@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Caleb Hart — Technology &amp; Creativity</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy-deep:#0b0e24;
+    --navy-mid:#161c47;
+    --indigo:#2a2f6e;
+    --pink:#ef5da8;
+    --peach:#ffd3d8;
+    --cyan:#5be3f0;
+    --ink:#f3eef8;
+    --ink-dim:#b9b7d6;
+    --grid-line:rgba(91,227,240,0.18);
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  html{scroll-behavior:smooth;}
+  body{
+    background:var(--navy-deep);
+    color:var(--ink);
+    font-family:'Inter',sans-serif;
+    overflow-x:hidden;
+  }
+  ::selection{ background:var(--pink); color:var(--navy-deep); }
+
+  h1,h2,h3,.display{
+    font-family:'Space Grotesk',sans-serif;
+    letter-spacing:-0.02em;
+  }
+  .mono{ font-family:'JetBrains Mono',monospace; letter-spacing:0.02em; }
+  a{ color:inherit; text-decoration:none; }
+
+  /* ---------- NAV ---------- */
+  nav{
+    position:fixed; top:0; left:0; right:0; z-index:100;
+    display:flex; align-items:center; justify-content:space-between;
+    padding:20px clamp(20px,5vw,60px);
+    background:linear-gradient(to bottom, rgba(11,14,36,0.85), transparent);
+    backdrop-filter:blur(2px);
+  }
+  .nav-brand{
+    font-weight:700; font-size:1.05rem;
+    display:flex; align-items:center; gap:10px;
+  }
+  .nav-brand .dot{
+    width:9px; height:9px; border-radius:50%;
+    background:var(--pink); box-shadow:0 0 12px var(--pink);
+  }
+  .nav-links{ display:flex; gap:clamp(16px,3vw,36px); font-size:0.88rem; }
+  .nav-links a{
+    color:var(--ink-dim); position:relative; padding-bottom:4px;
+    transition:color .2s ease;
+  }
+  .nav-links a:hover{ color:var(--cyan); }
+  .nav-links a::after{
+    content:''; position:absolute; left:0; bottom:0; height:1px; width:0;
+    background:var(--cyan); transition:width .25s ease;
+  }
+  .nav-links a:hover::after{ width:100%; }
+  .nav-toggle{ display:none; }
+
+  /* ---------- HERO / SCENE ---------- */
+  .hero{
+    position:relative;
+    height:100vh;
+    min-height:640px;
+    overflow:hidden;
+    display:flex;
+    align-items:flex-end;
+    background:
+      radial-gradient(ellipse at 50% 38%, #3a2350 0%, transparent 55%),
+      linear-gradient(to bottom, #0b0e24 0%, #171247 30%, #3d1b56 55%, #7a2f6b 72%, #b3487a 85%, #d97a8f 100%);
+  }
+  .stars{
+    position:absolute; inset:0; width:100%; height:65%;
+    background-image:
+      radial-gradient(1.5px 1.5px at 20% 20%, #fff 100%, transparent),
+      radial-gradient(1px 1px at 60% 10%, #fff 100%, transparent),
+      radial-gradient(1px 1px at 80% 30%, #fff 100%, transparent),
+      radial-gradient(1.5px 1.5px at 33% 45%, #fff 100%, transparent),
+      radial-gradient(1px 1px at 90% 15%, #fff 100%, transparent),
+      radial-gradient(1px 1px at 10% 60%, #fff 100%, transparent),
+      radial-gradient(1.5px 1.5px at 70% 55%, #fff 100%, transparent),
+      radial-gradient(1px 1px at 45% 8%, #fff 100%, transparent),
+      radial-gradient(1px 1px at 5% 30%, #fff 100%, transparent);
+    opacity:0.7;
+    animation:twinkle 4s ease-in-out infinite alternate;
+  }
+  @keyframes twinkle{ from{opacity:0.45;} to{opacity:0.85;} }
+
+  .sun{
+    position:absolute; left:50%; top:34%;
+    width:min(30vw,300px); height:min(30vw,300px);
+    transform:translate(-50%,-50%);
+    border-radius:50%;
+    background:linear-gradient(to bottom, #ffe9c4 0%, #ffc7d6 45%, #ff9cc1 70%, #d8639e 100%);
+    box-shadow:0 0 90px rgba(255,170,200,0.55), 0 0 200px rgba(255,140,190,0.25);
+  }
+  .sun::before{
+    content:''; position:absolute; inset:0; border-radius:50%;
+    background-image:repeating-linear-gradient(to bottom, transparent 0 8%, rgba(11,14,36,0.55) 8% 11%);
+    mix-blend-mode:multiply;
+  }
+
+  .horizon-glow{
+    position:absolute; left:0; right:0; bottom:30%; height:22%;
+    background:radial-gradient(ellipse at 50% 100%, rgba(255,180,210,0.55), transparent 70%);
+    pointer-events:none;
+  }
+
+  .palms{
+    position:absolute; bottom:26%; left:0; right:0; height:40%;
+    display:flex; justify-content:space-between;
+    padding:0 2%;
+    pointer-events:none;
+  }
+  .palm-cluster{ display:flex; gap:2vw; align-items:flex-end; }
+  .palm-cluster.right{ flex-direction:row-reverse; }
+  .palm{ opacity:0.92; filter:drop-shadow(0 0 18px rgba(20,10,40,0.6)); }
+
+  .road-wrap{
+    position:absolute; left:0; right:0; bottom:0; height:30%;
+    overflow:hidden;
+  }
+  .road{
+    position:absolute; left:50%; bottom:-5%; transform:translateX(-50%);
+    width:150%; height:130%;
+    background:linear-gradient(to top, #191347 0%, #211756 60%, #2c1c66 100%);
+    clip-path:polygon(42% 0%, 58% 0%, 78% 100%, 22% 100%);
+  }
+  .road::before, .road::after{
+    content:''; position:absolute; bottom:0; width:1.6%; height:100%;
+    background:linear-gradient(to top, #ffe9c4, #ffb3cd);
+    box-shadow:0 0 8px rgba(255,210,220,0.8);
+  }
+  .road::before{ left:22%; transform:skewX(20deg); transform-origin:bottom; }
+  .road::after{ right:22%; transform:skewX(-20deg); transform-origin:bottom; }
+  .lane{
+    position:absolute; left:50%; bottom:0; width:3%; height:100%;
+    transform:translateX(-50%);
+    background:repeating-linear-gradient(to top, var(--cyan) 0 8%, transparent 8% 16%);
+    opacity:0.85;
+  }
+
+  .car-layer{
+    position:absolute; left:50%; bottom:8%;
+    width:min(30vw,280px);
+    transform:translateX(-50%);
+    z-index:5;
+    will-change:transform;
+    filter:drop-shadow(0 10px 25px rgba(0,0,0,0.6));
+  }
+  .car-layer svg{ width:100%; display:block; }
+
+  .hero-copy{
+    position:relative; z-index:6;
+    width:100%;
+    padding:0 clamp(20px,6vw,80px) clamp(40px,8vh,90px);
+    display:flex; flex-direction:column; gap:10px;
+  }
+  .eyebrow{
+    font-size:0.78rem; text-transform:uppercase; color:var(--cyan);
+    letter-spacing:0.22em;
+  }
+  .hero-copy h1{
+    font-size:clamp(2.4rem, 7vw, 5rem);
+    font-weight:700;
+    color:var(--ink);
+    text-shadow:0 0 30px rgba(239,93,168,0.35);
+    line-height:1.02;
+  }
+  .hero-copy p{
+    max-width:560px;
+    color:var(--peach);
+    font-size:clamp(0.95rem,1.6vw,1.15rem);
+    line-height:1.55;
+  }
+  .scroll-hint{
+    margin-top:8px; font-size:0.78rem; color:var(--ink-dim);
+    display:flex; align-items:center; gap:8px;
+  }
+  .scroll-hint .chevron{
+    display:inline-block; animation:bob 1.6s ease-in-out infinite;
+  }
+  @keyframes bob{ 0%,100%{transform:translateY(0);} 50%{transform:translateY(5px);} }
+
+  /* ---------- SECTIONS ---------- */
+  main{ position:relative; z-index:2; background:var(--navy-deep); }
+  section{
+    padding:clamp(60px,10vh,110px) clamp(20px,6vw,80px);
+    max-width:1180px; margin:0 auto;
+  }
+  .section-head{ margin-bottom:clamp(28px,5vh,48px); }
+  .section-head .eyebrow{ color:var(--pink); }
+  .section-head h2{
+    font-size:clamp(1.8rem,4vw,2.6rem);
+    margin-top:8px;
+  }
+  .section-head p{ color:var(--ink-dim); margin-top:10px; max-width:560px; }
+
+  /* about */
+  .about-grid{
+    display:grid; grid-template-columns:1.3fr 1fr; gap:48px; align-items:start;
+  }
+  .about-grid p{ color:var(--ink-dim); line-height:1.75; margin-bottom:16px; font-size:1.02rem; }
+  .about-grid p strong{ color:var(--ink); font-weight:600; }
+  .location-card{
+    border:1px solid var(--grid-line);
+    background:linear-gradient(160deg, rgba(42,47,110,0.4), rgba(11,14,36,0.4));
+    border-radius:16px;
+    padding:22px;
+  }
+  .location-card .avatar{
+    width:100%; aspect-ratio:1/1; border-radius:12px;
+    background:
+      radial-gradient(circle at 50% 30%, #3a2350, #171247);
+    border:1px solid var(--grid-line);
+    display:flex; align-items:center; justify-content:center;
+    color:var(--ink-dim); font-size:0.8rem; text-align:center;
+    margin-bottom:14px;
+  }
+  .location-card .place{ font-weight:600; font-size:1.05rem; }
+  .location-card .place span{ color:var(--cyan); }
+
+  /* assistants / tabs */
+  .tab-bar{ display:flex; gap:6px; margin-bottom:0; flex-wrap:wrap; }
+  .tab-btn{
+    font-family:'JetBrains Mono',monospace;
+    font-size:0.85rem;
+    padding:12px 20px;
+    background:var(--navy-mid);
+    border:1px solid var(--grid-line);
+    border-bottom:none;
+    border-radius:10px 10px 0 0;
+    color:var(--ink-dim);
+    cursor:pointer;
+    transition:all .2s ease;
+  }
+  .tab-btn.active{ color:var(--cyan); background:#111536; }
+  .tab-panel-wrap{
+    border:1px solid var(--grid-line);
+    border-radius:0 12px 12px 12px;
+    background:#111536;
+    padding:clamp(22px,4vw,34px);
+  }
+  .tab-panel{ display:none; }
+  .tab-panel.active{ display:block; }
+  .tab-panel h3{ font-size:1.3rem; margin-bottom:12px; color:var(--ink); }
+  .tab-panel p{ color:var(--ink-dim); line-height:1.7; margin-bottom:18px; }
+  .chat-mock{
+    border:1px solid var(--grid-line);
+    border-radius:10px;
+    padding:14px 16px;
+    display:flex; align-items:center; justify-content:space-between;
+    background:rgba(91,227,240,0.05);
+    color:var(--ink-dim);
+    font-family:'JetBrains Mono',monospace;
+    font-size:0.85rem;
+  }
+  .chat-mock .send{
+    color:var(--navy-deep); background:var(--cyan);
+    padding:6px 14px; border-radius:6px; font-weight:600; font-size:0.78rem;
+  }
+
+  /* blog */
+  .blog-grid{
+    display:grid; grid-template-columns:repeat(3,1fr); gap:20px;
+  }
+  .blog-card{
+    border:1px solid var(--grid-line);
+    border-radius:14px;
+    padding:22px;
+    background:linear-gradient(160deg, rgba(42,47,110,0.35), rgba(11,14,36,0.2));
+    transition:transform .25s ease, border-color .25s ease;
+    display:flex; flex-direction:column; gap:14px; min-height:180px;
+  }
+  .blog-card:hover{ transform:translateY(-4px); border-color:var(--pink); }
+  .blog-card .date{
+    font-family:'JetBrains Mono',monospace; font-size:0.75rem; color:var(--cyan);
+  }
+  .blog-card h3{ font-size:1.1rem; line-height:1.35; }
+  .blog-card .tag{
+    margin-top:auto; font-size:0.75rem; color:var(--ink-dim);
+    text-transform:uppercase; letter-spacing:0.08em;
+  }
+
+  /* contact */
+  .contact-box{
+    border:1px solid var(--grid-line);
+    border-radius:18px;
+    padding:clamp(30px,5vw,50px);
+    background:linear-gradient(135deg, rgba(239,93,168,0.08), rgba(91,227,240,0.06));
+    display:flex; flex-wrap:wrap; gap:32px; align-items:center; justify-content:space-between;
+  }
+  .contact-box h2{ font-size:clamp(1.6rem,3.5vw,2.2rem); max-width:420px; }
+  .contact-links{ display:flex; gap:14px; flex-wrap:wrap; }
+  .contact-links a{
+    border:1px solid var(--grid-line);
+    padding:12px 22px; border-radius:999px; font-size:0.9rem;
+    transition:background .2s ease, color .2s ease;
+  }
+  .contact-links a:hover{ background:var(--cyan); color:var(--navy-deep); }
+
+  footer{
+    text-align:center; padding:30px 20px 50px;
+    color:var(--ink-dim); font-size:0.8rem;
+  }
+
+  .placeholder{
+    font-size:0.7rem; color:var(--ink-dim); opacity:0.7;
+    border:1px dashed var(--grid-line); border-radius:8px;
+    padding:3px 8px; display:inline-block; margin-top:8px;
+  }
+
+  @media (max-width:820px){
+    .nav-links{ display:none; }
+    .about-grid{ grid-template-columns:1fr; }
+    .blog-grid{ grid-template-columns:1fr; }
+    .contact-box{ flex-direction:column; align-items:flex-start; }
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    *{ animation-duration:0.01ms !important; animation-iteration-count:1 !important; transition-duration:0.01ms !important; }
+    .car-layer{ transform:none !important; }
+  }
+
+  :focus-visible{ outline:2px solid var(--cyan); outline-offset:3px; }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-brand"><span class="dot"></span> CALEB HART</div>
+  <div class="nav-links">
+    <a href="#about">About</a>
+    <a href="#assistants">Assistants</a>
+    <a href="#blog">Blog</a>
+    <a href="#contact">Contact</a>
+  </div>
+</nav>
+
+<div class="hero" id="hero">
+  <div class="stars"></div>
+  <div class="sun"></div>
+  <div class="horizon-glow"></div>
+
+  <div class="palms">
+    <div class="palm-cluster left">
+      <svg class="palm" width="70" height="180" viewBox="0 0 70 180"><g fill="#120a24"><rect x="32" y="60" width="6" height="120"/><path d="M35 60 C10 45 -5 35 5 15 C20 30 30 45 35 60Z"/><path d="M35 60 C60 40 75 25 65 5 C50 20 40 40 35 60Z"/><path d="M35 60 C15 55 -5 60 0 80 C15 75 28 68 35 60Z"/><path d="M35 60 C55 55 75 60 70 80 C55 75 42 68 35 60Z"/><path d="M35 60 C25 40 25 20 35 0 C42 20 42 40 35 60Z"/></g></svg>
+    </div>
+    <div class="palm-cluster right">
+      <svg class="palm" width="70" height="180" viewBox="0 0 70 180"><g fill="#120a24"><rect x="32" y="60" width="6" height="120"/><path d="M35 60 C10 45 -5 35 5 15 C20 30 30 45 35 60Z"/><path d="M35 60 C60 40 75 25 65 5 C50 20 40 40 35 60Z"/><path d="M35 60 C15 55 -5 60 0 80 C15 75 28 68 35 60Z"/><path d="M35 60 C55 55 75 60 70 80 C55 75 42 68 35 60Z"/><path d="M35 60 C25 40 25 20 35 0 C42 20 42 40 35 60Z"/></g></svg>
+    </div>
+  </div>
+
+  <div class="road-wrap">
+    <div class="road"></div>
+    <div class="lane"></div>
+  </div>
+
+  <div class="car-layer" id="car">
+    <svg viewBox="0 0 200 100" xmlns="http://www.w3.org/2000/svg">
+      <ellipse cx="100" cy="92" rx="70" ry="7" fill="#000" opacity="0.35"/>
+      <path d="M35 78 L40 45 C42 35 55 28 75 28 L125 28 C145 28 158 35 160 45 L165 78 Z" fill="#1c2a5e" stroke="#5be3f0" stroke-width="1.5"/>
+      <path d="M62 44 C64 36 72 32 84 32 L116 32 C128 32 136 36 138 44 L134 46 L66 46 Z" fill="#0d1436" stroke="#5be3f0" stroke-width="1"/>
+      <rect x="35" y="70" width="130" height="10" fill="#141c47"/>
+      <circle cx="60" cy="82" r="12" fill="#0b0e24" stroke="#3a4380" stroke-width="2"/>
+      <circle cx="140" cy="82" r="12" fill="#0b0e24" stroke="#3a4380" stroke-width="2"/>
+      <rect x="44" y="58" width="14" height="8" rx="2" fill="#ef5da8"/>
+      <rect x="142" y="58" width="14" height="8" rx="2" fill="#ef5da8"/>
+      <rect x="90" y="58" width="20" height="6" rx="2" fill="#ffd3d8" opacity="0.85"/>
+    </svg>
+  </div>
+
+  <div class="hero-copy">
+    <div class="eyebrow">technology &amp; creativity</div>
+    <h1>Caleb Hart</h1>
+    <p>Hello, and welcome to my website. I'm a technology professional with a flair for creativity — this is home to my résumé, my writing, and my personal AI assistants.</p>
+    <div class="scroll-hint"><span class="chevron">▾</span> scroll to explore</div>
+  </div>
+</div>
+
+<main>
+
+  <section id="about">
+    <div class="section-head">
+      <div class="eyebrow mono">// 01 about</div>
+      <h2>A bit about me</h2>
+    </div>
+    <div class="about-grid">
+      <div>
+        <p>I'm a technology professional with a flair for creativity. This site holds my <strong>complete résumé</strong>, my <strong>personal blog</strong> — the main outlet for my writing — and my very own <strong>AI assistants</strong>, handcrafted by yours truly.</p>
+        <p>Whether you're here to check my background, read what I've been thinking about lately, or just poke at a chatbot I built myself, you're in the right place.</p>
+        <div class="placeholder">Placeholder — résumé download / PDF viewer</div>
+      </div>
+      <div class="location-card">
+        <div class="avatar">Placeholder — profile photo</div>
+        <div class="place">Based in <span>Bridbany, Colorado</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="assistants">
+    <div class="section-head">
+      <div class="eyebrow mono">// 02 assistants</div>
+      <h2>Meet Mickey, Leo &amp; Donny</h2>
+      <p>Three assistants, three purposes — trained on my résumé, my work, and my way of writing.</p>
+    </div>
+
+    <div class="tab-bar" role="tablist">
+      <button class="tab-btn active" data-tab="mickey" role="tab">Michelangelo</button>
+      <button class="tab-btn" data-tab="leo" role="tab">Leonardo</button>
+      <button class="tab-btn" data-tab="donny" role="tab">Donatello</button>
+    </div>
+    <div class="tab-panel-wrap">
+      <div class="tab-panel active" id="panel-mickey">
+        <h3>Michelangelo — "Mickey"</h3>
+        <p>Mickey is tailor-made to answer questions about this website, my résumé, and my professional experience. I use him to write cover letters, draft résumés, and match me to roles that suit my skills.</p>
+        <div class="chat-mock">Chat with Mickey — type here… <span class="send">Send</span></div>
+      </div>
+      <div class="tab-panel" id="panel-leo">
+        <h3>Leonardo — "Leo"</h3>
+        <p>Leo is the creative one — built for brainstorming, ideation, and the kind of thinking that doesn't fit neatly into a résumé.</p>
+        <div class="placeholder">Placeholder — Leo's assistant configuration</div>
+      </div>
+      <div class="tab-panel" id="panel-donny">
+        <h3>Donatello — "Donny"</h3>
+        <p>Donny handles the technical deep-dives: architecture questions, tool use, and anything under the hood.</p>
+        <div class="placeholder">Placeholder — Donny's assistant configuration</div>
+      </div>
+    </div>
+  </section>
+
+  <section id="blog">
+    <div class="section-head">
+      <div class="eyebrow mono">// 03 writing</div>
+      <h2>Latest blog posts</h2>
+    </div>
+    <div class="blog-grid">
+      <div class="blog-card">
+        <span class="date">05.17.26</span>
+        <h3>Chronos-2, Amazon's TSFM, and heartbeats — why it's still being used today</h3>
+        <span class="tag">Forecasting</span>
+      </div>
+      <div class="blog-card">
+        <span class="date">08.06.26</span>
+        <h3>The reality of predicting the stock market</h3>
+        <span class="tag">TSFM for finance</span>
+      </div>
+      <div class="blog-card">
+        <span class="date">08.01.26</span>
+        <h3>Tool use in LLMs</h3>
+        <span class="tag">AI systems</span>
+      </div>
+    </div>
+  </section>
+
+  <section id="contact">
+    <div class="contact-box">
+      <h2>Want to get in touch?</h2>
+      <div class="contact-links">
+        <a href="#">Email — placeholder</a>
+        <a href="#">LinkedIn — placeholder</a>
+        <a href="#">GitHub — placeholder</a>
+      </div>
+    </div>
+  </section>
+
+  <footer>© 2026 Caleb Hart. Built with a flair for creativity.</footer>
+</main>
+
+<script>
+  // Tabs
+  const tabBtns = document.querySelectorAll('.tab-btn');
+  tabBtns.forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      tabBtns.forEach(b=>b.classList.remove('active'));
+      document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
+      btn.classList.add('active');
+      document.getElementById('panel-'+btn.dataset.tab).classList.add('active');
+    });
+  });
+
+  // Car drives off screen as you scroll through the hero
+  const hero = document.getElementById('hero');
+  const car = document.getElementById('car');
+  function updateCar(){
+    const heroHeight = hero.offsetHeight;
+    const scrolled = window.scrollY;
+    const progress = Math.min(Math.max(scrolled / (heroHeight * 0.9), 0), 1);
+    const travel = progress * (window.innerWidth * 0.85 + 300);
+    const scale = 1 + progress * 0.4;
+    const rise = progress * 40;
+    car.style.transform = `translate(calc(-50% + ${travel}px), -${rise}px) scale(${scale})`;
+    car.style.opacity = 1 - Math.max(0, progress - 0.75) * 4;
+  }
+  window.addEventListener('scroll', updateCar, { passive:true });
+  window.addEventListener('resize', updateCar);
+  updateCar();
+</script>
+
+</body>
+</html>
