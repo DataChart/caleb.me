@@ -354,6 +354,41 @@ code, pre { font-family: var(--mono); }
 .source-note { font-family: var(--mono); font-size: 12px; color: var(--muted); }
 .more-soon { font-family: var(--mono); font-size: 13px; color: var(--ink-3); }
 
+/* ---------- blog ---------- */
+.blog { display: flex; flex-direction: column; gap: 16px; }
+.blog h2 { font-size: 44px; font-weight: 700; }
+.post-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px; padding: 0; list-style: none; margin-top: 16px; }
+.post-card {
+  display: flex; flex-direction: column; gap: 10px;
+  padding: 22px; border-radius: 14px; border: 1px solid var(--line); background: var(--surface);
+}
+.post-card:hover { border-color: var(--accent); }
+.post-card h3 { font-size: 20px; font-weight: 500; line-height: 1.35; }
+.post-card h3 a { color: var(--ink); text-decoration: none; }
+.post-card h3 a:hover { color: var(--accent-hi); }
+.post-excerpt { color: var(--ink-2); font-size: 15px; line-height: 1.6; }
+.read-more { margin-top: auto; font-family: var(--mono); font-size: 13px; text-decoration: none; }
+.post-tag { font-family: var(--mono); font-size: 12px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); }
+
+.name-link { color: var(--ink); text-decoration: none; }
+.name-link:hover { color: var(--ink); }
+.post { padding-top: 48px; max-width: 720px; display: flex; flex-direction: column; gap: 20px; outline: none; }
+.back { font-family: var(--mono); font-size: 13px; text-decoration: none; align-self: flex-start; }
+.post-title { font-size: clamp(32px, 4.5vw, 48px); font-weight: 700; line-height: 1.12; }
+.origin {
+  display: flex; flex-direction: column; gap: 4px;
+  padding: 14px 18px; border-radius: 12px; border: 1px solid var(--line); background: var(--code-bg);
+  font-family: var(--mono); font-size: 13px; overflow-wrap: anywhere;
+}
+.origin h2 { font-size: 12px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); }
+.post-body { display: flex; flex-direction: column; gap: 20px; font-size: 18px; line-height: 1.75; color: var(--ink-2); margin: 12px 0 24px; }
+.post-body ul { list-style: disc; padding-left: 22px; display: flex; flex-direction: column; gap: 8px; }
+.post-body li::marker { color: var(--accent); }
+.post-body blockquote { margin: 0; padding: 4px 0 4px 20px; border-left: 3px solid var(--accent); color: var(--ink); font-style: italic; }
+.post-body .term { font-size: 14px; overflow-x: auto; white-space: pre; }
+.post-body a { overflow-wrap: anywhere; }
+.post-kicker { font-family: var(--mono); font-size: 14px; color: var(--ink-3); }
+
 /* ---------- footer ---------- */
 .site-footer {
   margin-top: 96px; padding-top: 24px; border-top: 1px solid var(--line);
@@ -381,7 +416,8 @@ code, pre { font-family: var(--mono); }
 }
 @media (max-width: 560px) {
   .wrap { padding: 32px 16px 32px; }
-  .skills-head h2, .soon h2 { font-size: 36px; }
+  .skills-head h2, .soon h2, .blog h2 { font-size: 36px; }
+  .post-body { font-size: 17px; }
   .info div { grid-template-columns: minmax(0, 1fr); gap: 0; }
   .out { margin-left: 0; }
   .agents li { grid-template-columns: minmax(0, 1fr); gap: 4px; }

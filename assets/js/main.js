@@ -34,9 +34,12 @@
     if (fromHash() !== name) history.pushState(null, '', '#' + name);
     show(name, { focus: true });
   });
-  window.addEventListener('popstate', function () { show(fromHash()); });
-  window.addEventListener('hashchange', function () { show(fromHash()); });
-  show(fromHash());
+  // Post pages have no panels; their tab links are plain links back to index.html.
+  if (Object.keys(panels).length) {
+    window.addEventListener('popstate', function () { show(fromHash()); });
+    window.addEventListener('hashchange', function () { show(fromHash()); });
+    show(fromHash());
+  }
 
   /* ---------- skill filters ---------- */
   var active = { sw: true, lang: true, soft: true };
