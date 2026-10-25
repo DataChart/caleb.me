@@ -160,21 +160,102 @@
     </div>
   </main>
 
+  <!-- ===================== RESEARCH DESK ===================== -->
+  <!-- Numbers below are a snapshot so the card reads well without JS; main.js replaces them with live data. -->
+  <section class="panel project" id="research" data-panel="research" tabindex="-1" aria-labelledby="research-h">
+    <header class="project-head">
+      <p class="badge"><span class="pulse" aria-hidden="true"></span>In active development · redeploys daily</p>
+      <h2 id="research-h">Atlas Research Desk</h2>
+      <p class="tagline">Frontier AI research, written and checked by agents, every claim traceable to a source.</p>
+      <p class="updated-line" data-gh-repo="DataChart/AtlasResearchDesk"><span class="c">$ git log -1</span> <span data-gh-when>checking latest commit…</span> <span class="commit-msg" data-gh-msg></span></p>
+      <div class="ctas">
+        <a class="btn btn-primary" href="https://datachart.github.io/AtlasResearchDesk/" target="_blank" rel="noopener">Open the live site <span aria-hidden="true">↗</span></a>
+        <a class="btn" href="https://github.com/DataChart/AtlasResearchDesk" target="_blank" rel="noopener">View source <span aria-hidden="true">↗</span></a>
+      </div>
+    </header>
+
+    <div class="project-grid">
+      <div class="project-about">
+        <p>Three Claude agents run this blog on a schedule. Every post covers one timely result from the last 60 days: the method, the evidence and its weaknesses. Nothing is published until a separate agent has checked every claim.</p>
+        <ul class="agents">
+          <li><span class="agent-name">Research</span><span>Picks a timely result from the last 60 days and writes one fully sourced post.</span></li>
+          <li><span class="agent-name">QA</span><span>Opens every source, checks every claim, grades sources A–D and annotates the post in place. Nothing ships without its pass.</span></li>
+          <li><span class="agent-name">Manager</span><span>After every three posts, writes a public cycle review and steers the next three.</span></li>
+        </ul>
+      </div>
+
+      <div class="project-live" aria-live="polite">
+        <div class="stats" id="atlas-stats">
+          <div class="stat"><span class="stat-num" data-k="posts">47</span><span class="stat-label">research posts</span></div>
+          <div class="stat"><span class="stat-num" data-k="reviews">15</span><span class="stat-label">cycle reviews</span></div>
+          <div class="stat"><span class="stat-num" data-k="words">140k</span><span class="stat-label">words published</span></div>
+          <div class="stat"><span class="stat-num" data-k="clean">97.9%</span><span class="stat-label">clean pipeline runs</span></div>
+        </div>
+        <h3 class="live-h">Latest posts</h3>
+        <ol class="post-list" id="atlas-posts">
+          <li><a href="https://datachart.github.io/AtlasResearchDesk/posts/2026-10-25-wanpe-reverse-constructed-video-prompts/" target="_blank" rel="noopener">Reverse-constructed prompts for 30-second video: WanPE's design, its pool-relative preference scores, and one ablation at 397B</a><span class="post-meta">Oct 25 · QA: pass with notes</span></li>
+          <li><a href="https://datachart.github.io/AtlasResearchDesk/posts/2026-10-25-rlvr-math-verifier-metamorphic-audit/" target="_blank" rel="noopener">Testing the graders behind RLVR: a metamorphic audit of four math verifiers, rechecked against its released counts</a><span class="post-meta">Oct 25 · QA: pass with notes</span></li>
+          <li><a href="https://datachart.github.io/AtlasResearchDesk/posts/2026-10-24-self-listening-full-duplex-anchoring/" target="_blank" rel="noopener">Self-Listening for full-duplex speech models: feeding played audio back as input, and what AnchorSpeech can show</a><span class="post-meta">Oct 24 · QA: pass with notes</span></li>
+        </ol>
+        <p class="source-note" id="atlas-source">Snapshot from Oct 25, 2026. Live figures load from the site's public API.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== FINANCE ===================== -->
+  <section class="panel project" id="finance" data-panel="finance" tabindex="-1" aria-labelledby="finance-h">
+    <header class="project-head">
+      <p class="badge"><span class="pulse" aria-hidden="true"></span>In active development · trades every US trading day</p>
+      <h2 id="finance-h">Agent Stock Portfolio</h2>
+      <p class="tagline">A paper-trading stock portfolio run entirely by Claude agents.</p>
+      <p class="updated-line" data-gh-repo="DataChart/AgentStockPortfolio"><span class="c">$ git log -1</span> <span data-gh-when>checking latest commit…</span> <span class="commit-msg" data-gh-msg></span></p>
+      <div class="ctas">
+        <a class="btn btn-primary" href="https://datachart.github.io/AgentStockPortfolio/" target="_blank" rel="noopener">Open the live dashboard <span aria-hidden="true">↗</span></a>
+        <a class="btn" href="https://github.com/DataChart/AgentStockPortfolio" target="_blank" rel="noopener">View source <span aria-hidden="true">↗</span></a>
+      </div>
+    </header>
+
+    <div class="project-grid">
+      <div class="project-about">
+        <p>Three agents run once per US trading day after the close, then push one commit to the repo. GitHub Pages republishes the dashboard from that commit.</p>
+        <ul class="agents">
+          <li><span class="agent-name">Analyst</span><span>Reviews past trades and results, and rewrites the strategy that guides future picks.</span></li>
+          <li><span class="agent-name">Research</span><span>Searches the web and makes at most one buy and one sell per day.</span></li>
+          <li><span class="agent-name">Fact checker</span><span>Replays every number from the $10,000 start and re-verifies prices from an independent source before clearing a trade.</span></li>
+        </ul>
+        <h3 class="live-h">Rules</h3>
+        <ul class="rules">
+          <li>$10,000 starting cash. US stocks and ETFs only, no margin or shorts.</li>
+          <li>At most one buy and one sell per trading day, after an opening allocation of up to 8 buys on Oct 12, 2026.</li>
+          <li>Fills at the closing price, with $1.00 commission per trade and 0.10% slippage.</li>
+        </ul>
+      </div>
+
+      <div class="project-live" aria-live="polite">
+        <div class="stats" id="asp-stats">
+          <div class="stat"><span class="stat-num" data-k="value">$9,721</span><span class="stat-label">portfolio value</span></div>
+          <div class="stat"><span class="stat-num" data-k="ret">▼ 2.79%</span><span class="stat-label">return since $10,000 start</span></div>
+          <div class="stat"><span class="stat-num" data-k="trades">11</span><span class="stat-label">trades</span></div>
+          <div class="stat"><span class="stat-num" data-k="cash">$616</span><span class="stat-label">cash</span></div>
+        </div>
+        <h3 class="live-h">Holdings</h3>
+        <table class="holdings" id="asp-holdings">
+          <thead><tr><th scope="col">Ticker</th><th scope="col">Value</th><th scope="col">Unrealized</th></tr></thead>
+          <tbody>
+            <tr><td>LLY</td><td>$2,911</td><td>▼ 0.51%</td></tr>
+            <tr><td>XLE</td><td>$2,860</td><td>▲ 2.16%</td></tr>
+            <tr><td>MSFT</td><td>$1,742</td><td>▼ 3.23%</td></tr>
+            <tr><td>CRM</td><td>$1,591</td><td>▲ 6.09%</td></tr>
+          </tbody>
+        </table>
+        <p class="source-note" id="asp-source">Snapshot as of the Oct 23, 2026 close. Live figures load from the dashboard's data.</p>
+      </div>
+    </div>
+
+    <p class="more-soon"><span class="c"># coming to this tab:</span> my_spending/ &nbsp; forecasting/</p>
+  </section>
+
   <!-- ===================== OTHER TABS ===================== -->
-  <section class="panel soon" id="research" data-panel="research" tabindex="-1" aria-labelledby="research-h">
-    <h2 id="research-h">Research Desk</h2>
-    <pre class="term"><span class="c">$</span> ls research-desk/
-<span class="c"># nothing here yet. First notes are being written.</span></pre>
-  </section>
-
-  <section class="panel soon" id="finance" data-panel="finance" tabindex="-1" aria-labelledby="finance-h">
-    <h2 id="finance-h">Finance</h2>
-    <p class="soon-sub">Portfolio, spending and forecasting work will live here.</p>
-    <pre class="term"><span class="c">$</span> ls finance/
-portfolio/   my_spending/   forecasting/
-<span class="c"># each folder is still empty. Check back soon.</span></pre>
-  </section>
-
   <section class="panel soon" id="llms" data-panel="llms" tabindex="-1" aria-labelledby="llms-h">
     <h2 id="llms-h">Fine-tuned LLMs</h2>
     <pre class="term"><span class="c">&gt;&gt;&gt;</span> model.<span class="f">generate</span>(<span class="s">"What's on this page?"</span>)
