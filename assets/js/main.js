@@ -7,7 +7,6 @@
   var panels = {};
   document.querySelectorAll('[data-panel]').forEach(function (el) { panels[el.dataset.panel] = el; });
   var tabs = document.querySelectorAll('.tab');
-  var order = Array.prototype.map.call(tabs, function (t) { return t.dataset.tab; });
   var nav = document.querySelector('.tabs');
 
   function show(name, opts) {
@@ -38,19 +37,6 @@
   window.addEventListener('popstate', function () { show(fromHash()); });
   window.addEventListener('hashchange', function () { show(fromHash()); });
   show(fromHash());
-
-  // Press 1-5 to switch tabs.
-  document.addEventListener('keydown', function (e) {
-    if (e.altKey || e.ctrlKey || e.metaKey || e.shiftKey) return;
-    var t = e.target;
-    if (t && (t.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName))) return;
-    var i = parseInt(e.key, 10);
-    if (i >= 1 && i <= order.length) {
-      var name = order[i - 1];
-      if (fromHash() !== name) history.pushState(null, '', '#' + name);
-      show(name);
-    }
-  });
 
   /* ---------- skill filters ---------- */
   var active = { sw: true, lang: true, soft: true };

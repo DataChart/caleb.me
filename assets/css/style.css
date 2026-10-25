@@ -121,7 +121,7 @@ a:hover { color: var(--ink); }
 ::selection { background: var(--accent); color: var(--accent-ink); }
 h1, h2, h3, p, ul, dl, dd, figure, pre { margin: 0; }
 ul { padding: 0; list-style: none; }
-code, pre, kbd { font-family: var(--mono); }
+code, pre { font-family: var(--mono); }
 
 .skip {
   position: absolute; left: 16px; top: -60px; z-index: 10;
@@ -133,8 +133,6 @@ code, pre, kbd { font-family: var(--mono); }
 .wrap { max-width: 1280px; margin: 0 auto; padding: 48px 32px 40px; }
 
 /* ---------- header ---------- */
-.prompt { font-family: var(--mono); font-size: 13px; color: var(--muted); margin-bottom: 10px; }
-.prompt-cmd { color: var(--ink-3); }
 .masthead { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 16px; }
 .name {
   font-size: clamp(44px, 7vw, 84px); font-weight: 700;
@@ -166,17 +164,13 @@ code, pre, kbd { font-family: var(--mono); }
   border-bottom: 1px solid var(--bg);
   box-shadow: inset 0 2px 0 var(--accent);
 }
-.tab-key {
-  font-size: 10px; color: var(--muted);
-  border: 1px solid var(--line-2); border-radius: 4px; padding: 0 4px; line-height: 16px;
-}
 
 /* Panels: with JS only the active one shows; without JS everything stacks. */
 .panel { padding-top: 48px; outline: none; }
 .js .panel:not(.is-active) { display: none; }
 
 /* ---------- intro ---------- */
-.intro { display: flex; flex-direction: column; gap: 22px; max-width: 820px; }
+.intro { grid-area: intro; display: flex; flex-direction: column; gap: 22px; max-width: 820px; }
 .lede { font-size: clamp(22px, 2.6vw, 30px); line-height: 1.35; font-weight: 500; }
 .sub { font-size: 17px; line-height: 1.65; color: var(--ink-2); }
 .ctas { display: flex; flex-wrap: wrap; gap: 10px; }
@@ -196,11 +190,12 @@ code, pre, kbd { font-family: var(--mono); }
 .orgs ul { display: flex; flex-wrap: wrap; gap: 6px 24px; }
 
 /* ---------- main grid ---------- */
+/* Desktop: the portrait/notebook column runs alongside both the intro and the skills. */
 .main-grid {
-  margin-top: 64px;
-  display: grid; gap: 56px;
+  display: grid; gap: 64px 56px;
   grid-template-columns: minmax(0, 1fr) minmax(320px, 420px);
-  grid-template-areas: "skills side";
+  grid-template-rows: auto 1fr;
+  grid-template-areas: "intro side" "skills side";
   align-items: start;
 }
 .skills { grid-area: skills; display: flex; flex-direction: column; gap: 36px; min-width: 0; }
@@ -318,10 +313,6 @@ code, pre, kbd { font-family: var(--mono); }
 }
 .foot-links { display: flex; flex-wrap: wrap; gap: 8px 20px; }
 .foot-meta { color: var(--muted); }
-kbd {
-  font-size: 11px; padding: 1px 5px; border-radius: 4px;
-  border: 1px solid var(--line-2); border-bottom-width: 2px; color: var(--ink-3);
-}
 .foot-right { display: flex; align-items: center; gap: 16px; }
 .theme-btn {
   width: 44px; height: 44px; border-radius: 10px; cursor: pointer;
@@ -335,7 +326,7 @@ kbd {
 
 /* ---------- responsive ---------- */
 @media (max-width: 900px) {
-  .main-grid { grid-template-columns: minmax(0, 1fr); grid-template-areas: "side" "skills"; gap: 64px; }
+  .main-grid { grid-template-columns: minmax(0, 1fr); grid-template-rows: none; grid-template-areas: "intro" "side" "skills"; gap: 64px; }
   .side { max-width: 440px; }
 }
 @media (max-width: 560px) {
@@ -343,7 +334,6 @@ kbd {
   .skills-head h2, .soon h2 { font-size: 36px; }
   .info div { grid-template-columns: minmax(0, 1fr); gap: 0; }
   .out { margin-left: 0; }
-  .hint { display: none; }
 }
 
 @media (prefers-reduced-motion: reduce) {
