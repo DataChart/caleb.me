@@ -64,6 +64,10 @@ python3 tools/make_giraffe.py assets/img/giraffe-16bit
 
 This writes `giraffe-16bit.svg` plus a 10x PNG preview. Delete the preview before committing.
 
+## Roadmap
+
+Planned work and quick wins are in [ROADMAP.md](ROADMAP.md).
+
 ## Easter eggs
 
 Open the browser console.
