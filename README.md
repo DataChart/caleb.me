@@ -24,7 +24,8 @@ The site is static, so GitHub Pages can serve it straight from `main`:
 index.html              Main page: header, tabs and every tab panel
 blog/*.html             One page per blog post
 assets/css/style.css    All styles, with light and dark theme tokens at the top
-assets/js/main.js       Tabs, skill filters, theme toggle and live project data
+assets/js/main.js       Tabs, theme toggle and live project data
+assets/js/skills-matrix.js  Skills data and the matrix built from it
 assets/img/             The 16-bit giraffe portrait (also the favicon)
 tools/make_giraffe.py   Script that draws the giraffe
 ```
@@ -32,8 +33,7 @@ tools/make_giraffe.py   Script that draws the giraffe
 ## How the page works
 
 - **Tabs** are hash-routed (`#main`, `#research`, `#finance`, `#llms`, `#blog`). With JS off, every panel stacks on one page.
-- **Skills** sit in three tiers. Each pill's shape and color give its type: orange circle for software, white square for languages, purple diamond for soft skills. The legend buttons filter by type.
-- **Project links under a pill** are the small numbered buttons. Each one links to a blog post or project that uses the skill. A pill with nothing to show yet has no buttons.
+- **Skills** is a matrix generated from `LEVELS` and `DATA` at the top of `assets/js/skills-matrix.js`. Each skill has a level from 1 (Hobbyist) to 5 (Master), a project count and an optional `certified` flag. The KPI strip, legend, two-column table and "Selected engagements" cards are all built from that data, so editing it is the only upkeep. Hover or tap a skill to see the projects that use it, and the reverse. A project that names a skill that doesn't exist logs a warning in the console.
 - **Theme** follows the system setting. The footer button overrides it, and the choice is saved in `localStorage`.
 
 ## Live project data
@@ -53,7 +53,6 @@ The HTML holds a snapshot of every figure. If a request fails (for example mid-r
 1. Copy one of the files in `blog/` and rename it with a short slug, e.g. `blog/my-new-post.html`.
 2. Change the `<title>`, the meta description, the tag, the `<h1>`, the "Originally posted on LinkedIn" link (or delete that box), and the `<article>` body.
 3. Add a card for it to the `<ol class="post-cards">` list in the Blog panel of `index.html`.
-4. Optionally, add a numbered `.ln` button under any skill pill it relates to.
 
 ## Regenerate the giraffe
 

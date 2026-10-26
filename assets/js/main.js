@@ -41,23 +41,6 @@
     show(fromHash());
   }
 
-  /* ---------- skill filters ---------- */
-  var active = { sw: true, lang: true, soft: true };
-  document.querySelectorAll('.legend-btn').forEach(function (btn) {
-    btn.addEventListener('click', function () {
-      var type = btn.dataset.filter;
-      active[type] = !active[type];
-      // Never filter everything away: turning the last one off turns all back on.
-      if (!active.sw && !active.lang && !active.soft) active = { sw: true, lang: true, soft: true };
-      document.querySelectorAll('.legend-btn').forEach(function (b) {
-        b.setAttribute('aria-pressed', String(active[b.dataset.filter]));
-      });
-      document.querySelectorAll('.skill').forEach(function (s) {
-        s.classList.toggle('is-hidden', !active[s.dataset.type]);
-      });
-    });
-  });
-
   /* ---------- theme toggle ---------- */
   var themeBtn = document.getElementById('theme-btn');
   var mql = window.matchMedia ? window.matchMedia('(prefers-color-scheme: light)') : null;

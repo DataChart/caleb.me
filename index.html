@@ -102,59 +102,18 @@
         </div>
       </aside>
 
-      <section class="skills" aria-labelledby="skills-h">
-        <div class="skills-head">
-          <h2 id="skills-h">Skills</h2>
-          <div class="legend" role="group" aria-label="Filter skills by type">
-            <button type="button" class="legend-btn" data-filter="sw" aria-pressed="true"><span class="mark sw" aria-hidden="true"></span>Software</button>
-            <button type="button" class="legend-btn" data-filter="lang" aria-pressed="true"><span class="mark lang" aria-hidden="true"></span>Language</button>
-            <button type="button" class="legend-btn" data-filter="soft" aria-pressed="true"><span class="mark soft" aria-hidden="true"></span>Soft skill</button>
-            <span class="legend-note"><span class="ln ln-demo" aria-hidden="true">01</span>Example post or project</span>
-          </div>
+      <section class="skills sm" id="skills" aria-labelledby="sm-title">
+        <h2 id="sm-title">Skills</h2>
+        <!-- Everything below is generated from LEVELS and DATA at the top of assets/js/skills-matrix.js. -->
+        <div class="sm-kpis" id="sm-kpis"></div>
+        <div class="sm-legend" id="sm-legend"></div>
+        <div class="sm-cols" id="sm-cols"></div>
+        <div class="sm-eng-head">
+          <h3>Selected engagements</h3>
+          <span class="sm-hint">Hover or tap a skill or project to link them</span>
         </div>
-
-        <!-- Each .ln button links to one blog post or project that uses the skill. Skills with no write-up yet have no buttons. -->
-        <div class="tier">
-          <h3>Led 10+ projects <span class="count">// 14</span></h3>
-          <ul class="chips">
-            <li class="skill" data-type="lang"><span class="chip"><span class="mark lang" aria-hidden="true"></span>Python</span><span class="links"><a class="ln" href="#finance" title="Project: Agent Stock Portfolio" aria-label="Python: Project: Agent Stock Portfolio">01</a><a class="ln" href="blog/chronos-2-foundation-model-spotlight.html" title="Blog: Chronos-2 spotlight" aria-label="Python: Blog: Chronos-2 spotlight">02</a></span></li>
-            <li class="skill" data-type="soft"><span class="chip"><span class="mark soft" aria-hidden="true"></span>Public Speaking</span><span class="links"><a class="ln" href="blog/facilitation-skills-for-leaders.html" title="Blog: Manager or facilitator?" aria-label="Public Speaking: Blog: Manager or facilitator?">01</a></span></li>
-            <li class="skill" data-type="lang"><span class="chip"><span class="mark lang" aria-hidden="true"></span>C++</span></li>
-            <li class="skill" data-type="lang"><span class="chip"><span class="mark lang" aria-hidden="true"></span>R</span></li>
-            <li class="skill" data-type="lang"><span class="chip"><span class="mark lang" aria-hidden="true"></span>JavaScript</span><span class="links"><a class="ln" href="#research" title="Project: Atlas Research Desk" aria-label="JavaScript: Project: Atlas Research Desk">01</a><a class="ln" href="#finance" title="Project: Agent Stock Portfolio" aria-label="JavaScript: Project: Agent Stock Portfolio">02</a></span></li>
-            <li class="skill" data-type="sw"><span class="chip"><span class="mark sw" aria-hidden="true"></span>Visual Studio</span></li>
-            <li class="skill" data-type="sw"><span class="chip"><span class="mark sw" aria-hidden="true"></span>SSMS</span></li>
-            <li class="skill" data-type="sw"><span class="chip"><span class="mark sw" aria-hidden="true"></span>SSIS</span></li>
-            <li class="skill" data-type="sw"><span class="chip"><span class="mark sw" aria-hidden="true"></span>Azure</span></li>
-            <li class="skill" data-type="lang"><span class="chip"><span class="mark lang" aria-hidden="true"></span>HTML</span><span class="links"><a class="ln" href="#research" title="Project: Atlas Research Desk" aria-label="HTML: Project: Atlas Research Desk">01</a><a class="ln" href="#finance" title="Project: Agent Stock Portfolio" aria-label="HTML: Project: Agent Stock Portfolio">02</a></span></li>
-            <li class="skill" data-type="sw"><span class="chip"><span class="mark sw" aria-hidden="true"></span>Claude</span><span class="links"><a class="ln" href="#research" title="Project: Atlas Research Desk" aria-label="Claude: Project: Atlas Research Desk">01</a><a class="ln" href="#finance" title="Project: Agent Stock Portfolio" aria-label="Claude: Project: Agent Stock Portfolio">02</a></span></li>
-            <li class="skill" data-type="sw"><span class="chip"><span class="mark sw" aria-hidden="true"></span>ChatGPT</span></li>
-            <li class="skill" data-type="sw"><span class="chip"><span class="mark sw" aria-hidden="true"></span>Pandas</span></li>
-            <li class="skill" data-type="soft"><span class="chip"><span class="mark soft" aria-hidden="true"></span>Project Management</span><span class="links"><a class="ln" href="blog/facilitation-skills-for-leaders.html" title="Blog: Manager or facilitator?" aria-label="Project Management: Blog: Manager or facilitator?">01</a></span></li>
-          </ul>
-        </div>
-
-        <div class="tier">
-          <h3>Led 3+ projects <span class="count">// 4</span></h3>
-          <ul class="chips">
-            <li class="skill" data-type="lang"><span class="chip"><span class="mark lang" aria-hidden="true"></span>C#</span></li>
-            <li class="skill" data-type="sw"><span class="chip"><span class="mark sw" aria-hidden="true"></span>ArcGIS</span></li>
-            <li class="skill" data-type="sw"><span class="chip"><span class="mark sw" aria-hidden="true"></span>Multi-Agent Systems</span><span class="links"><a class="ln" href="#research" title="Project: Atlas Research Desk" aria-label="Multi-Agent Systems: Project: Atlas Research Desk">01</a><a class="ln" href="#finance" title="Project: Agent Stock Portfolio" aria-label="Multi-Agent Systems: Project: Agent Stock Portfolio">02</a></span></li>
-            <li class="skill" data-type="sw"><span class="chip"><span class="mark sw" aria-hidden="true"></span>Polars</span></li>
-          </ul>
-        </div>
-
-        <div class="tier">
-          <h3>Familiar with <span class="count">// 0</span></h3>
-          <p class="empty"><span class="c">&gt;&gt;&gt;</span> familiar_with<br><span class="c">[]</span>  <span class="c"># more coming soon</span></p>
-        </div>
-
-        <div class="tier">
-          <h3>Would love to use more <span class="count">// 1</span></h3>
-          <ul class="chips">
-            <li class="skill" data-type="lang"><span class="chip"><span class="mark lang" aria-hidden="true"></span>Rust</span></li>
-          </ul>
-        </div>
+        <div class="sm-cards" id="sm-cards"></div>
+        <noscript><p class="sm-hint">The skills matrix needs JavaScript to draw.</p></noscript>
       </section>
 
     </div>
@@ -306,5 +265,6 @@
 </div>
 
 <script src="assets/js/main.js" defer></script>
+<script src="assets/js/skills-matrix.js" defer></script>
 </body>
 </html>
