@@ -302,6 +302,16 @@ code, pre { font-family: var(--mono); }
 .corner.tr { top: 0; right: 0; border-top-width: 6px; border-right-width: 6px; border-top-right-radius: 18px; }
 .corner.bl { bottom: 0; left: 0; border-bottom-width: 6px; border-left-width: 6px; border-bottom-left-radius: 18px; }
 .corner.br { bottom: 0; right: 0; border-bottom-width: 6px; border-right-width: 6px; border-bottom-right-radius: 18px; }
+/* Sunset portrait in dark mode, sunrise in light mode. Mirrors the theme token rules at the top. */
+.viewfinder .vf-day { display: none; }
+:root[data-theme="light"] .viewfinder .vf-night { display: none; }
+:root[data-theme="light"] .viewfinder img.vf-day { display: block; }
+:root[data-theme="light"] .viewfinder span.vf-day { display: inline; }
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme="dark"]) .viewfinder .vf-night { display: none; }
+  :root:not([data-theme="dark"]) .viewfinder img.vf-day { display: block; }
+  :root:not([data-theme="dark"]) .viewfinder span.vf-day { display: inline; }
+}
 .viewfinder figcaption {
   position: absolute; bottom: -4px; left: 50%; transform: translate(-50%, 100%);
   font-family: var(--mono); font-size: 11px; color: var(--muted); white-space: nowrap;
