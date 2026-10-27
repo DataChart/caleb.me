@@ -1,0 +1,309 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Two skies, one giraffe: a code walkthrough of my pixel-art portrait · Caleb Hart</title>
+<meta name="description" content="How a 48×48 numpy array becomes the sunset giraffe in dark mode and the sunrise giraffe in light mode, walked through line by line.">
+<meta name="color-scheme" content="dark light">
+<link rel="icon" href="../assets/img/giraffe-16bit.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&amp;family=JetBrains+Mono:wght@400;500;700&amp;display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/css/style.css">
+<script>
+  try {
+    var saved = localStorage.getItem('theme');
+    if (saved === 'light' || saved === 'dark') document.documentElement.dataset.theme = saved;
+  } catch (e) {}
+  document.documentElement.classList.add('js');
+</script>
+</head>
+<body>
+<a class="skip" href="#post">Skip to content</a>
+<div class="wrap">
+  <header class="site-header">
+    <div class="masthead">
+      <a class="name name-link" href="../index.html">CALEB HART<span class="cursor" aria-hidden="true">_</span></a>
+      <p class="kicker">AI · Automation · Business Intelligence · Education</p>
+    </div>
+    <nav class="tabs" aria-label="Sections">
+      <a class="tab" href="../index.html#main">Main</a>
+      <a class="tab" href="../index.html#research">Research Desk</a>
+      <a class="tab" href="../index.html#finance">Finance</a>
+      <a class="tab" href="../index.html#llms">Fine-tuned LLMs</a>
+      <a class="tab" href="../index.html#blog" aria-current="page">Blog</a>
+    </nav>
+  </header>
+  <main id="post" class="post post-wide" tabindex="-1">
+    <a class="back" href="../index.html#blog"><span aria-hidden="true">←</span> All posts</a>
+    <p class="post-tag">Python &amp; Pixel Art</p>
+    <h1 class="post-title">Two skies, one giraffe: a code walkthrough of my pixel-art portrait</h1>
+    <article class="post-body">
+      <div class="hero-pair"><figure><img src="../assets/img/giraffe-16bit.svg" width="384" height="384" alt="The sunset giraffe: purple dusk sky with stars, orange sun on the horizon"><figcaption>Sunset · dark mode</figcaption></figure><figure><img src="../assets/img/giraffe-16bit-day.svg" width="384" height="384" alt="The sunrise giraffe: blue and peach morning sky with clouds and birds, yellow sun just above the horizon"><figcaption>Sunrise · light mode</figcaption></figure></div>
+      <p>The giraffe in the corner of my homepage isn't a PNG I drew in an image editor. It's a Python script. Every pixel is a number in a 48×48 numpy array, and the script writes it out as an SVG the browser can scale without blurring. When I added a light mode, it felt wrong to show a giraffe at dusk on a bright white page, so I taught the script a second scene: sunrise.</p>
+      <p>This post walks through the whole script, top to bottom. Most of it is shared between the two versions, since the giraffe itself never changes. Wherever the code <em>does</em> differ, you'll get a split view: sunset on the left, sunrise on the right. The full file is <a href="https://github.com/DataChart/caleb.me/blob/main/tools/make_giraffe.py" target="_blank" rel="noopener">tools/make_giraffe.py</a> if you want to follow along.</p>
+      <h2><span class="md-mark" aria-hidden="true">## </span>1. The canvas</h2>
+      <p>Everything starts with an empty 48×48 grid of RGB pixels. <code>hexc</code> turns a CSS-style hex color into an RGB tuple, because I think in hex and numpy thinks in integers. <code>ys, xs</code> are coordinate grids, so later I can write a shape as a single vectorized expression instead of a loop.</p>
+      <figure class="md-code"><figcaption><span class="fence">```python</span> make_giraffe.py</figcaption><pre><code><span class="k">import</span> math, sys
+<span class="k">import</span> numpy <span class="k">as</span> np
+<span class="k">from</span> PIL <span class="k">import</span> Image
+
+N = <span class="n">48</span>
+H = W = N
+
+<span class="k">def</span> <span class="f">hexc</span>(h):
+    h = h.<span class="f">lstrip</span>(<span class="s">&#x27;#&#x27;</span>); <span class="k">return</span> <span class="f">tuple</span>(<span class="f">int</span>(h[i:i+<span class="n">2</span>], <span class="n">16</span>) <span class="k">for</span> i <span class="k">in</span> (<span class="n">0</span>, <span class="n">2</span>, <span class="n">4</span>))
+
+img = np.<span class="f">zeros</span>((H, W, <span class="n">3</span>), dtype=np.uint8)
+ys, xs = np.mgrid[<span class="n">0</span>:H, <span class="n">0</span>:W]</code></pre></figure>
+      <h2><span class="md-mark" aria-hidden="true">## </span>2. Picking a scene</h2>
+      <p>The script takes an optional second argument. No argument means sunset, which keeps the original command working exactly as before. Then each scene picks its own palette: ten sky bands from top to horizon, three sun colors, two ground colors and a tree color. This little block is the entire personality of each version.</p>
+      <figure class="md-code"><figcaption><span class="fence">```python</span> make_giraffe.py</figcaption><pre><code>SCENE = sys.argv[<span class="n">2</span>] <span class="k">if</span> <span class="f">len</span>(sys.argv) &gt; <span class="n">2</span> <span class="k">else</span> <span class="s">&#x27;sunset&#x27;</span></code></pre></figure>
+      <div class="split"><figure class="md-code is-sunset"><figcaption><span class="fence">```python</span> <b>Sunset</b> · dark mode</figcaption><pre><code>sky = [<span class="s"><i class="sw" style="background:#160f2b"></i>&#x27;#160f2b&#x27;</span>, <span class="s"><i class="sw" style="background:#1d1438"></i>&#x27;#1d1438&#x27;</span>, <span class="s"><i class="sw" style="background:#261a49"></i>&#x27;#261a49&#x27;</span>, <span class="s"><i class="sw" style="background:#33205c"></i>&#x27;#33205c&#x27;</span>, <span class="s"><i class="sw" style="background:#46276b"></i>&#x27;#46276b&#x27;</span>,
+       <span class="s"><i class="sw" style="background:#5e2e75"></i>&#x27;#5e2e75&#x27;</span>, <span class="s"><i class="sw" style="background:#7c3878"></i>&#x27;#7c3878&#x27;</span>, <span class="s"><i class="sw" style="background:#a04673"></i>&#x27;#a04673&#x27;</span>, <span class="s"><i class="sw" style="background:#c95c62"></i>&#x27;#c95c62&#x27;</span>, <span class="s"><i class="sw" style="background:#ec8250"></i>&#x27;#ec8250&#x27;</span>]
+SUN = (<span class="s"><i class="sw" style="background:#ffd27a"></i>&#x27;#ffd27a&#x27;</span>, <span class="s"><i class="sw" style="background:#ffb25c"></i>&#x27;#ffb25c&#x27;</span>, <span class="s"><i class="sw" style="background:#f08a4b"></i>&#x27;#f08a4b&#x27;</span>)
+GROUND = (<span class="s"><i class="sw" style="background:#2b1840"></i>&#x27;#2b1840&#x27;</span>, <span class="s"><i class="sw" style="background:#1e1233"></i>&#x27;#1e1233&#x27;</span>)
+TREE = <span class="s"><i class="sw" style="background:#120a22"></i>&#x27;#120a22&#x27;</span></code></pre></figure><figure class="md-code is-sunrise"><figcaption><span class="fence">```python</span> <b>Sunrise</b> · light mode</figcaption><pre><code>sky = [<span class="s"><i class="sw" style="background:#6fa8dc"></i>&#x27;#6fa8dc&#x27;</span>, <span class="s"><i class="sw" style="background:#82b4e2"></i>&#x27;#82b4e2&#x27;</span>, <span class="s"><i class="sw" style="background:#98c1e8"></i>&#x27;#98c1e8&#x27;</span>, <span class="s"><i class="sw" style="background:#b0cdec"></i>&#x27;#b0cdec&#x27;</span>, <span class="s"><i class="sw" style="background:#cad7ea"></i>&#x27;#cad7ea&#x27;</span>,
+       <span class="s"><i class="sw" style="background:#e3dbe0"></i>&#x27;#e3dbe0&#x27;</span>, <span class="s"><i class="sw" style="background:#f4d3c8"></i>&#x27;#f4d3c8&#x27;</span>, <span class="s"><i class="sw" style="background:#fbcaa8"></i>&#x27;#fbcaa8&#x27;</span>, <span class="s"><i class="sw" style="background:#fed592"></i>&#x27;#fed592&#x27;</span>, <span class="s"><i class="sw" style="background:#ffe6a8"></i>&#x27;#ffe6a8&#x27;</span>]
+SUN = (<span class="s"><i class="sw" style="background:#fff1b8"></i>&#x27;#fff1b8&#x27;</span>, <span class="s"><i class="sw" style="background:#ffc75e"></i>&#x27;#ffc75e&#x27;</span>, <span class="s"><i class="sw" style="background:#ffa94d"></i>&#x27;#ffa94d&#x27;</span>)  <span class="c"># core, rim, scanline gaps</span>
+GROUND = (<span class="s"><i class="sw" style="background:#a07a4e"></i>&#x27;#a07a4e&#x27;</span>, <span class="s"><i class="sw" style="background:#86643f"></i>&#x27;#86643f&#x27;</span>)          <span class="c"># top edge, below</span>
+TREE = <span class="s"><i class="sw" style="background:#4a3426"></i>&#x27;#4a3426&#x27;</span></code></pre></figure></div>
+      <p>Sunset runs from deep indigo down to a hot orange at the horizon. Sunrise flips the temperature: a clear blue up top that warms through lavender and peach into pale gold. The ground and tree go from near-black silhouettes to warm browns, because in morning light you can actually see them.</p>
+      <h2><span class="md-mark" aria-hidden="true">## </span>3. A dithered sky</h2>
+      <p>Ten flat stripes of color would look like a flag, not a sky. The fix is ordered dithering, the same trick 16-bit consoles used to fake gradients with tiny palettes. A 4×4 Bayer matrix gives every pixel a threshold between 0 and 1. As you move down a band, the fraction <code>f</code> grows, and more pixels cross their threshold and flip to the next color. The result is that checkerboard-y blend you can see between each band.</p>
+      <figure class="md-code"><figcaption><span class="fence">```python</span> make_giraffe.py</figcaption><pre><code>bayer = np.<span class="f">array</span>([[<span class="n">0</span>, <span class="n">8</span>, <span class="n">2</span>, <span class="n">10</span>], [<span class="n">12</span>, <span class="n">4</span>, <span class="n">14</span>, <span class="n">6</span>], [<span class="n">3</span>, <span class="n">11</span>, <span class="n">1</span>, <span class="n">9</span>], [<span class="n">15</span>, <span class="n">7</span>, <span class="n">13</span>, <span class="n">5</span>]]) / <span class="n">16.0</span>
+band_h = <span class="n">40</span> / (<span class="f">len</span>(sky) - <span class="n">1</span>)
+<span class="k">for</span> y <span class="k">in</span> <span class="f">range</span>(H):
+    <span class="k">for</span> x <span class="k">in</span> <span class="f">range</span>(W):
+        t = <span class="f">min</span>(y, <span class="n">39.99</span>) / band_h
+        i = <span class="f">int</span>(t); f = t - i
+        j = <span class="f">min</span>(i + <span class="n">1</span>, <span class="f">len</span>(sky) - <span class="n">1</span>)
+        c = sky[j] <span class="k">if</span> f &gt; bayer[y % <span class="n">4</span>, x % <span class="n">4</span>] <span class="k">else</span> sky[i]
+        img[y, x] = <span class="f">hexc</span>(c)</code></pre></figure>
+      <p>This loop is identical for both scenes. The only thing that changes is which <code>sky</code> list it reads from, which is exactly why the palette block above carries so much weight.</p>
+      <h2><span class="md-mark" aria-hidden="true">## </span>4. What fills the sky</h2>
+      <p>Here's the biggest real difference in the code. Sunset gets a scatter of stars, plus one larger star drawn as a little plus sign. Sunrise gets three pixel clouds, each three rows tall (a bright white top, a pink middle and a shadowed underside catching the light), and two birds. Each bird is just three pixels in a V.</p>
+      <div class="split"><figure class="md-code is-sunset"><figcaption><span class="fence">```python</span> <b>Sunset</b> · dark mode</figcaption><pre><code><span class="c"># stars</span>
+<span class="k">for</span> (sx, sy, c) <span class="k">in</span> [(<span class="n">4</span>, <span class="n">3</span>, <span class="s"><i class="sw" style="background:#ffffff"></i>&#x27;#ffffff&#x27;</span>), (<span class="n">13</span>, <span class="n">6</span>, <span class="s"><i class="sw" style="background:#cbbdf5"></i>&#x27;#cbbdf5&#x27;</span>),
+                    (<span class="n">40</span>, <span class="n">4</span>, <span class="s"><i class="sw" style="background:#ffffff"></i>&#x27;#ffffff&#x27;</span>), (<span class="n">45</span>, <span class="n">10</span>, <span class="s"><i class="sw" style="background:#cbbdf5"></i>&#x27;#cbbdf5&#x27;</span>),
+                    (<span class="n">35</span>, <span class="n">2</span>, <span class="s"><i class="sw" style="background:#cbbdf5"></i>&#x27;#cbbdf5&#x27;</span>), (<span class="n">8</span>, <span class="n">12</span>, <span class="s"><i class="sw" style="background:#9d8fd0"></i>&#x27;#9d8fd0&#x27;</span>),
+                    (<span class="n">44</span>, <span class="n">18</span>, <span class="s"><i class="sw" style="background:#9d8fd0"></i>&#x27;#9d8fd0&#x27;</span>), (<span class="n">2</span>, <span class="n">20</span>, <span class="s"><i class="sw" style="background:#9d8fd0"></i>&#x27;#9d8fd0&#x27;</span>)]:
+    img[sy, sx] = <span class="f">hexc</span>(c)
+<span class="c"># one bigger star</span>
+img[<span class="n">3</span>, <span class="n">3</span>] = img[<span class="n">3</span>, <span class="n">5</span>] = img[<span class="n">2</span>, <span class="n">4</span>] = img[<span class="n">4</span>, <span class="n">4</span>] = <span class="f">hexc</span>(<span class="s"><i class="sw" style="background:#8f7fd0"></i>&#x27;#8f7fd0&#x27;</span>)</code></pre></figure><figure class="md-code is-sunrise"><figcaption><span class="fence">```python</span> <b>Sunrise</b> · light mode</figcaption><pre><code><span class="c"># pixel clouds catching the first light, and two birds</span>
+<span class="k">for</span> (cx0, cy0, w) <span class="k">in</span> [(<span class="n">3</span>, <span class="n">7</span>, <span class="n">9</span>), (<span class="n">30</span>, <span class="n">4</span>, <span class="n">11</span>), (<span class="n">38</span>, <span class="n">15</span>, <span class="n">7</span>)]:
+    <span class="k">for</span> x <span class="k">in</span> <span class="f">range</span>(cx0, <span class="f">min</span>(cx0 + w, W)):
+        img[cy0 + <span class="n">1</span>, x] = <span class="f">hexc</span>(<span class="s"><i class="sw" style="background:#f7e4e6"></i>&#x27;#f7e4e6&#x27;</span>)
+    <span class="k">for</span> x <span class="k">in</span> <span class="f">range</span>(cx0 + <span class="n">2</span>, <span class="f">min</span>(cx0 + w - <span class="n">2</span>, W)):
+        img[cy0, x] = <span class="f">hexc</span>(<span class="s"><i class="sw" style="background:#ffffff"></i>&#x27;#ffffff&#x27;</span>)
+    <span class="k">for</span> x <span class="k">in</span> <span class="f">range</span>(cx0 + <span class="n">1</span>, <span class="f">min</span>(cx0 + w - <span class="n">1</span>, W)):
+        img[cy0 + <span class="n">2</span>, x] = <span class="f">hexc</span>(<span class="s"><i class="sw" style="background:#e9c3c4"></i>&#x27;#e9c3c4&#x27;</span>)
+<span class="k">for</span> (bx, by) <span class="k">in</span> [(<span class="n">39</span>, <span class="n">23</span>), (<span class="n">43</span>, <span class="n">21</span>)]:
+    img[by, bx] = img[by, bx + <span class="n">2</span>] = img[by + <span class="n">1</span>, bx + <span class="n">1</span>] = <span class="f">hexc</span>(<span class="s"><i class="sw" style="background:#3b2a40"></i>&#x27;#3b2a40&#x27;</span>)</code></pre></figure></div>
+      <h2><span class="md-mark" aria-hidden="true">## </span>5. The sun</h2>
+      <p>Both suns are the same circle of radius 6, with a two-tone fill: a bright core and a slightly darker rim. The horizontal "scanline gaps" are a nod to retro synthwave suns. The difference is height. The setting sun sits right on the horizon, and the rising sun has cleared it by two pixels, so the gaps move up with it.</p>
+      <div class="split"><figure class="md-code is-sunset"><figcaption><span class="fence">```python</span> <b>Sunset</b> · dark mode</figcaption><pre><code>cx, cy, r = <span class="n">9</span>, <span class="n">38</span>, <span class="n">6</span>   <span class="c"># sitting on the horizon</span>
+gaps = (<span class="n">35</span>, <span class="n">37</span>)</code></pre></figure><figure class="md-code is-sunrise"><figcaption><span class="fence">```python</span> <b>Sunrise</b> · light mode</figcaption><pre><code>cx, cy, r = <span class="n">9</span>, <span class="n">36</span>, <span class="n">6</span>   <span class="c"># two pixels higher</span>
+gaps = (<span class="n">33</span>, <span class="n">35</span>)</code></pre></figure></div>
+      <figure class="md-code"><figcaption><span class="fence">```python</span> make_giraffe.py</figcaption><pre><code><span class="k">for</span> y <span class="k">in</span> <span class="f">range</span>(H):
+    <span class="k">for</span> x <span class="k">in</span> <span class="f">range</span>(W):
+        d = math.<span class="f">hypot</span>(x - cx, y - cy)
+        <span class="k">if</span> d &lt;= r:
+            c = SUN[<span class="n">0</span>] <span class="k">if</span> d &lt; r - <span class="n">2</span> <span class="k">else</span> SUN[<span class="n">1</span>]
+            <span class="c"># retro scanline gaps on the sun</span>
+            <span class="k">if</span> y <span class="k">in</span> gaps:
+                c = SUN[<span class="n">2</span>]
+            img[y, x] = <span class="f">hexc</span>(c)</code></pre></figure>
+      <h2><span class="md-mark" aria-hidden="true">## </span>6. Ground and acacia tree</h2>
+      <p>The ground is two rows of color with a dotted top edge, so it reads as grass instead of a ruler line. The acacia is a flat-topped canopy on a one-pixel trunk, because a savanna needs an acacia. The shapes are shared, and only the colors come from each scene's palette.</p>
+      <figure class="md-code"><figcaption><span class="fence">```python</span> make_giraffe.py</figcaption><pre><code><span class="c"># ground</span>
+ground_top = <span class="n">41</span>
+<span class="k">for</span> y <span class="k">in</span> <span class="f">range</span>(ground_top, H):
+    <span class="k">for</span> x <span class="k">in</span> <span class="f">range</span>(W):
+        img[y, x] = <span class="f">hexc</span>(GROUND[<span class="n">1</span>] <span class="k">if</span> y &gt; ground_top <span class="k">else</span> GROUND[<span class="n">0</span>])
+<span class="k">for</span> gx <span class="k">in</span> <span class="f">range</span>(<span class="n">0</span>, W, <span class="n">3</span>):
+    img[ground_top - <span class="n">1</span>, gx] = <span class="f">hexc</span>(GROUND[<span class="n">0</span>])
+
+<span class="c"># acacia tree silhouette (right)</span>
+tree = TREE
+<span class="k">for</span> y <span class="k">in</span> <span class="f">range</span>(<span class="n">31</span>, <span class="n">34</span>):
+    <span class="k">for</span> x <span class="k">in</span> <span class="f">range</span>(<span class="n">37</span>, <span class="n">48</span>):
+        <span class="k">if</span> <span class="k">not</span> ((y == <span class="n">31</span> <span class="k">and</span> (x &lt; <span class="n">39</span> <span class="k">or</span> x &gt; <span class="n">46</span>)) <span class="k">or</span> (y == <span class="n">33</span> <span class="k">and</span> (x &lt; <span class="n">38</span>))):
+            img[y, x] = <span class="f">hexc</span>(tree)
+<span class="k">for</span> y <span class="k">in</span> <span class="f">range</span>(<span class="n">34</span>, ground_top):
+    img[y, <span class="n">42</span>] = <span class="f">hexc</span>(tree)
+img[<span class="n">34</span>, <span class="n">41</span>] = img[<span class="n">35</span>, <span class="n">41</span>] = img[<span class="n">34</span>, <span class="n">43</span>] = <span class="f">hexc</span>(tree)</code></pre></figure>
+      <h2><span class="md-mark" aria-hidden="true">## </span>7. Building the giraffe out of masks</h2>
+      <p>From here on, the code is the same for both versions. The giraffe is built from boolean masks, 48×48 arrays of True and False that say "this pixel belongs to the neck" or "this pixel is an ear". <code>ellipse</code> handles rotated ovals (the head and muzzle are tilted −34° so the giraffe looks down and to the left), and <code>poly</code> borrows Pillow's polygon fill for the neck, skull and mane. The two ossicones (the horns) are just thin rectangles with darker knobs on top.</p>
+      <figure class="md-code"><figcaption><span class="fence">```python</span> make_giraffe.py</figcaption><pre><code><span class="k">def</span> <span class="f">ellipse</span>(cx, cy, rx, ry, ang):
+    a = math.<span class="f">radians</span>(ang)
+    dx, dy = xs - cx, ys - cy
+    u = dx * math.<span class="f">cos</span>(a) + dy * math.<span class="f">sin</span>(a)
+    v = -dx * math.<span class="f">sin</span>(a) + dy * math.<span class="f">cos</span>(a)
+    <span class="k">return</span> (u / rx) ** <span class="n">2</span> + (v / ry) ** <span class="n">2</span> &lt;= <span class="n">1.0</span>
+
+<span class="k">def</span> <span class="f">poly</span>(pts):
+    <span class="k">from</span> PIL <span class="k">import</span> ImageDraw
+    m = Image.<span class="f">new</span>(<span class="s">&#x27;L&#x27;</span>, (W, H), <span class="n">0</span>)
+    ImageDraw.<span class="f">Draw</span>(m).<span class="f">polygon</span>(pts, fill=<span class="n">1</span>)
+    <span class="k">return</span> np.<span class="f">array</span>(m).<span class="f">astype</span>(bool)
+
+neck = <span class="f">poly</span>([(<span class="n">18</span>, <span class="n">48</span>), (<span class="n">38</span>, <span class="n">48</span>), (<span class="n">33</span>, <span class="n">30</span>), (<span class="n">31</span>, <span class="n">20</span>), (<span class="n">24</span>, <span class="n">19</span>), (<span class="n">23</span>, <span class="n">30</span>)])
+head = <span class="f">ellipse</span>(<span class="n">20.5</span>, <span class="n">16.5</span>, <span class="n">10</span>, <span class="n">5.4</span>, -<span class="n">34</span>)
+skull = <span class="f">poly</span>([(<span class="n">23</span>, <span class="n">9</span>), (<span class="n">30</span>, <span class="n">11</span>), (<span class="n">33</span>, <span class="n">21</span>), (<span class="n">25</span>, <span class="n">22</span>), (<span class="n">21</span>, <span class="n">14</span>)])
+muzzle = <span class="f">ellipse</span>(<span class="n">13</span>, <span class="n">22</span>, <span class="n">4.8</span>, <span class="n">3.8</span>, -<span class="n">34</span>)
+ear = <span class="f">ellipse</span>(<span class="n">33</span>, <span class="n">11.5</span>, <span class="n">3.6</span>, <span class="n">1.5</span>, -<span class="n">18</span>)
+oss1 = (xs &gt;= <span class="n">24</span>) &amp; (xs &lt;= <span class="n">25</span>) &amp; (ys &gt;= <span class="n">5</span>) &amp; (ys &lt;= <span class="n">10</span>)
+oss2 = (xs &gt;= <span class="n">28</span>) &amp; (xs &lt;= <span class="n">29</span>) &amp; (ys &gt;= <span class="n">4</span>) &amp; (ys &lt;= <span class="n">10</span>)
+knob1 = (xs &gt;= <span class="n">23</span>) &amp; (xs &lt;= <span class="n">26</span>) &amp; (ys &gt;= <span class="n">4</span>) &amp; (ys &lt;= <span class="n">5</span>)
+knob2 = (xs &gt;= <span class="n">27</span>) &amp; (xs &lt;= <span class="n">30</span>) &amp; (ys &gt;= <span class="n">3</span>) &amp; (ys &lt;= <span class="n">4</span>)
+mane = <span class="f">poly</span>([(<span class="n">31</span>, <span class="n">19</span>), (<span class="n">34</span>, <span class="n">19</span>), (<span class="n">38.5</span>, <span class="n">44</span>), (<span class="n">36</span>, <span class="n">44</span>)]) &amp; ~neck
+
+face = head | muzzle | skull
+body = neck | face | ear
+horns = oss1 | oss2 | knob1 | knob2
+allm = body | horns | mane</code></pre></figure>
+      <p>Combining masks with <code>|</code> and <code>&amp; ~</code> is basically set algebra on pixels. <code>allm</code> ends up as "everything that is giraffe", and the last step uses it to draw the outline.</p>
+      <h2><span class="md-mark" aria-hidden="true">## </span>8. Palettes and the reticulated pattern</h2>
+      <p>Each part of the giraffe gets a three-step palette: highlight, base and shadow. The pattern on the neck is a Voronoi diagram. I scatter seed points on a jittered grid with a fixed random seed (so the giraffe looks identical on every run), then for each pixel compare the distance to its nearest and second-nearest seed. Where those two are almost equal, you're on a border between cells, and that's a light line. Everywhere else is a dark patch. Real reticulated giraffes look a lot like Voronoi diagrams, which still delights me.</p>
+      <figure class="md-code"><figcaption><span class="fence">```python</span> make_giraffe.py</figcaption><pre><code>TAN = [<span class="s"><i class="sw" style="background:#ffe3a6"></i>&#x27;#ffe3a6&#x27;</span>, <span class="s"><i class="sw" style="background:#f4bf63"></i>&#x27;#f4bf63&#x27;</span>, <span class="s"><i class="sw" style="background:#cf8f3e"></i>&#x27;#cf8f3e&#x27;</span>]
+PATCH = [<span class="s"><i class="sw" style="background:#c46f2c"></i>&#x27;#c46f2c&#x27;</span>, <span class="s"><i class="sw" style="background:#9f5422"></i>&#x27;#9f5422&#x27;</span>, <span class="s"><i class="sw" style="background:#76391a"></i>&#x27;#76391a&#x27;</span>]
+LINE = [<span class="s"><i class="sw" style="background:#fcebc4"></i>&#x27;#fcebc4&#x27;</span>, <span class="s"><i class="sw" style="background:#f6dca8"></i>&#x27;#f6dca8&#x27;</span>, <span class="s"><i class="sw" style="background:#d9b47a"></i>&#x27;#d9b47a&#x27;</span>]
+MUZ = [<span class="s"><i class="sw" style="background:#fbead0"></i>&#x27;#fbead0&#x27;</span>, <span class="s"><i class="sw" style="background:#e9cfa3"></i>&#x27;#e9cfa3&#x27;</span>, <span class="s"><i class="sw" style="background:#c4a374"></i>&#x27;#c4a374&#x27;</span>]
+EAR = [<span class="s"><i class="sw" style="background:#ffe3a6"></i>&#x27;#ffe3a6&#x27;</span>, <span class="s"><i class="sw" style="background:#f4bf63"></i>&#x27;#f4bf63&#x27;</span>, <span class="s"><i class="sw" style="background:#cf8f3e"></i>&#x27;#cf8f3e&#x27;</span>]
+OUT = <span class="s"><i class="sw" style="background:#2b140c"></i>&#x27;#2b140c&#x27;</span>
+
+<span class="c"># reticulated pattern via voronoi seeds (neck + back of skull)</span>
+rng = np.random.<span class="f">default_rng</span>(<span class="n">7</span>)
+seeds = []
+<span class="k">for</span> gy <span class="k">in</span> <span class="f">range</span>(<span class="n">8</span>, <span class="n">50</span>, <span class="n">5</span>):
+    <span class="k">for</span> gx <span class="k">in</span> <span class="f">range</span>(<span class="n">14</span>, <span class="n">42</span>, <span class="n">5</span>):
+        seeds.<span class="f">append</span>((gx + rng.<span class="f">uniform</span>(-<span class="n">1.6</span>, <span class="n">1.6</span>) + (<span class="n">2.5</span> <span class="k">if</span> (gy // <span class="n">5</span>) % <span class="n">2</span> <span class="k">else</span> <span class="n">0</span>), gy + rng.<span class="f">uniform</span>(-<span class="n">1.4</span>, <span class="n">1.4</span>)))
+seeds = np.<span class="f">array</span>(seeds)
+d = np.<span class="f">sqrt</span>((xs[..., <span class="k">None</span>] - seeds[:, <span class="n">0</span>]) ** <span class="n">2</span> + (ys[..., <span class="k">None</span>] - seeds[:, <span class="n">1</span>]) ** <span class="n">2</span>)
+ds = np.<span class="f">sort</span>(d, axis=<span class="n">2</span>)
+is_line = (ds[..., <span class="n">1</span>] - ds[..., <span class="n">0</span>]) &lt; <span class="n">1.25</span></code></pre></figure>
+      <h2><span class="md-mark" aria-hidden="true">## </span>9. Shading with one rule</h2>
+      <p>Pixel artists usually light from the upper left, so <code>tone</code> does too. If a pixel's right or bottom neighbor is outside the shape, it's in shadow. If its left or top neighbor is outside, it's in highlight. Otherwise it gets the base color. Checking two pixels to the right gives the shadow a bit more thickness, which makes the neck look round instead of flat.</p>
+      <figure class="md-code"><figcaption><span class="fence">```python</span> make_giraffe.py</figcaption><pre><code><span class="k">def</span> <span class="f">tone</span>(mask, y, x):
+    <span class="c"># light from upper-left: highlight where left/up is outside, shadow where right/down is outside</span>
+    left = x - <span class="n">1</span> &lt; <span class="n">0</span> <span class="k">or</span> <span class="k">not</span> mask[y, x - <span class="n">1</span>]
+    up = y - <span class="n">1</span> &lt; <span class="n">0</span> <span class="k">or</span> <span class="k">not</span> mask[y - <span class="n">1</span>, x]
+    r1 = x + <span class="n">1</span> &gt;= W <span class="k">or</span> <span class="k">not</span> mask[y, x + <span class="n">1</span>]
+    r2 = x + <span class="n">2</span> &gt;= W <span class="k">or</span> <span class="k">not</span> mask[y, x + <span class="n">2</span>]
+    dn = y + <span class="n">1</span> &gt;= H <span class="k">or</span> <span class="k">not</span> mask[y + <span class="n">1</span>, x]
+    <span class="k">if</span> r1 <span class="k">or</span> r2 <span class="k">or</span> dn:
+        <span class="k">return</span> <span class="n">2</span>
+    <span class="k">if</span> left <span class="k">or</span> up:
+        <span class="k">return</span> <span class="n">0</span>
+    <span class="k">return</span> <span class="n">1</span></code></pre></figure>
+      <p>Then one big loop paints every giraffe pixel, deciding which part it belongs to in priority order: mane, horns, ear, muzzle, patterned neck, then plain face.</p>
+      <figure class="md-code"><figcaption><span class="fence">```python</span> make_giraffe.py</figcaption><pre><code>patterned = (neck | (skull &amp; ~head &amp; ~muzzle))
+<span class="k">for</span> y <span class="k">in</span> <span class="f">range</span>(H):
+    <span class="k">for</span> x <span class="k">in</span> <span class="f">range</span>(W):
+        <span class="k">if</span> <span class="k">not</span> allm[y, x]:
+            <span class="k">continue</span>
+        <span class="k">if</span> mane[y, x]:
+            c = <span class="s"><i class="sw" style="background:#6e3416"></i>&#x27;#6e3416&#x27;</span> <span class="k">if</span> (y % <span class="n">3</span>) <span class="k">else</span> <span class="s"><i class="sw" style="background:#8f4a1c"></i>&#x27;#8f4a1c&#x27;</span>
+        <span class="k">elif</span> horns[y, x]:
+            c = <span class="s"><i class="sw" style="background:#3d2012"></i>&#x27;#3d2012&#x27;</span> <span class="k">if</span> (knob1[y, x] <span class="k">or</span> knob2[y, x]) <span class="k">else</span> (<span class="s"><i class="sw" style="background:#a8693a"></i>&#x27;#a8693a&#x27;</span> <span class="k">if</span> x <span class="k">in</span> (<span class="n">24</span>, <span class="n">28</span>) <span class="k">else</span> <span class="s"><i class="sw" style="background:#7a4421"></i>&#x27;#7a4421&#x27;</span>)
+        <span class="k">elif</span> ear[y, x] <span class="k">and</span> <span class="k">not</span> face[y, x]:
+            c = EAR[<span class="f">tone</span>(ear, y, x)]
+            <span class="k">if</span> <span class="n">32</span> &lt;= x &lt;= <span class="n">35</span> <span class="k">and</span> y == <span class="n">11</span>:
+                c = <span class="s"><i class="sw" style="background:#e39a7a"></i>&#x27;#e39a7a&#x27;</span>  <span class="c"># inner ear</span>
+        <span class="k">elif</span> muzzle[y, x] <span class="k">and</span> <span class="k">not</span> head[y, x] <span class="k">or</span> (muzzle[y, x] <span class="k">and</span> x &lt; <span class="n">15</span>):
+            c = MUZ[<span class="f">tone</span>(face, y, x)]
+        <span class="k">elif</span> patterned[y, x] <span class="k">and</span> <span class="k">not</span> head[y, x]:
+            t = <span class="f">tone</span>(body, y, x)
+            c = LINE[t] <span class="k">if</span> is_line[y, x] <span class="k">else</span> PATCH[t]
+        <span class="k">else</span>:
+            t = <span class="f">tone</span>(face, y, x)
+            c = TAN[t]
+        img[y, x] = <span class="f">hexc</span>(c)</code></pre></figure>
+      <h2><span class="md-mark" aria-hidden="true">## </span>10. The details that make it a face</h2>
+      <p>A few hand-placed pixels do a lot of work here: freckle spots on the face, an eye with a white highlight pixel and a lash line above it, a nostril, and a mouth line that dips by one pixel. Then the outline pass walks every giraffe pixel and darkens any pixel that touches the outside. One rule, and suddenly it's a sprite.</p>
+      <figure class="md-code"><figcaption><span class="fence">```python</span> make_giraffe.py</figcaption><pre><code><span class="c"># small face spots</span>
+<span class="k">for</span> (sx, sy) <span class="k">in</span> [(<span class="n">25</span>, <span class="n">13</span>), (<span class="n">26</span>, <span class="n">14</span>), (<span class="n">19</span>, <span class="n">12</span>), (<span class="n">28</span>, <span class="n">17</span>), (<span class="n">29</span>, <span class="n">16</span>), (<span class="n">23</span>, <span class="n">18</span>)]:
+    <span class="k">if</span> face[sy, sx]:
+        img[sy, sx] = <span class="f">hexc</span>(<span class="s"><i class="sw" style="background:#b8692a"></i>&#x27;#b8692a&#x27;</span>)
+
+<span class="c"># eye with highlight + lash</span>
+img[<span class="n">14</span>, <span class="n">21</span>] = img[<span class="n">14</span>, <span class="n">22</span>] = img[<span class="n">15</span>, <span class="n">21</span>] = img[<span class="n">15</span>, <span class="n">22</span>] = <span class="f">hexc</span>(<span class="s"><i class="sw" style="background:#1a0b06"></i>&#x27;#1a0b06&#x27;</span>)
+img[<span class="n">14</span>, <span class="n">21</span>] = <span class="f">hexc</span>(<span class="s"><i class="sw" style="background:#ffffff"></i>&#x27;#ffffff&#x27;</span>)
+img[<span class="n">13</span>, <span class="n">20</span>] = img[<span class="n">13</span>, <span class="n">21</span>] = img[<span class="n">13</span>, <span class="n">22</span>] = <span class="f">hexc</span>(<span class="s"><i class="sw" style="background:#5a2c14"></i>&#x27;#5a2c14&#x27;</span>)
+<span class="c"># nostril + mouth</span>
+img[<span class="n">21</span>, <span class="n">11</span>] = <span class="f">hexc</span>(<span class="s"><i class="sw" style="background:#5a2c14"></i>&#x27;#5a2c14&#x27;</span>); img[<span class="n">20</span>, <span class="n">11</span>] = <span class="f">hexc</span>(<span class="s"><i class="sw" style="background:#8a5a34"></i>&#x27;#8a5a34&#x27;</span>)
+<span class="k">for</span> mx <span class="k">in</span> <span class="f">range</span>(<span class="n">11</span>, <span class="n">16</span>):
+    my = <span class="n">24</span> + (<span class="n">1</span> <span class="k">if</span> mx &gt; <span class="n">13</span> <span class="k">else</span> <span class="n">0</span>)
+    <span class="k">if</span> muzzle[my, mx]:
+        img[my, mx] = <span class="f">hexc</span>(<span class="s"><i class="sw" style="background:#8a5a34"></i>&#x27;#8a5a34&#x27;</span>)
+
+<span class="c"># outline: mask pixels touching outside</span>
+<span class="k">for</span> y <span class="k">in</span> <span class="f">range</span>(H):
+    <span class="k">for</span> x <span class="k">in</span> <span class="f">range</span>(W):
+        <span class="k">if</span> <span class="k">not</span> allm[y, x]:
+            <span class="k">continue</span>
+        edge = <span class="k">False</span>
+        <span class="k">for</span> dy, dx <span class="k">in</span> ((<span class="n">0</span>, <span class="n">1</span>), (<span class="n">0</span>, -<span class="n">1</span>), (<span class="n">1</span>, <span class="n">0</span>), (-<span class="n">1</span>, <span class="n">0</span>)):
+            yy, xx = y + dy, x + dx
+            <span class="k">if</span> <span class="n">0</span> &lt;= yy &lt; H <span class="k">and</span> <span class="n">0</span> &lt;= xx &lt; W <span class="k">and</span> <span class="k">not</span> allm[yy, xx]:
+                edge = <span class="k">True</span>
+        <span class="k">if</span> edge:
+            img[y, x] = <span class="f">hexc</span>(OUT)</code></pre></figure>
+      <h2><span class="md-mark" aria-hidden="true">## </span>11. From array to SVG</h2>
+      <p>A 48×48 PNG would look blurry when scaled up, so the script writes an SVG instead. Each row is run-length encoded: consecutive pixels of the same color become one rectangle, and all rectangles of one color share a single <code>&lt;path&gt;</code>. That keeps the file to about 40 paths instead of 2,304 squares. <code>shape-rendering="crispEdges"</code> tells the browser not to anti-alias the edges, so the pixels stay sharp at any size.</p>
+      <figure class="md-code"><figcaption><span class="fence">```python</span> make_giraffe.py</figcaption><pre><code>runs = {}
+<span class="k">for</span> y <span class="k">in</span> <span class="f">range</span>(H):
+    x = <span class="n">0</span>
+    <span class="k">while</span> x &lt; W:
+        c = <span class="f">tuple</span>(img[y, x]); x0 = x
+        <span class="k">while</span> x &lt; W <span class="k">and</span> <span class="f">tuple</span>(img[y, x]) == c:
+            x += <span class="n">1</span>
+        runs.<span class="f">setdefault</span>(c, []).<span class="f">append</span>(<span class="s">f&#x27;</span><span class="s">M</span>{x0}<span class="s"> </span>{y}<span class="s">h</span>{x - x0}<span class="s">v1h-</span>{x - x0}<span class="s">z</span><span class="s">&#x27;</span>)
+parts = [<span class="s">f&#x27;</span><span class="s">&lt;svg xmlns=&quot;http://www.w3.org/2000/svg&quot; viewBox=&quot;0 0 </span>{W}<span class="s"> </span>{H}<span class="s">&quot; width=&quot;</span>{W*<span class="n">8</span>}<span class="s">&quot; height=&quot;</span>{H*<span class="n">8</span>}<span class="s">&quot; shape-rendering=&quot;crispEdges&quot; role=&quot;img&quot; aria-labelledby=&quot;t&quot;&gt;</span><span class="s">&#x27;</span>,
+         <span class="s">f&#x27;</span><span class="s">&lt;title id=&quot;t&quot;&gt;16-bit pixel-art portrait of a giraffe at </span>{<span class="s">&quot;dawn&quot;</span> <span class="k">if</span> SCENE == <span class="s">&quot;sunrise&quot;</span> <span class="k">else</span> <span class="s">&quot;dusk&quot;</span>}<span class="s">&lt;/title&gt;</span><span class="s">&#x27;</span>]
+<span class="k">for</span> c, ds_ <span class="k">in</span> <span class="f">sorted</span>(runs.<span class="f">items</span>(), key=<span class="k">lambda</span> kv: -<span class="f">len</span>(kv[<span class="n">1</span>])):
+    parts.<span class="f">append</span>(<span class="s">f&#x27;</span><span class="s">&lt;path fill=&quot;#</span>{c[<span class="n">0</span>]:<span class="s">02x</span>}{c[<span class="n">1</span>]:<span class="s">02x</span>}{c[<span class="n">2</span>]:<span class="s">02x</span>}<span class="s">&quot; d=&quot;</span>{<span class="s">&quot;&quot;</span>.<span class="f">join</span>(ds_)}<span class="s">&quot;/&gt;</span><span class="s">&#x27;</span>)
+parts.<span class="f">append</span>(<span class="s">&#x27;&lt;/svg&gt;&#x27;</span>)
+<span class="f">open</span>(sys.argv[<span class="n">1</span>] + <span class="s">&#x27;.svg&#x27;</span>, <span class="s">&#x27;w&#x27;</span>).<span class="f">write</span>(<span class="s">&#x27;\n&#x27;</span>.<span class="f">join</span>(parts) + <span class="s">&#x27;\n&#x27;</span>)</code></pre></figure>
+      <p>The only scene-specific bit here is the accessible title baked into the file:</p>
+      <div class="split"><figure class="md-code is-sunset"><figcaption><span class="fence">```svg</span> <b>Sunset</b> · dark mode</figcaption><pre><code>&lt;title&gt;<span class="n">16</span>-bit pixel-art portrait of a giraffe at dusk&lt;/title&gt;</code></pre></figure><figure class="md-code is-sunrise"><figcaption><span class="fence">```svg</span> <b>Sunrise</b> · light mode</figcaption><pre><code>&lt;title&gt;<span class="n">16</span>-bit pixel-art portrait of a giraffe at dawn&lt;/title&gt;</code></pre></figure></div>
+      <p>Running it twice gives both files:</p>
+      <figure class="md-code"><figcaption><span class="fence">```sh</span> terminal</figcaption><pre><code>python3 tools/make_giraffe.py assets/img/giraffe-16bit              # sunset
+python3 tools/make_giraffe.py assets/img/giraffe-16bit-day sunrise  # sunrise</code></pre></figure>
+      <h2><span class="md-mark" aria-hidden="true">## </span>12. Swapping them on the page</h2>
+      <p>Both images sit in the portrait frame on the homepage, and CSS shows one of them. The rules mirror the ones that already switch the site's colors: an explicit choice from the theme button wins, and otherwise the system setting decides. It doesn't need any JavaScript of its own, so flipping the theme swaps the giraffe instantly.</p>
+      <figure class="md-code"><figcaption><span class="fence">```html</span> index.html</figcaption><pre><code>&lt;img class=&quot;vf-night&quot; src=&quot;assets/img/giraffe-16bit.svg&quot; alt=&quot;16-bit pixel-art giraffe at dusk&quot;&gt;
+&lt;img class=&quot;vf-day&quot; src=&quot;assets/img/giraffe-16bit-day.svg&quot; alt=&quot;16-bit pixel-art giraffe at dawn&quot;&gt;</code></pre></figure>
+      <figure class="md-code"><figcaption><span class="fence">```css</span> style.css</figcaption><pre><code>.viewfinder .vf-day { display: none; }
+:root[data-theme=&quot;light&quot;] .viewfinder .vf-night { display: none; }
+:root[data-theme=&quot;light&quot;] .viewfinder img.vf-day { display: block; }
+:root[data-theme=&quot;light&quot;] .viewfinder span.vf-day { display: inline; }
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme=&quot;dark&quot;]) .viewfinder .vf-night { display: none; }
+  :root:not([data-theme=&quot;dark&quot;]) .viewfinder img.vf-day { display: block; }</code></pre></figure>
+      <h2><span class="md-mark" aria-hidden="true">## </span>Why bother?</h2>
+      <p>Honestly? Because it's fun, and because I like that my portrait is something you can read, diff and version-control. Changing the time of day was eight lines of palette and a handful of clouds. Everything else, from the Voronoi spots to the outline pass, came along for free. That's my favorite kind of code: the part that matters is small, and the rest just works.</p>
+    </article>
+    <a class="back" href="../index.html#blog"><span aria-hidden="true">←</span> All posts</a>
+  </main>
+  <footer class="site-footer">
+    <div class="foot-links">
+      <a href="mailto:Clebhart2018@gmail.com">Email</a>
+      <a href="https://www.linkedin.com/in/caleb-e-hart" target="_blank" rel="noopener">LinkedIn</a>
+      <a href="https://github.com/DataChart" target="_blank" rel="noopener">GitHub</a>
+    </div>
+    <p class="foot-meta">Hand-written HTML, CSS &amp; a little JS. No frameworks.</p>
+    <div class="foot-right">
+      <span class="updated">Last updated October 2026</span>
+      <button type="button" class="theme-btn" id="theme-btn" aria-label="Switch to light mode">
+        <svg class="icon-sun" aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+        <svg class="icon-moon" aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+      </button>
+    </div>
+  </footer>
+</div>
+<script src="../assets/js/main.js" defer></script>
+</body>
+</html>

@@ -437,6 +437,35 @@ code, pre { font-family: var(--mono); }
 .post-body a { overflow-wrap: anywhere; }
 .post-kicker { font-family: var(--mono); font-size: 14px; color: var(--ink-3); }
 
+/* Wide posts: code walkthroughs with markdown-style code blocks and split sunset/sunrise views. */
+.post-wide { max-width: 1120px; }
+.post-wide .post-body > p, .post-wide .post-body > h2, .post-wide .hero-pair { max-width: 720px; }
+.post-wide .post-body h2 { font-size: 24px; font-weight: 500; line-height: 1.3; color: var(--ink); margin-top: 20px; }
+.md-mark { font-family: var(--mono); font-weight: 400; color: var(--muted); }
+.post-wide .post-body p code { font-size: 0.85em; color: var(--ink); background: var(--code-bg); border: 1px solid var(--line); border-radius: 5px; padding: 1px 5px; }
+
+.md-code { margin: 0; min-width: 0; border: 1px solid var(--line); border-radius: 12px; background: var(--code-bg); overflow: hidden; }
+.md-code figcaption { display: flex; align-items: center; gap: 8px; padding: 8px 14px; border-bottom: 1px solid var(--line); font-family: var(--mono); font-size: 12px; color: var(--muted); }
+.md-code figcaption b { font-weight: 500; color: var(--ink-2); }
+.md-code .fence { color: var(--ink-3); }
+.md-code pre { padding: 14px 16px; overflow-x: auto; font-size: 13px; line-height: 1.65; color: var(--ink); tab-size: 4; }
+.md-code .k { color: var(--hl-k); }
+.md-code .n { color: var(--hl-n); }
+.sw { display: inline-block; width: 0.8em; height: 0.8em; margin-right: 4px; vertical-align: -1px; border-radius: 2px; border: 1px solid var(--line-2); }
+
+.split { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 12px; }
+.split figcaption::before { content: ""; width: 10px; height: 10px; border-radius: 2px; flex: none; }
+.split .is-sunset figcaption::before { background: linear-gradient(#33205c, #ec8250); }
+.split .is-sunrise figcaption::before { background: linear-gradient(#6fa8dc, #ffe6a8); }
+
+.hero-pair { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+.hero-pair img { display: block; width: 100%; height: auto; border-radius: 10px; image-rendering: pixelated; image-rendering: crisp-edges; }
+.hero-pair figcaption { margin-top: 8px; font-family: var(--mono); font-size: 12px; color: var(--muted); }
+
+@media (max-width: 720px) {
+  .split { grid-template-columns: minmax(0, 1fr); }
+}
+
 /* ---------- footer ---------- */
 .site-footer {
   margin-top: 96px; padding-top: 24px; border-top: 1px solid var(--line);
