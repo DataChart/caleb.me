@@ -1,6 +1,7 @@
 """Render the 16-bit giraffe portrait used on the Main tab.
 
-Usage: python tools/make_giraffe.py assets/img/giraffe-16bit
+Usage: python tools/make_giraffe.py assets/img/giraffe-16bit            # sunset, for dark mode
+       python tools/make_giraffe.py assets/img/giraffe-16bit-day sunrise # sunrise, for light mode
 Writes <prefix>.svg (the site asset) and <prefix>_preview.png (10x, for eyeballing).
 Needs numpy and Pillow.
 """
@@ -17,8 +18,21 @@ def hexc(h):
 img = np.zeros((H, W, 3), dtype=np.uint8)
 ys, xs = np.mgrid[0:H, 0:W]
 
+SCENE = sys.argv[2] if len(sys.argv) > 2 else 'sunset'
+
+# Each scene sets the sky bands (top to horizon), the sun, the ground and the tree; the giraffe is shared.
+if SCENE == 'sunrise':
+    sky = ['#6fa8dc', '#82b4e2', '#98c1e8', '#b0cdec', '#cad7ea', '#e3dbe0', '#f4d3c8', '#fbcaa8', '#fed592', '#ffe6a8']
+    SUN = ('#fff1b8', '#ffc75e', '#ffa94d')  # core, rim, scanline gaps
+    GROUND = ('#a07a4e', '#86643f')          # top edge, below
+    TREE = '#4a3426'
+else:
+    sky = ['#160f2b', '#1d1438', '#261a49', '#33205c', '#46276b', '#5e2e75', '#7c3878', '#a04673', '#c95c62', '#ec8250']
+    SUN = ('#ffd27a', '#ffb25c', '#f08a4b')
+    GROUND = ('#2b1840', '#1e1233')
+    TREE = '#120a22'
+
 # ---------- sky with ordered-dither bands ----------
-sky = ['#160f2b', '#1d1438', '#261a49', '#33205c', '#46276b', '#5e2e75', '#7c3878', '#a04673', '#c95c62', '#ec8250']
 bayer = np.array([[0, 8, 2, 10], [12, 4, 14, 6], [3, 11, 1, 9], [15, 7, 13, 5]]) / 16.0
 band_h = 40 / (len(sky) - 1)
 for y in range(H):
@@ -29,33 +43,46 @@ for y in range(H):
         c = sky[j] if f > bayer[y % 4, x % 4] else sky[i]
         img[y, x] = hexc(c)
 
-# stars
-for (sx, sy, c) in [(4, 3, '#ffffff'), (13, 6, '#cbbdf5'), (40, 4, '#ffffff'), (45, 10, '#cbbdf5'), (35, 2, '#cbbdf5'), (8, 12, '#9d8fd0'), (44, 18, '#9d8fd0'), (2, 20, '#9d8fd0')]:
-    img[sy, sx] = hexc(c)
-img[3, 3] = img[3, 5] = img[2, 4] = img[4, 4] = hexc('#8f7fd0')
+if SCENE == 'sunrise':
+    # pixel clouds catching the first light, and two birds
+    for (cx0, cy0, w) in [(3, 7, 9), (30, 4, 11), (38, 15, 7)]:
+        for x in range(cx0, min(cx0 + w, W)):
+            img[cy0 + 1, x] = hexc('#f7e4e6')
+        for x in range(cx0 + 2, min(cx0 + w - 2, W)):
+            img[cy0, x] = hexc('#ffffff')
+        for x in range(cx0 + 1, min(cx0 + w - 1, W)):
+            img[cy0 + 2, x] = hexc('#e9c3c4')
+    for (bx, by) in [(39, 23), (43, 21)]:
+        img[by, bx] = img[by, bx + 2] = img[by + 1, bx + 1] = hexc('#3b2a40')
+else:
+    # stars
+    for (sx, sy, c) in [(4, 3, '#ffffff'), (13, 6, '#cbbdf5'), (40, 4, '#ffffff'), (45, 10, '#cbbdf5'), (35, 2, '#cbbdf5'), (8, 12, '#9d8fd0'), (44, 18, '#9d8fd0'), (2, 20, '#9d8fd0')]:
+        img[sy, sx] = hexc(c)
+    img[3, 3] = img[3, 5] = img[2, 4] = img[4, 4] = hexc('#8f7fd0')
 
-# sun on horizon (left)
-cx, cy, r = 9, 38, 6
+# sun on horizon (left); the sunrise sun sits a little higher, just clearing the ground
+cx, cy, r = (9, 36, 6) if SCENE == 'sunrise' else (9, 38, 6)
+gaps = (33, 35) if SCENE == 'sunrise' else (35, 37)
 for y in range(H):
     for x in range(W):
         d = math.hypot(x - cx, y - cy)
         if d <= r:
-            c = '#ffd27a' if d < r - 2 else '#ffb25c'
+            c = SUN[0] if d < r - 2 else SUN[1]
             # retro scanline gaps on the sun
-            if y in (35, 37):
-                c = '#f08a4b'
+            if y in gaps:
+                c = SUN[2]
             img[y, x] = hexc(c)
 
 # ground
 ground_top = 41
 for y in range(ground_top, H):
     for x in range(W):
-        img[y, x] = hexc('#1e1233' if y > ground_top else '#2b1840')
+        img[y, x] = hexc(GROUND[1] if y > ground_top else GROUND[0])
 for gx in range(0, W, 3):
-    img[ground_top - 1, gx] = hexc('#2b1840')
+    img[ground_top - 1, gx] = hexc(GROUND[0])
 
 # acacia tree silhouette (right)
-tree = '#120a22'
+tree = TREE
 for y in range(31, 34):
     for x in range(37, 48):
         if not ((y == 31 and (x < 39 or x > 46)) or (y == 33 and (x < 38))):
@@ -190,7 +217,7 @@ for y in range(H):
             x += 1
         runs.setdefault(c, []).append(f'M{x0} {y}h{x - x0}v1h-{x - x0}z')
 parts = [f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {W} {H}" width="{W*8}" height="{H*8}" shape-rendering="crispEdges" role="img" aria-labelledby="t">',
-         '<title id="t">16-bit pixel-art portrait of a giraffe at dusk</title>']
+         f'<title id="t">16-bit pixel-art portrait of a giraffe at {"dawn" if SCENE == "sunrise" else "dusk"}</title>']
 for c, ds_ in sorted(runs.items(), key=lambda kv: -len(kv[1])):
     parts.append(f'<path fill="#{c[0]:02x}{c[1]:02x}{c[2]:02x}" d="{"".join(ds_)}"/>')
 parts.append('</svg>')

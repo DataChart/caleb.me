@@ -26,7 +26,7 @@ blog/*.html             One page per blog post
 assets/css/style.css    All styles, with light and dark theme tokens at the top
 assets/js/main.js       Tabs, theme toggle and live project data
 assets/js/skills-matrix.js  Skills data and the matrix built from it
-assets/img/             The 16-bit giraffe portrait (also the favicon)
+assets/img/             The 16-bit giraffe portraits: sunset for dark mode (also the favicon), sunrise for light mode
 tools/make_giraffe.py   Script that draws the giraffe
 ```
 
@@ -58,10 +58,11 @@ The HTML holds a snapshot of every figure. If a request fails (for example mid-r
 
 ```sh
 pip install numpy pillow
-python3 tools/make_giraffe.py assets/img/giraffe-16bit
+python3 tools/make_giraffe.py assets/img/giraffe-16bit              # sunset, shown in dark mode
+python3 tools/make_giraffe.py assets/img/giraffe-16bit-day sunrise  # sunrise, shown in light mode
 ```
 
-This writes `giraffe-16bit.svg` plus a 10x PNG preview. Delete the preview before committing.
+Each run writes the SVG plus a 10x PNG preview. Delete the preview before committing.
 
 ## Roadmap
 
