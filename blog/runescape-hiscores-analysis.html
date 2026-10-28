@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>What 131 variables of RuneScape hiscores say about players · Caleb Hart</title>
-<meta name="description" content="Comparing statistical models on RuneScape hiscores, K-means clustering for storytelling, and keeping training under two hours.">
+<title>What 2 million RuneScape hiscores say about players · Caleb Hart</title>
+<meta name="description" content="Can boss kill counts predict a player&#x27;s total XP? Random forests, sparse data, K-means clustering and an R² of 0.76 on Old School RuneScape hiscores.">
 <meta name="color-scheme" content="dark light">
 <link rel="icon" href="../assets/img/giraffe-16bit.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -38,19 +38,27 @@
   <main id="post" class="post" tabindex="-1">
     <a class="back" href="../index.html#blog"><span aria-hidden="true">←</span> All posts</a>
     <p class="post-tag">Statistics</p>
-    <h1 class="post-title">What 131 variables of RuneScape hiscores say about players</h1>
+    <h1 class="post-title">What 2 million RuneScape hiscores say about players</h1>
+    <aside class="origin" aria-labelledby="src-h"><h2 id="src-h">Source on GitHub</h2><a href="https://github.com/DataChart/Statistical-Analysis-of-OSRS-Hiscores" target="_blank" rel="noopener">github.com/DataChart/Statistical-Analysis-of-OSRS-Hiscores</a></aside>
     <article class="post-body">
-      <p>For Statistical Machine Learning I (STAT441, Spring 2024), I got to combine two things I love: statistics and video games. The dataset was RuneScape hiscores, the public leaderboards that track every player's levels and experience across the game's skills and activities. Every player became a row with 131 variables.</p>
-      <h2>Predicting player trends</h2>
-      <p>I compared many statistical models to predict trends in how players progress. With 131 variables, the hard part is less about fitting a model and more about picking one that generalizes, and comparing several approaches side by side made that choice a lot clearer.</p>
-      <!-- TODO(Caleb): which trend were you predicting, and which model won? -->
+      <p>For Statistical Machine Learning I at Oregon Tech, I got to combine two things I love: statistics and video games. The dataset was the Old School RuneScape (OSRS) hiscores, the public leaderboards that track every player's levels, experience and achievements.</p>
+      <h2>The data</h2>
+      <p>I started from Luke Arend's open scrape of the top 2 million players on the OSRS hiscores. The raw file is about 1.5 GB: 2,007,339 rows by 198 columns, covering XP, rank and level in every skill, plus scores for clue scrolls, minigames and bosses. After deduplication, 1,999,625 players remained.</p>
+      <p>I dropped the rank columns, timestamps and usernames, then kept total XP plus every score column. The username was a tough one to drop, because it carries a hidden signal. OSRS has a limited pool of names, so very short ones (the minimum is three characters) tend to belong to old accounts.</p>
+      <h2>The question</h2>
+      <p>Can you predict a player's total XP from how many times they've killed each in-game boss, even though that data is extremely sparse? Most players have never touched most bosses, so the feature matrix is mostly zeros, and the target is heavily skewed by a few maxed-out accounts.</p>
+      <h2>The model</h2>
+      <p>I built a scikit-learn pipeline: fill missing kill counts with 0, standardize, keep the k best features (5, 10 or 15) by an F-test, then fit a random forest regressor, with linear regression as a baseline. A grid search tried 216 combinations of tree count, depth, split and leaf sizes, and bootstrapping, with 3-fold cross-validation (648 fits).</p>
+      <p>The best random forest used 200 trees with a maximum depth of 10 and the 15 best features, and it scored an R² of 0.76 on the held-out test set. In other words, boss kill counts alone explain about three quarters of the variation in total XP. An earlier run with a randomized search landed at 0.70.</p>
       <h2>Clustering for storytelling</h2>
       <p>I also ran an unsupervised clustering analysis with K-means. Clustering doesn't need labels: it groups players who look alike across all those variables. The result was great for visualization and storytelling, because each cluster becomes a kind of player you can describe.</p>
-      <!-- TODO(Caleb): what were the clusters? Naming them (skillers, combat-focused, and so on) would make a great section. -->
-      <h2>Keeping it fast</h2>
-      <p>A dataset that wide can get slow quickly, so I made a lot of optimizations to keep computation time low and got training times under two hours.</p>
+      <!-- TODO(Caleb): what were the clusters? Naming them (skillers, bossers, and so on) would make a great section. -->
+      <h2>What I would do next</h2>
+      <ul><li>Go back to a full grid search with wider hyperparameter ranges</li><li>Try gradient boosting, plus Lasso and Ridge regression</li><li>Use group-based imputation instead of filling with zeros</li><li>Log-transform the skewed target</li><li>Engineer features like total boss kills and low-level boss kills</li></ul>
+      <h2>Project files</h2>
+      <ul class="files"><li><a href="../assets/projects/runescape/osrs-final-presentation.pdf" target="_blank" rel="noopener">Final presentation</a> <span class="file-meta">PDF · 1.6 MB</span></li><li><a href="../assets/projects/runescape/osrs-prep-and-exploration.pdf" target="_blank" rel="noopener">Notebook: preparation and exploration</a> <span class="file-meta">PDF · 956 KB</span></li><li><a href="../assets/projects/runescape/osrs-pipeline-and-analysis.pdf" target="_blank" rel="noopener">Notebook: pipeline and analysis</a> <span class="file-meta">PDF · 221 KB</span></li><li><a href="https://github.com/DataChart/Statistical-Analysis-of-OSRS-Hiscores" target="_blank" rel="noopener">Repository</a> <span class="file-meta">GitHub</span></li></ul>
       <h2>At a glance</h2>
-      <ul class="glance"><li><strong>Course:</strong> STAT441 Statistical Machine Learning I, Oregon Institute of Technology</li><li><strong>When:</strong> Spring 2024</li><li><strong>Methods:</strong> Comparison of statistical models, K-means clustering</li><li><strong>Results:</strong> Modeled player trends across 131 variables, with training under 2 hours</li></ul>
+      <ul class="glance"><li><strong>Course:</strong> STAT441 Statistical Machine Learning I, Oregon Institute of Technology</li><li><strong>When:</strong> Notebooks dated December 2024</li><li><strong>Data:</strong> Top 2 million OSRS hiscores (Luke Arend); 2,007,339 × 198 raw</li><li><strong>Methods:</strong> Random forest and linear regression in a scikit-learn pipeline, grid search, K-means clustering</li><li><strong>Results:</strong> R² of 0.76 on the test set; training kept under 2 hours</li></ul>
     </article>
     <a class="back" href="../index.html#blog"><span aria-hidden="true">←</span> All posts</a>
   </main>

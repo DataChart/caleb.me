@@ -437,6 +437,23 @@ code, pre { font-family: var(--mono); }
 .post-body a { overflow-wrap: anywhere; }
 .post-kicker { font-family: var(--mono); font-size: 14px; color: var(--ink-3); }
 
+/* Project files, figures and inline charts on project posts. */
+.post-body ul.files { list-style: none; padding-left: 0; gap: 6px; }
+.files li { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 4px 12px; padding: 10px 14px; border: 1px solid var(--line); border-radius: 10px; background: var(--code-bg); font-size: 16px; }
+.file-meta { font-family: var(--mono); font-size: 12px; color: var(--muted); white-space: nowrap; }
+.post-figure { margin: 0; display: flex; flex-direction: column; gap: 8px; }
+.post-figure img { display: block; width: 100%; height: auto; border-radius: 12px; border: 1px solid var(--line); }
+.post-figure figcaption { font-size: 14px; color: var(--muted); }
+.chart { display: block; width: 100%; height: auto; }
+.chart .grid { stroke: var(--line); stroke-width: 1; }
+.chart .axis { fill: var(--muted); font-family: var(--mono); font-size: 12px; }
+.chart .bar { fill: var(--accent); }
+.chart .goal { stroke: var(--ink-2); stroke-width: 2; stroke-dasharray: 5 4; }
+.chart-legend { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; font-family: var(--mono); font-size: 12px; color: var(--muted); line-height: 1.4; }
+.sw-bar, .sw-goal { display: inline-block; width: 14px; }
+.sw-bar { height: 10px; border-radius: 2px; background: var(--accent); }
+.sw-goal { border-top: 2px dashed var(--ink-2); margin-left: 8px; }
+
 /* Wide posts: code walkthroughs with markdown-style code blocks and split sunset/sunrise views. */
 .post-wide { max-width: 1120px; }
 .post-wide .post-body > p, .post-wide .post-body > h2, .post-wide .hero-pair { max-width: 720px; }
