@@ -20,6 +20,7 @@ const DATA = {
       { name: "Pandas", level: 3, projects: 12 },
       { name: "Polars", level: 2, projects: 4 },
       { name: "ArcGIS", level: 2, projects: 4 },
+      { name: "SQL",    level: 3, projects: 0 },  // resume: 3 years; project count not on the resume
     ]},
     { name: "Cloud and platforms", skills: [
       { name: "Azure",         level: 3, projects: 12, certified: true },
@@ -34,6 +35,18 @@ const DATA = {
       { name: "C#",         level: 2, projects: 4 },
       { name: "Rust",       level: 1, projects: 0 },
     ]},
+    // From the 2025 resume. Project counts are the resume projects below; levels are a first guess to adjust.
+    { name: "Machine learning and statistics", skills: [
+      { name: "Machine learning",        level: 3, projects: 4 },
+      { name: "Forecasting",             level: 3, projects: 2 },
+      { name: "Statistics",              level: 3, projects: 1 },
+      { name: "Reinf. learning",         level: 2, projects: 1 },
+      { name: "XGBoost",                 level: 2, projects: 1 },
+      { name: "Data cleaning",           level: 3, projects: 1 },
+      { name: "TensorFlow",              level: 2, projects: 0 },
+      { name: "CUDA",                    level: 2, projects: 0 },
+      { name: "A/B testing",             level: 2, projects: 0 },
+    ]},
     { name: "Applied AI", skills: [
       { name: "Claude",              level: 4, projects: 13 },
       { name: "ChatGPT",             level: 3, projects: 12 },
@@ -42,20 +55,27 @@ const DATA = {
     { name: "Leadership", skills: [
       { name: "Project management", level: 4, projects: 16, certified: true },
       { name: "Public speaking",    level: 3, projects: 10 },
+      { name: "Teaching",           level: 3, projects: 1 },
     ]},
   ],
 
   // Featured projects. `skills` must use names that exactly match skill names above.
   projects: [
-    { title: "Sales data platform", outcome: "Cut reporting time from 2 days to 2 hours",
-      linkLabel: "Case study", url: "#",
-      skills: ["SSMS", "SSIS", "Azure", "Python"] },
-    { title: "AI research assistant", outcome: "Adopted by 40 analysts in first month",
-      linkLabel: "GitHub", url: "#",
-      skills: ["Python", "Claude", "Multi-agent systems", "Polars"] },
-    { title: "Field asset mapping", outcome: "Replaced 3 legacy tools with one dashboard",
-      linkLabel: "Live demo", url: "#",
-      skills: ["ArcGIS", "JavaScript", "C#", "Project management"] },
+    { title: "USDA production forecasting", outcome: "Forecasts up to 1 year ahead; flagged 1.2% of data as outliers",
+      linkLabel: "Blog post", url: "blog/usda-meat-poultry-forecasting.html",
+      skills: ["Python", "Machine learning", "Forecasting", "Data cleaning"] },
+    { title: "Minesweeper RL agent", outcome: "Deep RL beat Q-learning, converging in about 900 episodes",
+      linkLabel: "Blog post", url: "blog/minesweeper-reinforcement-learning.html",
+      skills: ["Python", "Reinf. learning", "Machine learning"] },
+    { title: "Store sales forecasting", outcome: "Automated forecast emails saved 10 hours a week",
+      linkLabel: "Blog post", url: "blog/store-sales-gradient-boosting.html",
+      skills: ["XGBoost", "Forecasting", "Machine learning"] },
+    { title: "RuneScape hiscores analysis", outcome: "Modeled player trends across 131 variables",
+      linkLabel: "Blog post", url: "blog/runescape-hiscores-analysis.html",
+      skills: ["Statistics", "Machine learning"] },
+    { title: "Solar for rural Kenya", outcome: "Co-led a solar install that lit 24 rural homes",
+      linkLabel: "Blog post", url: "blog/kenya-solar-installation.html",
+      skills: ["Project management", "Teaching"] },
   ],
 };
 
