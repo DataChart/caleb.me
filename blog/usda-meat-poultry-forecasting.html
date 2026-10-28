@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Forecasting a year of USDA meat and poultry production · Caleb Hart</title>
-<meta name="description" content="Statistical models versus LSTMs on decades of seasonal USDA production data, with automated pipelines and outlier detection.">
+<meta name="description" content="A VAE and a transformer on decades of seasonal USDA production data, with automated pipelines, outlier detection and an honest look at the results.">
 <meta name="color-scheme" content="dark light">
 <link rel="icon" href="../assets/img/giraffe-16bit.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -39,20 +39,27 @@
     <a class="back" href="../index.html#blog"><span aria-hidden="true">←</span> All posts</a>
     <p class="post-tag">Forecasting</p>
     <h1 class="post-title">Forecasting a year of USDA meat and poultry production</h1>
+    <aside class="origin" aria-labelledby="src-h"><h2 id="src-h">Source on GitHub</h2><a href="https://github.com/DataChart/USDA-Meat-and-Poultry-Forecasting" target="_blank" rel="noopener">github.com/DataChart/USDA-Meat-and-Poultry-Forecasting</a></aside>
     <article class="post-body">
-      <p>For my Statistical Machine Learning II final project at Oregon Tech (STAT442, Winter 2025), I took on USDA meat and poultry production statistics. It's a great forecasting dataset because it's long, multiple decades of it, and it's seasonal in a way that's correlated across products. Production of one thing moves with the calendar, and often with production of the others.</p>
+      <p>For my Statistical Machine Learning II final project at Oregon Tech (STAT442, Winter 2025), I took on USDA meat and poultry production statistics. It's a great forecasting dataset because it's long and seasonal, and the seasons are correlated across products. Production of one thing moves with the calendar, and often with production of the others.</p>
       <p>The goal was simple to say and harder to do: forecast production as far ahead as possible, and figure out which kind of model actually earns its complexity.</p>
-      <h2>Classic statistics vs. deep learning</h2>
-      <p>I designed and compared two families of models. On one side were regression models, the classic statistical approach, where you can read the coefficients and see why the model thinks what it thinks. On the other were LSTM networks, a type of recurrent neural network built to remember patterns over long sequences. That's exactly the property you want when a seasonal cycle repeats every year for decades.</p>
-      <p>Running both side by side was the point. Deep learning is the shiny option, but on tabular time series a well-built regression model is often a tough baseline to beat, and comparing them honestly is half of doing data science well.</p>
-      <!-- TODO(Caleb): which models won on which products? Any surprises in the comparison? -->
-      <h2>Pipelines first</h2>
-      <p>Multi-decade data means a lot of cleaning and reshaping before any model sees it, so I automated the data pipelines in Python to make the whole thing run at scale instead of by hand. That paid off twice: re-running experiments became cheap, and the cleaning step itself surfaced something useful.</p>
-      <h2>Results</h2>
-      <p>With about a two-hour training time, the pipeline flagged 1.2% of the data as outliers, and the models produced successful forecasts up to one year in advance.</p>
-      <!-- TODO(Caleb): add an accuracy metric (MAPE, RMSE) or a chart if you still have one. -->
+      <h2>The data</h2>
+      <p>The source is the USDA's historical meat statistics table, which catalogs U.S. meat production by month all the way back to 1921. The variables are beef, veal, pork, lamb and mutton, total red meat, broilers, other chicken, turkey, total poultry, and total red meat and poultry, all in millions of pounds.</p>
+      <p>Cleaning was its own project. For the first model I cropped the data to January 2001 through December 2024, the span with no missing values. Then I stripped the commas out of every number (an Excel moment), cast everything to numeric, and normalized with a MinMaxScaler so nothing went negative. For the second model I went back further, to 1977, keeping only federally inspected meat so I could use the longest clean history.</p>
+      <h2>Model one: a variational autoencoder</h2>
+      <p>My first approach was a variational autoencoder (VAE) built in PyTorch. An LSTM encoder squeezes each window of history into a 20-dimensional latent space, and an LSTM decoder turns samples from that space back into the next 12 months of production. The appeal is that a VAE learns the shape of the data and can generate realistic new sequences from it.</p>
+      <p>It trained for 20 epochs, with the test loss falling from 6.76 to about 2.5. The forecasts captured the broad trends, but they weren't sensitive enough to the month-to-month swings. My honest takeaway from the write-up still stands: VAEs are very finicky, and getting them accurate takes a lot of trial and error.</p>
+      <h2>Model two: a transformer, plus anomaly detection</h2>
+      <p>So I built a transformer-based forecaster next, trained on the longer 1977–2025 history, along with an anomaly detection pass over the data. Over about two hours of training, the pipeline flagged 1.2% of the data as outliers, and the models produced forecasts up to one year in advance. The transformer improved on the VAE by using the extra history, though there's still accuracy left on the table.</p>
+      <p>I automated the data pipelines in Python so re-running experiments stayed cheap, which mattered a lot with models this fiddly.</p>
+      <!-- TODO(Caleb): a headline accuracy number (MAPE, RMSE) for the transformer would make the results section much stronger. -->
+      <figure class="post-figure"><a href="../assets/projects/usda/usda-poster.pdf" target="_blank" rel="noopener"><img src="../assets/projects/usda/usda-poster.jpg" alt="Research poster: U.S. Meat Production Analysis and Forecasting, with time-series plots, a correlation heatmap and VAE and transformer results" loading="lazy"></a><figcaption>The project poster. Click to open the full-size PDF.</figcaption></figure>
+      <h2>What I learned</h2>
+      <p>Every meat category is strongly correlated with the others, which makes sense since production follows national trends. The annual peaks and dips are easy to see, and so is the long decline in some categories. Both deep models can forecast a time series, but they're hard to train, tune and understand. Next time I'd spend more time on hyperparameter tuning and compare against simpler baselines.</p>
+      <h2>Project files</h2>
+      <ul class="files"><li><a href="../assets/projects/usda/usda-vae-writeup.pdf" target="_blank" rel="noopener">Final write-up (VAE predictor)</a> <span class="file-meta">PDF · 924 KB</span></li><li><a href="../assets/projects/usda/usda-poster.pdf" target="_blank" rel="noopener">Research poster</a> <span class="file-meta">PDF · 202 KB</span></li><li><a href="../assets/projects/usda/usda-anomalies-transformers-slides.pdf" target="_blank" rel="noopener">Slides: anomalies and transformers</a> <span class="file-meta">PDF · 363 KB</span></li><li><a href="https://github.com/DataChart/USDA-Meat-and-Poultry-Forecasting" target="_blank" rel="noopener">Repository</a> <span class="file-meta">GitHub</span></li></ul>
       <h2>At a glance</h2>
-      <ul class="glance"><li><strong>Course:</strong> STAT442 Statistical Machine Learning II, Oregon Institute of Technology</li><li><strong>When:</strong> Winter 2025</li><li><strong>Models:</strong> LSTM networks and regression models</li><li><strong>Results:</strong> Forecasts up to 1 year ahead; 1.2% of the data flagged as outliers; about 2 hours of training</li></ul>
+      <ul class="glance"><li><strong>Course:</strong> STAT442, Oregon Institute of Technology</li><li><strong>When:</strong> Winter 2025</li><li><strong>Models:</strong> Variational autoencoder (LSTM encoder and decoder), transformer-based forecaster</li><li><strong>Tools:</strong> Python, pandas, NumPy, PyTorch, Keras, seaborn, Matplotlib</li><li><strong>Results:</strong> Forecasts up to 1 year ahead; 1.2% of the data flagged as outliers; about 2 hours of training</li></ul>
     </article>
     <a class="back" href="../index.html#blog"><span aria-hidden="true">←</span> All posts</a>
   </main>

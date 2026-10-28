@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>A writing tracker in R Shiny: 151,170 words in six months · Caleb Hart</title>
+<meta name="description" content="The R Shiny dashboard I built to track my daily writing across personal writing, outlines and my novel, with radar charts and monthly goals.">
+<meta name="color-scheme" content="dark light">
+<link rel="icon" href="../assets/img/giraffe-16bit.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&amp;family=JetBrains+Mono:wght@400;500;700&amp;display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/css/style.css">
+<script>
+  try {
+    var saved = localStorage.getItem('theme');
+    if (saved === 'light' || saved === 'dark') document.documentElement.dataset.theme = saved;
+  } catch (e) {}
+  document.documentElement.classList.add('js');
+</script>
+</head>
+<body>
+<a class="skip" href="#post">Skip to content</a>
+<div class="wrap">
+  <header class="site-header">
+    <div class="masthead">
+      <a class="name name-link" href="../index.html">CALEB HART<span class="cursor" aria-hidden="true">_</span></a>
+      <p class="kicker">AI · Automation · Business Intelligence · Education</p>
+    </div>
+    <nav class="tabs" aria-label="Sections">
+      <a class="tab" href="../index.html#main">Main</a>
+      <a class="tab" href="../index.html#research">Research Desk</a>
+      <a class="tab" href="../index.html#finance">Finance</a>
+      <a class="tab" href="../index.html#llms">Fine-tuned LLMs</a>
+      <a class="tab" href="../index.html#blog" aria-current="page">Blog</a>
+    </nav>
+  </header>
+  <main id="post" class="post" tabindex="-1">
+    <a class="back" href="../index.html#blog"><span aria-hidden="true">←</span> All posts</a>
+    <p class="post-tag">R &amp; Dashboards</p>
+    <h1 class="post-title">A writing tracker in R Shiny: 151,170 words in six months</h1>
+    <aside class="origin" aria-labelledby="src-h"><h2 id="src-h">Source on GitHub</h2><a href="https://github.com/DataChart/WritingTrackerApp" target="_blank" rel="noopener">github.com/DataChart/WritingTrackerApp</a></aside>
+    <article class="post-body">
+      <p>Outside of data science, I write science fiction. I've written two novels, and the hardest part was never the ideas, it was showing up every day. So I did what a data scientist does: I logged it, and then I built a dashboard for it.</p>
+      <h2>The data</h2>
+      <p>Every day went into a simple spreadsheet with the date, a daily word count, and how those words split across three kinds of writing: personal writing, outlines and ideas, and the official story. Each day had a goal of 1,000 words. A second sheet rolled everything up by month with a monthly goal.</p>
+      <p>From January to June 2024 that log covers 150 days and 151,170 words.</p>
+      <figure class="post-figure"><svg class="chart" viewBox="0 0 640 260" role="img" aria-labelledby="wc-t wc-d"><title id="wc-t">Words written per month versus goal, January to June 2024</title><desc id="wc-d">Jan: 22,006 words, goal 20,000; Feb: 21,817 words, goal 30,000; Mar: 27,185 words, goal 30,000; Apr: 36,311 words, goal 46,554; May: 28,684 words, goal 40,000; Jun: 15,167 words, goal 50,000</desc><line class="grid" x1="44" x2="630" y1="230.0" y2="230.0"/><text class="axis" x="38" y="234.0" text-anchor="end">0k</text><line class="grid" x1="44" x2="630" y1="187.2" y2="187.2"/><text class="axis" x="38" y="191.2" text-anchor="end">10k</text><line class="grid" x1="44" x2="630" y1="144.4" y2="144.4"/><text class="axis" x="38" y="148.4" text-anchor="end">20k</text><line class="grid" x1="44" x2="630" y1="101.6" y2="101.6"/><text class="axis" x="38" y="105.6" text-anchor="end">30k</text><line class="grid" x1="44" x2="630" y1="58.8" y2="58.8"/><text class="axis" x="38" y="62.8" text-anchor="end">40k</text><line class="grid" x1="44" x2="630" y1="16.0" y2="16.0"/><text class="axis" x="38" y="20.0" text-anchor="end">50k</text><rect class="bar" x="63.5" y="135.8" width="58.6" height="94.2" rx="3"/><line class="goal" x1="59.5" x2="126.1" y1="144.4" y2="144.4"/><text class="axis" x="92.8" y="250" text-anchor="middle">Jan</text><rect class="bar" x="161.2" y="136.6" width="58.6" height="93.4" rx="3"/><line class="goal" x1="157.2" x2="223.8" y1="101.6" y2="101.6"/><text class="axis" x="190.5" y="250" text-anchor="middle">Feb</text><rect class="bar" x="258.9" y="113.6" width="58.6" height="116.4" rx="3"/><line class="goal" x1="254.9" x2="321.5" y1="101.6" y2="101.6"/><text class="axis" x="288.2" y="250" text-anchor="middle">Mar</text><rect class="bar" x="356.5" y="74.6" width="58.6" height="155.4" rx="3"/><line class="goal" x1="352.5" x2="419.1" y1="30.7" y2="30.7"/><text class="axis" x="385.8" y="250" text-anchor="middle">Apr</text><rect class="bar" x="454.2" y="107.2" width="58.6" height="122.8" rx="3"/><line class="goal" x1="450.2" x2="516.8" y1="58.8" y2="58.8"/><text class="axis" x="483.5" y="250" text-anchor="middle">May</text><rect class="bar" x="551.9" y="165.1" width="58.6" height="64.9" rx="3"/><line class="goal" x1="547.9" x2="614.5" y1="16.0" y2="16.0"/><text class="axis" x="581.2" y="250" text-anchor="middle">Jun</text></svg><p class="chart-legend"><span class="sw-bar"></span>Words written <span class="sw-goal"></span>Monthly goal</p><figcaption>Monthly totals from the app's own data file, January to June 2024.</figcaption></figure>
+      <p>January was the only month that beat its goal (22,006 words against 20,000). After that I kept raising the bar faster than I could clear it, which is either ambition or a bug in my goal-setting. The best month was April, with 36,311 words, and nearly 17,000 of them went into the official story.</p>
+      <h2>The app</h2>
+      <p>The dashboard is an R Shiny app with four tabs:</p>
+      <ul><li><strong>Day:</strong> a radar chart (fmsb) comparing today against my all-time average and the last 30 days across all three kinds of writing, plus a small summary table.</li><li><strong>Month:</strong> pick a month and a category and get an interactive plotly bar chart of every day, next to the full data table.</li><li><strong>Year:</strong> a grouped bar chart of word count by category for every month, so you can see where the words actually went.</li><li><strong>Input:</strong> a placeholder for logging words straight from the app, which is still on the to-do list.</li></ul>
+      <p>Under the hood it's tidyverse for the reshaping (a pivot_longer turns the monthly sheet into one row per category), ggplot2 wrapped in plotly for the interactive charts, DT for the tables, and a sandstone theme from shinythemes.</p>
+      <!-- TODO(Caleb): add the R project report here once it is in the repo, plus a screenshot of the dashboard. -->
+      <h2>Project files</h2>
+      <ul class="files"><li><a href="https://github.com/DataChart/WritingTrackerApp/blob/main/app.R" target="_blank" rel="noopener">app.R (the whole Shiny app)</a> <span class="file-meta">GitHub</span></li><li><a href="https://github.com/DataChart/WritingTrackerApp/blob/main/Simple%20Wriing%20Log%20Sheet%20-%20Sheet1.csv" target="_blank" rel="noopener">Daily writing log (CSV)</a> <span class="file-meta">GitHub</span></li><li><a href="https://github.com/DataChart/WritingTrackerApp" target="_blank" rel="noopener">Repository</a> <span class="file-meta">GitHub</span></li></ul>
+      <h2>At a glance</h2>
+      <ul class="glance"><li><strong>Type:</strong> Personal project</li><li><strong>When:</strong> January to June 2024 of data</li><li><strong>Tools:</strong> R, Shiny, tidyverse, ggplot2, plotly, fmsb, DT, bslib</li><li><strong>Results:</strong> 151,170 words tracked over 150 days</li></ul>
+    </article>
+    <a class="back" href="../index.html#blog"><span aria-hidden="true">←</span> All posts</a>
+  </main>
+  <footer class="site-footer">
+    <div class="foot-links">
+      <a href="mailto:Clebhart2018@gmail.com">Email</a>
+      <a href="https://www.linkedin.com/in/caleb-e-hart" target="_blank" rel="noopener">LinkedIn</a>
+      <a href="https://github.com/DataChart" target="_blank" rel="noopener">GitHub</a>
+    </div>
+    <p class="foot-meta">Hand-written HTML, CSS &amp; a little JS. No frameworks.</p>
+    <div class="foot-right">
+      <span class="updated">Last updated October 2026</span>
+      <button type="button" class="theme-btn" id="theme-btn" aria-label="Switch to light mode">
+        <svg class="icon-sun" aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+        <svg class="icon-moon" aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+      </button>
+    </div>
+  </footer>
+</div>
+<script src="../assets/js/main.js" defer></script>
+</body>
+</html>

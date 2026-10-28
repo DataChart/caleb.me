@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Teaching an agent to play Minesweeper · Caleb Hart</title>
-<meta name="description" content="A custom OpenAI Gym environment, Q-learning versus deep RL, and what about 900 training episodes taught me about exploration.">
+<meta name="description" content="A custom Gymnasium environment, REINFORCE versus DQN and SARSA, and what about 900 training episodes taught me about exploration.">
 <meta name="color-scheme" content="dark light">
 <link rel="icon" href="../assets/img/giraffe-16bit.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -39,19 +39,24 @@
     <a class="back" href="../index.html#blog"><span aria-hidden="true">←</span> All posts</a>
     <p class="post-tag">Reinforcement Learning</p>
     <h1 class="post-title">Teaching an agent to play Minesweeper</h1>
+    <aside class="origin" aria-labelledby="src-h"><h2 id="src-h">Source on GitHub</h2><a href="https://github.com/DataChart/ReinforcementLearningMinesweeper" target="_blank" rel="noopener">github.com/DataChart/ReinforcementLearningMinesweeper</a></aside>
     <article class="post-body">
       <p>For Reinforcement Learning (STAT407, Spring 2025), I built an agent that plays Minesweeper. It's a perfect RL playground. The rules are tiny, the board is a grid, and every click is a decision under uncertainty: reveal a safe square and you learn something, guess wrong and the episode is over.</p>
       <h2>Building the environment</h2>
-      <p>I built a custom OpenAI Gym environment for it. That meant defining what the agent sees (the board as revealed so far), what it can do (pick a square), and how it's rewarded. I optimized the rewards for two things at once: win rate, and solving efficiency, meaning clearing the board without wasted moves.</p>
-      <!-- TODO(Caleb): board size, reward values, and anything clever about the state encoding. -->
-      <h2>Q-learning vs. deep RL</h2>
-      <p>I compared tabular Q-learning against deep reinforcement learning methods. The interesting question underneath is exploration versus exploitation: how often should the agent try something new to learn, and how often should it cash in on what it already knows? In Minesweeper, too much exploration means clicking on mines, and too little means never discovering the patterns that make the game solvable.</p>
-      <p>Q-learning keeps a table of how good each action is in each state, which gets enormous fast on a Minesweeper board. Deep RL replaces that table with a neural network that can generalize between board positions it has never seen.</p>
+      <p>I wrote a custom environment with the Gymnasium (OpenAI Gym) API. The board is 9×9 with 20 mines. The agent sees the board as revealed so far, as a 9×9 grid of values between −1 and 1, and its action is simply which tile to click. Episodes are capped at 200 steps so a confused agent can't loop forever.</p>
+      <p>The rewards do most of the teaching:</p>
+      <ul><li>Win: +50</li><li>Lose (hit a mine): −10</li><li>Progress (reveal new safe tiles): +1</li><li>Guess (click with no information to go on): −0.3</li><li>No progress (click something already revealed): −0.1</li></ul>
+      <p>I optimized them for two things at once: win rate, and solving efficiency, meaning clearing the board without wasted moves. The last version of the notebook also adds a fixed-mine mode, which places the mines in the same spots every game so you can check that the agent is really learning before you make the problem harder.</p>
+      <h2>Three ways to learn</h2>
+      <p>The core agent uses REINFORCE, a Monte Carlo policy gradient method. A small policy network (flatten, two 128-unit layers with ReLU, and a softmax over every tile) outputs a probability for each click. After each game, the returns are discounted (γ = 0.99) and normalized, and the network is nudged toward the clicks that led to good outcomes, using Adam with a 0.001 learning rate. There's no separate value network: it learns directly from how each game turned out.</p>
+      <p>I compared it against value-based methods, a Deep Q-Network (DQN) and SARSA, both with ε-greedy exploration that starts fully random and decays toward 1%. The question underneath is exploration versus exploitation: how often should the agent try something new to learn, and how often should it cash in on what it already knows? In Minesweeper, too much exploration means clicking mines, and too little means never finding the patterns that make the game solvable.</p>
       <h2>Results</h2>
       <p>The deep reinforcement learning strategies won overall. The models converged after about 900 training episodes, with an average of 27 minutes of compute time.</p>
-      <!-- TODO(Caleb): final win rate, and a GIF of the agent playing would be amazing here. -->
+      <!-- TODO(Caleb): final win rate per method, and a reward-curve screenshot or GIF of the agent playing. -->
+      <h2>Project files</h2>
+      <ul class="files"><li><a href="../assets/projects/minesweeper/minesweeper-reinforce-writeup.pdf" target="_blank" rel="noopener">Write-up: environment, agent and parameters</a> <span class="file-meta">PDF · 39 KB</span></li><li><a href="../assets/projects/minesweeper/notebook-v4-reinforce.html" target="_blank" rel="noopener">Notebook v4: Monte Carlo REINFORCE</a> <span class="file-meta">Notebook · 363 KB</span></li><li><a href="../assets/projects/minesweeper/notebook-v5-sarsa-dqn.html" target="_blank" rel="noopener">Notebook v5: SARSA and DQN</a> <span class="file-meta">Notebook · 458 KB</span></li><li><a href="../assets/projects/minesweeper/notebook-v6-fixed-board.html" target="_blank" rel="noopener">Notebook v6: fixed-board environment</a> <span class="file-meta">Notebook · 367 KB</span></li><li><a href="https://github.com/DataChart/ReinforcementLearningMinesweeper" target="_blank" rel="noopener">Repository</a> <span class="file-meta">GitHub</span></li></ul>
       <h2>At a glance</h2>
-      <ul class="glance"><li><strong>Course:</strong> STAT407 Reinforcement Learning, Oregon Institute of Technology</li><li><strong>When:</strong> Spring 2025</li><li><strong>Methods:</strong> Custom OpenAI Gym environment, Q-learning, deep RL</li><li><strong>Results:</strong> Deep RL won; converged in about 900 episodes at about 27 minutes of compute on average</li></ul>
+      <ul class="glance"><li><strong>Course:</strong> STAT407 Reinforcement Learning, Oregon Institute of Technology</li><li><strong>When:</strong> Spring 2025</li><li><strong>Methods:</strong> Custom Gymnasium environment (9×9, 20 mines); REINFORCE, DQN and SARSA</li><li><strong>Tools:</strong> Python, PyTorch, Gymnasium</li><li><strong>Results:</strong> Deep RL won; converged in about 900 episodes at about 27 minutes of compute on average</li></ul>
     </article>
     <a class="back" href="../index.html#blog"><span aria-hidden="true">←</span> All posts</a>
   </main>
