@@ -1,4 +1,6 @@
-/* Skills matrix: edit LEVELS and DATA below. The KPIs, legend, table and cards are all generated from them. */
+/* Skills matrix: edit LEVELS and DATA below. The KPIs, legend, table and cards are all generated from them.
+   Certifications: `certs` is a count (1–3) or a list of up to three certificate names, e.g.
+   certs: ["AZ-900", "DP-100"]. Names show as a tooltip on the check marks. */
 
 const LEVELS = [
   { name: "Hobbyist", color: "#85B7EB", desc: "Personal or learning projects; working knowledge." },
@@ -21,28 +23,36 @@ const DATA = {
       { name: "Polars", level: 2, projects: 4 },
       { name: "ArcGIS", level: 2, projects: 4 },
       { name: "SQL",    level: 3, projects: 0 },  // resume: 3 years; project count not on the resume
+      // From LinkedIn (Poudre Valley REA). Levels are a first guess to adjust; 0 = count not given.
+      { name: "Power BI",        level: 3, projects: 20 },
+      { name: "Dashboards",      level: 3, projects: 35 },
+      { name: "Data governance", level: 3, projects: 1 },
+      { name: "API integration", level: 2, projects: 4 },
     ]},
     { name: "Cloud and platforms", skills: [
-      { name: "Azure",         level: 3, projects: 12, certified: true },
+      { name: "Azure",         level: 3, projects: 12, certs: 1 },
       { name: "Visual Studio", level: 3, projects: 14 },
     ]},
     { name: "Software development", skills: [
-      { name: "Python",     level: 5, projects: 22, certified: true },
+      { name: "Python",     level: 5, projects: 22, certs: 1 },
       { name: "C++",        level: 3, projects: 11 },
       { name: "JavaScript", level: 3, projects: 11 },
       { name: "HTML",       level: 3, projects: 10 },
       { name: "R",          level: 3, projects: 10 },
       { name: "R Shiny",    level: 2, projects: 1 },
       { name: "C#",         level: 2, projects: 4 },
+      { name: "PowerShell", level: 2, projects: 0 },
+      { name: "Git",        level: 3, projects: 0 },
+      { name: "Web dev",    level: 3, projects: 11 },  // Hart2Chart: 5 sites + 6 dashboards
       { name: "Rust",       level: 1, projects: 0 },
     ]},
     // From the 2025 resume. Project counts are the resume projects below; levels are a first guess to adjust.
     { name: "Machine learning and statistics", skills: [
       { name: "Machine learning",        level: 3, projects: 5 },
-      { name: "Forecasting",             level: 3, projects: 2 },
-      { name: "Statistics",              level: 3, projects: 1 },
-      { name: "Reinf. learning",         level: 2, projects: 1 },
-      { name: "XGBoost",                 level: 2, projects: 1 },
+      { name: "Forecasting",             level: 3, projects: 3 },
+      { name: "Statistics",              level: 3, projects: 2 },
+      { name: "Reinf. learning",         level: 2, projects: 2 },
+      { name: "XGBoost",                 level: 2, projects: 2 },
       { name: "Data cleaning",           level: 3, projects: 1 },
       { name: "TensorFlow",              level: 2, projects: 0 },
       { name: "CUDA",                    level: 2, projects: 0 },
@@ -50,16 +60,19 @@ const DATA = {
       { name: "scikit-learn",            level: 2, projects: 1 },
       { name: "NLP",                     level: 2, projects: 1 },
       { name: "A/B testing",             level: 2, projects: 0 },
+      { name: "Game theory",             level: 2, projects: 1 },  // poker: CFR, Deep CFR, PPO
     ]},
     { name: "Applied AI", skills: [
       { name: "Claude",              level: 4, projects: 13 },
       { name: "ChatGPT",             level: 3, projects: 12 },
       { name: "Multi-agent systems", level: 2, projects: 4 },
+      { name: "RAG",                 level: 2, projects: 1 },
+      { name: "Copilot",             level: 2, projects: 1 },
     ]},
     { name: "Leadership", skills: [
-      { name: "Project management", level: 4, projects: 16, certified: true },
+      { name: "Project management", level: 4, projects: 16, certs: 1 },
       { name: "Public speaking",    level: 3, projects: 10 },
-      { name: "Teaching",           level: 3, projects: 1 },
+      { name: "Teaching",           level: 3, projects: 2 },
       { name: "System analysis",    level: 2, projects: 1 },
     ]},
   ],
@@ -90,6 +103,15 @@ const DATA = {
     { title: "Card price scanner", outcome: "Designed a photo-to-price card app with full UML",
       linkLabel: "Blog post", url: "blog/trading-card-price-scanner.html",
       skills: ["System analysis", "Project management"] },
+    { title: "Poudre Valley REA", outcome: "8 automations saving 200+ hours a year; AI training for 60 staff",
+      linkLabel: "Blog post", url: "blog/my-time-at-poudre-valley-rea.html",
+      skills: ["Power BI", "SQL", "Dashboards", "Data governance", "API integration", "Python", "PowerShell", "C#", "Git", "Azure", "RAG", "Copilot", "Teaching"] },
+    { title: "Poker RL research", outcome: "10M simulated games; Deep CFR beat tabular by 40% on bb/100",
+      linkLabel: "Blog post", url: "blog/my-time-as-a-poker-data-scientist.html",
+      skills: ["Python", "Reinf. learning", "Game theory", "XGBoost", "Forecasting", "Statistics"] },
+    { title: "Hart2Chart", outcome: "Ran a web and dashboard practice with a 5-star rating",
+      linkLabel: "Blog post", url: "blog/my-time-at-hart2chart.html",
+      skills: ["Web dev", "HTML", "JavaScript", "Dashboards", "Project management"] },
   ],
 };
 
@@ -98,17 +120,26 @@ const DATA = {
   if (!$("sm-cols")) return;
   const esc = (s) => String(s).replace(/[&<>"]/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;" }[c]));
   const allSkills = DATA.areas.flatMap(a => a.skills);
+  const MAX_CERTS = 3;
+  const certsOf = s => {
+    const c = Array.isArray(s.certs) ? s.certs : Array(Math.max(0, s.certs | 0)).fill("");
+    return c.slice(0, MAX_CERTS);
+  };
   const skillNames = new Set(allSkills.map(s => s.name));
 
   // Validation (warn only)
-  allSkills.forEach(s => { if (!(s.level >= 1 && s.level <= 5)) console.warn(`[skills] ${s.name}: level must be 1–5`); });
+  allSkills.forEach(s => {
+    if (!(s.level >= 1 && s.level <= 5)) console.warn(`[skills] ${s.name}: level must be 1–5`);
+    const n = Array.isArray(s.certs) ? s.certs.length : (s.certs | 0);
+    if (n > MAX_CERTS) console.warn(`[skills] ${s.name}: at most ${MAX_CERTS} certifications are shown`);
+  });
   DATA.projects.forEach(p => p.skills.forEach(n => { if (!skillNames.has(n)) console.warn(`[skills] "${p.title}" references unknown skill "${n}"`); }));
 
   // KPIs
   const kpis = [
     [DATA.projectsDelivered, "Projects delivered"],
     [allSkills.length, "Core competencies"],
-    [allSkills.filter(s => s.certified).length, "Certifications"],
+    [allSkills.reduce((n, s) => n + certsOf(s).length, 0), "Certifications"],
     [`${DATA.yearsLeading} yrs`, "Leading delivery"],
   ];
   $("sm-kpis").innerHTML = kpis.map(([v, l]) => `<div class="sm-kpi"><b>${esc(v)}</b><span>${esc(l)}</span></div>`).join("");
@@ -116,7 +147,7 @@ const DATA = {
   // Legend
   $("sm-legend").innerHTML =
     `<span class="sm-legend-scale">Hobbyist ${LEVELS.map(l => `<i style="background:${l.color}"></i>`).join("")} Master</span>` +
-    `<span><span class="sm-cert" aria-hidden="true">✓</span> Certified</span>`;
+    `<span><span class="sm-cert" aria-hidden="true">✓</span> One per certification</span>`;
 
   // Balance areas into two columns
   const rowsOf = a => a.skills.length + 1;
@@ -133,14 +164,22 @@ const DATA = {
     LEVELS.map((l, i) => `<span><em data-level="${i}">${l.name}</em></span>`).join("") +
     `<span><em>Projects</em></span><span></span></div>`;
 
+  const certHTML = s => {
+    const c = certsOf(s);
+    if (!c.length) return `<span class="sm-cert"></span>`;
+    const names = c.filter(Boolean).join(", ");
+    return `<span class="sm-cert"${names ? ` title="${esc(names)}"` : ""}><span aria-hidden="true">${"✓".repeat(c.length)}</span></span>`;
+  };
   const rowHTML = s => {
     const blocks = LEVELS.map((l, i) =>
       `<span class="sm-block"${i < s.level ? ` style="background:${l.color};border-color:${l.color}"` : ""}></span>`).join("");
-    const label = `${s.name}: ${LEVELS[s.level - 1].name}, ${s.projects} projects${s.certified ? ", certified" : ""}`;
+    const c = certsOf(s), names = c.filter(Boolean).join(", ");
+    const certText = c.length ? `, ${c.length} certification${c.length > 1 ? "s" : ""}${names ? ` (${names})` : ""}` : "";
+    const label = `${s.name}: ${LEVELS[s.level - 1].name}, ${s.projects} projects${certText}`;
     return `<div class="sm-row" role="button" tabindex="0" aria-pressed="false" data-skill="${esc(s.name)}" aria-label="${esc(label)}">` +
       `<span class="sm-name">${esc(s.name)}</span>${blocks}` +
       `<span class="sm-count">${s.projects || "–"}</span>` +
-      `<span class="sm-cert">${s.certified ? '<span aria-hidden="true">✓</span>' : ""}</span></div>`;
+      certHTML(s) + `</div>`;
   };
 
   $("sm-cols").innerHTML = columns.map(areas =>
