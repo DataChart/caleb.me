@@ -232,7 +232,7 @@ code, pre { font-family: var(--mono); }
 
 .sm-row, .sm-head {
   display: grid;
-  grid-template-columns: 110px repeat(5, minmax(0,1fr)) 52px 18px;
+  grid-template-columns: 110px repeat(5, minmax(0,1fr)) 52px 30px;
   gap: 3px; align-items: center;
 }
 .sm-head { height: 52px; align-items: end; }
@@ -251,7 +251,7 @@ code, pre { font-family: var(--mono); }
 .sm-name { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding-left: 2px; }
 .sm-block { height: 8px; border-radius: 2px; background: var(--sm-surface); border: 0.5px solid var(--sm-border); }
 .sm-count { color: var(--sm-text-2); text-align: center; font-variant-numeric: tabular-nums; }
-.sm-cert { color: var(--sm-success); text-align: center; }
+.sm-cert { color: var(--sm-success); text-align: center; letter-spacing: -0.12em; white-space: nowrap; }
 
 .sm-eng-head { display: flex; justify-content: space-between; align-items: baseline; margin-top: 16px; }
 .sm-hint { font-size: 11px; color: var(--sm-text-3); }

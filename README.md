@@ -33,7 +33,7 @@ tools/make_giraffe.py   Script that draws the giraffe
 ## How the page works
 
 - **Tabs** are hash-routed (`#main`, `#research`, `#finance`, `#llms`, `#blog`). With JS off, every panel stacks on one page.
-- **Skills** is a matrix generated from `LEVELS` and `DATA` at the top of `assets/js/skills-matrix.js`. Each skill has a level from 1 (Hobbyist) to 5 (Master), a project count and an optional `certified` flag. The KPI strip, legend, two-column table and "Selected engagements" cards are all built from that data, so editing it is the only upkeep. Hover or tap a skill to see the projects that use it, and the reverse. A project that names a skill that doesn't exist logs a warning in the console.
+- **Skills** is a matrix generated from `LEVELS` and `DATA` at the top of `assets/js/skills-matrix.js`. Each skill has a level from 1 (Hobbyist) to 5 (Master), a project count and optional `certs`: a count from 1 to 3, or a list of up to three certificate names (shown as a tooltip), each drawn as its own check mark. The KPI strip, legend, two-column table and "Selected engagements" cards are all built from that data, so editing it is the only upkeep. Hover or tap a skill to see the projects that use it, and the reverse. A project that names a skill that doesn't exist logs a warning in the console.
 - **Theme** follows the system setting. The footer button overrides it, and the choice is saved in `localStorage`.
 
 ## Live project data
