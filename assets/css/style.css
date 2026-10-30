@@ -232,7 +232,7 @@ code, pre { font-family: var(--mono); }
 
 .sm-row, .sm-head {
   display: grid;
-  grid-template-columns: 110px repeat(5, minmax(0,1fr)) 52px 30px;
+  grid-template-columns: 132px repeat(5, minmax(0,1fr)) 52px 30px;
   gap: 3px; align-items: center;
 }
 .sm-head { height: 52px; align-items: end; }
