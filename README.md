@@ -51,8 +51,8 @@ The HTML holds a snapshot of every figure. If a request fails (for example mid-r
 ## Add a blog post
 
 1. Copy one of the files in `blog/` and rename it with a short slug, e.g. `blog/my-new-post.html`.
-2. Change the `<title>`, the meta description, the tag, the `<h1>`, the "Originally posted on LinkedIn" link (or delete that box), and the `<article>` body.
-3. Add a card for it to the `<ol class="post-cards">` list in the Blog panel of `index.html`.
+2. Change the `<title>`, the meta description, the tag, the `<h1>`, the "Posted" date under it, the "Originally posted on LinkedIn" link (or delete that box), and the `<article>` body.
+3. Add a card for it to the `<ol class="post-cards">` list in the Blog panel of `index.html`. Give the `<li>` a `data-date="YYYY-MM-DD"` (used for sorting) and a `data-category` matching one of the filter chips (`Projects`, `Work`, `Leadership` or `AI notes`), and put the same date in the card's `<time class="post-date">`. Card order in the file doesn't matter; the Blog tab sorts newest first.
 
 ## Regenerate the giraffe
 

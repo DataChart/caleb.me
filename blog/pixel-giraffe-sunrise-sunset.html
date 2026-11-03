@@ -39,6 +39,7 @@
     <a class="back" href="../index.html#blog"><span aria-hidden="true">←</span> All posts</a>
     <p class="post-tag">Python &amp; Pixel Art</p>
     <h1 class="post-title">Two skies, one giraffe: a code walkthrough of my pixel-art portrait</h1>
+    <p class="post-date">Posted <time datetime="2026-10-27">October 27, 2026</time></p>
     <article class="post-body">
       <div class="hero-pair"><figure><img src="../assets/img/giraffe-16bit.svg" width="384" height="384" alt="The sunset giraffe: purple dusk sky with stars, orange sun on the horizon"><figcaption>Sunset · dark mode</figcaption></figure><figure><img src="../assets/img/giraffe-16bit-day.svg" width="384" height="384" alt="The sunrise giraffe: blue and peach morning sky with clouds and birds, yellow sun just above the horizon"><figcaption>Sunrise · light mode</figcaption></figure></div>
       <p>The giraffe in the corner of my homepage isn't a PNG I drew in an image editor. It's a Python script. Every pixel is a number in a 48×48 numpy array, and the script writes it out as an SVG the browser can scale without blurring. When I added a light mode, it felt wrong to show a giraffe at dusk on a bright white page, so I taught the script a second scene: sunrise.</p>
