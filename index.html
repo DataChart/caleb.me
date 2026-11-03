@@ -217,10 +217,46 @@
   </section>
 
   <!-- ===================== OTHER TABS ===================== -->
-  <section class="panel soon" id="llms" data-panel="llms" tabindex="-1" aria-labelledby="llms-h">
+  <section class="panel llms" id="llms" data-panel="llms" tabindex="-1" aria-labelledby="llms-h">
     <h2 id="llms-h">Fine-tuned LLMs</h2>
-    <pre class="term"><span class="c">&gt;&gt;&gt;</span> model.<span class="f">generate</span>(<span class="s">"What's on this page?"</span>)
-<span class="s">'Write-ups on fine-tuned models are on the way.'</span></pre>
+    <p class="soon-sub">Two small language-model projects, each with three example prompts.</p>
+
+    <article class="llm-demo" aria-labelledby="llm-rag-h">
+      <header class="llm-head">
+        <p class="post-tag">Retrieval-augmented generation</p>
+        <h3 id="llm-rag-h">Webscraped RAG chatbot</h3>
+        <a href="blog/rag-interview-demo.html">Read the code walkthrough <span aria-hidden="true">→</span></a>
+      </header>
+      <ul class="llm-features"><li><b>Model</b><span>A local chatbot that answers questions about a utility co-op using only text from its own website, and cites the pages it used.</span></li><li><b>Training process</b><span>No weights were trained. I scraped 247 web pages and 73 PDFs, split them into 3,329 overlapping 150-word chunks, and embedded them into ChromaDB. Each question retrieves the 5 nearest chunks as context.</span></li><li><b>Tools</b><span>Python, BeautifulSoup, PyMuPDF, sentence-transformers (all-MiniLM-L6-v2), ChromaDB, LM Studio</span></li><li><b>Base model</b><span>Mistral, running locally in LM Studio</span></li></ul>
+      <div class="chat">
+        <div class="msg msg-user"><span class="who">You</span><p>What is the sales tax exempt certificate for?</p></div><div class="msg msg-bot"><span class="who">Model</span><p>It's for businesses that use electricity and gas for industrial purposes. If your company is 75% or more exempt from sales taxes, you file the form with your utility company, and the utility stops charging state and RTD/CD sales taxes and state-collected local taxes.</p><p class="msg-src">Sources: pvrea.coop/wp-content/uploads/2021/04/DR-1666-fillable.pdf</p></div><div class="msg msg-user"><span class="who">You</span><p>Do you have anything for kids?</p></div><div class="msg msg-bot"><span class="who">Model</span><p>Yes. The Kids Corner page has printable activity sheets for kids, including an Energy Explorers storm safety crossword.</p><p class="msg-src">Sources: pvrea.coop/my-community/for-our-kids/kids-corner/, pvrea.coop/wp-content/uploads/2021/04/2017_03_DS_EnergyExplorers_StormSafetyCrossword_Logo_0.pdf</p></div><div class="msg msg-user"><span class="who">You</span><p>Who won the high school basketball game on Friday?</p></div><div class="msg msg-bot"><span class="who">Model</span><p>I don't know. That isn't in the website content I have to work from.</p></div>
+      </div>
+      <p class="llm-note">Sample responses, written to show what the model does. They weren't captured from a live run.</p>
+    </article>
+
+    <article class="llm-demo" aria-labelledby="llm-cc-h">
+      <header class="llm-head">
+        <p class="post-tag">Fine-tuned model</p>
+        <h3 id="llm-cc-h">Python code commenter</h3>
+        <a href="blog/code-commenting-llm.html">Read the write-up <span aria-hidden="true">→</span></a>
+      </header>
+      <ul class="llm-features"><li><b>Model</b><span>Reads uncommented Python function definitions and writes a one-line docstring for each one.</span></li><li><b>Training process</b><span>Fine-tuned on 10,000 Python functions paired with their docstrings. Our team of four rated it 1.43 out of 2 on more than 90 functions (my own ratings averaged 1.56).</span></li><li><b>Tools</b><span>Python, Hugging Face datasets, tkinter for the desktop GUI</span></li><li><b>Base model</b><span>T5, adapted from a CodeT5 docstring-generation notebook; trained on code_search_net_python_10000_examples</span></li></ul>
+      <div class="chat">
+        <div class="msg msg-user"><span class="who">You</span><pre class="chat-code"><code>def celsius_to_fahrenheit(c):
+    return c * 9 / 5 + 32</code></pre></div><div class="msg msg-bot"><span class="who">Model</span><pre class="chat-code"><code>def celsius_to_fahrenheit(c):
+    &quot;&quot;&quot;Convert a temperature from Celsius to Fahrenheit.&quot;&quot;&quot;
+    return c * 9 / 5 + 32</code></pre></div><div class="msg msg-user"><span class="who">You</span><pre class="chat-code"><code>def count_words(path):
+    with open(path) as f:
+        return len(f.read().split())</code></pre></div><div class="msg msg-bot"><span class="who">Model</span><pre class="chat-code"><code>def count_words(path):
+    &quot;&quot;&quot;Count the number of words in a text file.&quot;&quot;&quot;
+    with open(path) as f:
+        return len(f.read().split())</code></pre></div><div class="msg msg-user"><span class="who">You</span><pre class="chat-code"><code>def chunk_list(items, size):
+    return [items[i:i + size] for i in range(0, len(items), size)]</code></pre></div><div class="msg msg-bot"><span class="who">Model</span><pre class="chat-code"><code>def chunk_list(items, size):
+    &quot;&quot;&quot;Split a list into chunks of the given size.&quot;&quot;&quot;
+    return [items[i:i + size] for i in range(0, len(items), size)]</code></pre></div>
+      </div>
+      <p class="llm-note">Sample responses, written to show what the model does. They weren't captured from a live run.</p>
+    </article>
   </section>
 
   <section class="panel blog" id="blog" data-panel="blog" tabindex="-1" aria-labelledby="blog-h">
