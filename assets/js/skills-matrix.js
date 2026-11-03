@@ -1,6 +1,7 @@
 /* Skills matrix: edit LEVELS and DATA below. The KPIs, legend, table and cards are all generated from them.
    Certifications: `certs` is a count (1–3) or a list of up to three certificate names, e.g.
-   certs: ["AZ-900", "DP-100"]. Names show as a tooltip on the check marks. */
+   certs: ["AZ-900", "DP-100"]. Names show as a tooltip on the check marks.
+   Layout: each area has `column: "left"` or `column: "right"`; areas render top-to-bottom in the order listed. */
 
 const LEVELS = [
   { name: "Hobbyist", color: "#85B7EB", desc: "Personal or learning projects; working knowledge." },
@@ -16,45 +17,50 @@ const DATA = {
   yearsLeading: 2,
 
   areas: [
-    { name: "Data engineering", skills: [
-      { name: "SSMS",   level: 4, projects: 18 },
-      { name: "SSIS",   level: 3, projects: 15 },
-      { name: "Pandas", level: 4, projects: 12, certs: 1 },
-      { name: "Polars", level: 1, projects: 4 },
-      { name: "ArcGIS", level: 2, projects: 4 },
-      { name: "SQL",    level: 5, projects: 0, certs: 1 },  // project count not given yet
-      { name: "Power BI",        level: 3, projects: 20, certs: 1 },
-      { name: "Dashboards",      level: 3, projects: 35 },
-      { name: "Data governance", level: 3, projects: 1 },
-      { name: "API integration", level: 2, projects: 4 },
-    ]},
-    { name: "Cloud and platforms", skills: [
-      { name: "Azure",         level: 3, projects: 12 },
-    ]},
-    { name: "Software development", skills: [
-      { name: "Python",     level: 5, projects: 22, certs: 1 },
-      { name: "C++",        level: 2, projects: 11 },
-      { name: "JavaScript", level: 3, projects: 11 },
-      { name: "HTML",       level: 5, projects: 10 },
-      { name: "R",          level: 3, projects: 10 },
-      { name: "C#",         level: 3, projects: 4 },
-      { name: "PowerShell", level: 2, projects: 0 },
-      { name: "Git",        level: 3, projects: 0 },
-      { name: "Web dev",    level: 3, projects: 11 },  // Hart2Chart: 5 sites + 6 dashboards
-      { name: "Rust",       level: 1, projects: 0 },
-    ]},
-    { name: "Applied AI", skills: [
-      { name: "Machine learning",    level: 4, projects: 6 },
-      { name: "Claude",              level: 5, projects: 13 },
-      { name: "ChatGPT",             level: 2, projects: 12 },
-      { name: "Agent orchestration", level: 3, projects: 4 },
-      { name: "RAG",                 level: 2, projects: 1 },
-      { name: "Copilot",             level: 2, projects: 1 },
-    ]},
-    { name: "Leadership", skills: [
-      { name: "Project management", level: 3, projects: 16 },
+    // ---- Left column ----
+    { name: "Leadership", column: "left", skills: [
       { name: "Public speaking",    level: 5, projects: 10 },
+      { name: "Project management", level: 3, projects: 16 },
       { name: "Teaching",           level: 3, projects: 2 },
+      { name: "Data governance",    level: 3, projects: 1 },
+    ]},
+    { name: "Cloud Services", column: "left", skills: [
+      { name: "Azure",        level: 3, projects: 12, certs: 1 },
+      { name: "AWS",          level: 1, projects: 0 },
+      { name: "Google Cloud", level: 1, projects: 0 },
+    ]},
+    { name: "Data engineering", column: "left", skills: [
+      { name: "Power BI",        level: 5, projects: 20, certs: 1 },
+      { name: "SSMS",            level: 5, projects: 18 },
+      { name: "SQL",             level: 5, projects: 0, certs: 1 },  // project count not given yet
+      { name: "Pandas",          level: 4, projects: 12, certs: 1 },
+      { name: "SSIS",            level: 3, projects: 15 },
+      { name: "API integration", level: 3, projects: 4 },
+      { name: "ArcGIS",          level: 2, projects: 4 },
+      { name: "Polars",          level: 1, projects: 4 },
+    ]},
+
+    // ---- Right column ----
+    { name: "Applied AI", column: "right", skills: [
+      { name: "Claude",              level: 5, projects: 13 },
+      { name: "Copilot",             level: 5, projects: 1 },
+      { name: "Machine learning",    level: 4, projects: 6 },
+      { name: "Agent orchestration", level: 3, projects: 4 },
+      { name: "ChatGPT",             level: 2, projects: 12 },
+      { name: "RAG",                 level: 2, projects: 1 },
+    ]},
+    { name: "Software development", column: "right", skills: [
+      { name: "Python",           level: 5, projects: 22, certs: 1 },
+      { name: "HTML",             level: 5, projects: 10 },
+      { name: "R",                level: 4, projects: 10 },
+      { name: "Git",              level: 4, projects: 0 },
+      { name: "JavaScript",       level: 3, projects: 11 },
+      { name: "C#",               level: 3, projects: 4 },
+      { name: "C++",              level: 2, projects: 11 },
+      { name: "PowerShell(Bash)", level: 2, projects: 0 },
+      { name: "Rust",             level: 1, projects: 0 },
+      { name: "COBOL",            level: 1, projects: 0 },
+      { name: "Java",             level: 1, projects: 0 },
     ]},
   ],
 
@@ -68,7 +74,7 @@ const DATA = {
       skills: ["Python", "Machine learning"] },
     { title: "Store sales forecasting", outcome: "Automated forecast emails saved 10 hours a week",
       linkLabel: "Blog post", url: "blog/store-sales-gradient-boosting.html",
-      skills: ["Machine learning", "Dashboards"] },
+      skills: ["Machine learning"] },
     { title: "RuneScape hiscores analysis", outcome: "Modeled 2 million players; random forest reached R² 0.76",
       linkLabel: "Blog post", url: "blog/runescape-hiscores-analysis.html",
       skills: ["Python", "Machine learning"] },
@@ -86,13 +92,13 @@ const DATA = {
       skills: ["Project management"] },
     { title: "Poudre Valley REA", outcome: "8 automations saving 200+ hours a year; AI training for 60 staff",
       linkLabel: "Blog post", url: "blog/my-time-at-poudre-valley-rea.html",
-      skills: ["Power BI", "SQL", "Dashboards", "Data governance", "API integration", "Python", "PowerShell", "C#", "Git", "Azure", "RAG", "Copilot", "Teaching"] },
+      skills: ["Power BI", "SQL", "Data governance", "API integration", "Python", "PowerShell(Bash)", "C#", "Git", "Azure", "RAG", "Copilot", "Teaching"] },
     { title: "Poker RL research", outcome: "10M simulated games; Deep CFR beat tabular by 40% on bb/100",
       linkLabel: "Blog post", url: "blog/my-time-as-a-poker-data-scientist.html",
       skills: ["Python", "Machine learning"] },
     { title: "Hart2Chart", outcome: "Ran a web and dashboard practice with a 5-star rating",
       linkLabel: "Blog post", url: "blog/my-time-at-hart2chart.html",
-      skills: ["Web dev", "HTML", "JavaScript", "Dashboards", "Project management"] },
+      skills: ["HTML", "JavaScript", "Project management"] },
   ],
 };
 
@@ -114,6 +120,9 @@ const DATA = {
     const n = Array.isArray(s.certs) ? s.certs.length : (s.certs | 0);
     if (n > MAX_CERTS) console.warn(`[skills] ${s.name}: at most ${MAX_CERTS} certifications are shown`);
   });
+  DATA.areas.forEach(a => {
+    if (a.column !== "left" && a.column !== "right") console.warn(`[skills] area "${a.name}": column must be "left" or "right"`);
+  });
   DATA.projects.forEach(p => p.skills.forEach(n => { if (!skillNames.has(n)) console.warn(`[skills] "${p.title}" references unknown skill "${n}"`); }));
 
   // KPIs
@@ -130,16 +139,11 @@ const DATA = {
     `<span class="sm-legend-scale">Hobbyist ${LEVELS.map(l => `<i style="background:${l.color}"></i>`).join("")} Master</span>` +
     `<span><span class="sm-cert" aria-hidden="true">✓</span> One per certification</span>`;
 
-  // Balance areas into two columns
-  const rowsOf = a => a.skills.length + 1;
-  const total = DATA.areas.reduce((n, a) => n + rowsOf(a), 0);
-  let best = 1, bestDiff = Infinity, run = 0;
-  DATA.areas.forEach((a, i) => {
-    run += rowsOf(a);
-    const diff = Math.abs(total - 2 * run);
-    if (i < DATA.areas.length - 1 && diff < bestDiff) { bestDiff = diff; best = i + 1; }
-  });
-  const columns = [DATA.areas.slice(0, best), DATA.areas.slice(best)];
+  // Fixed two-column layout (set by each area's `column` property)
+  const columns = [
+    DATA.areas.filter(a => a.column === "left"),
+    DATA.areas.filter(a => a.column === "right"),
+  ];
 
   const headerHTML = `<div class="sm-head" aria-hidden="true"><span></span>` +
     LEVELS.map((l, i) => `<span><em data-level="${i}">${l.name}</em></span>`).join("") +
