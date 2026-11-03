@@ -47,7 +47,7 @@ const DATA = {
       { name: "Machine learning",    level: 4, projects: 6 },
       { name: "Agent orchestration", level: 3, projects: 4 },
       { name: "ChatGPT",             level: 2, projects: 12 },
-      { name: "RAG",                 level: 2, projects: 1 },
+      { name: "RAG",                 level: 2, projects: 2 },
     ]},
     { name: "Software development", column: "right", skills: [
       { name: "Python",           level: 5, projects: 22, certs: 1 },
@@ -99,6 +99,9 @@ const DATA = {
     { title: "Hart2Chart", outcome: "Ran a web and dashboard practice with a 5-star rating",
       linkLabel: "Blog post", url: "blog/my-time-at-hart2chart.html",
       skills: ["HTML", "JavaScript", "Project management"] },
+    { title: "Interview RAG demo", outcome: "Local chatbot over 247 web pages and 73 PDFs, built for an interview",
+      linkLabel: "Blog post", url: "blog/rag-interview-demo.html",
+      skills: ["Python", "RAG", "Machine learning"] },
   ],
 };
 

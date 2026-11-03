@@ -1,0 +1,551 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The LLM demo that paid dividends · Caleb Hart</title>
+<meta name="description" content="I blanked on what RAG stood for in a job interview, so a week later I showed up with one: a local chatbot over the company&#x27;s 247 web pages and 73 PDFs. Here&#x27;s the story and every line of the code.">
+<meta name="color-scheme" content="dark light">
+<link rel="icon" href="../assets/img/giraffe-16bit.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&amp;family=JetBrains+Mono:wght@400;500;700&amp;display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/css/style.css">
+<script>
+  try {
+    var saved = localStorage.getItem('theme');
+    if (saved === 'light' || saved === 'dark') document.documentElement.dataset.theme = saved;
+  } catch (e) {}
+  document.documentElement.classList.add('js');
+</script>
+</head>
+<body>
+<a class="skip" href="#post">Skip to content</a>
+<div class="wrap">
+  <header class="site-header">
+    <div class="masthead">
+      <a class="name name-link" href="../index.html">CALEB HART<span class="cursor" aria-hidden="true">_</span></a>
+      <p class="kicker">AI · Automation · Business Intelligence · Education</p>
+    </div>
+    <nav class="tabs" aria-label="Sections">
+      <a class="tab" href="../index.html#main">Main</a>
+      <a class="tab" href="../index.html#research">Research Desk</a>
+      <a class="tab" href="../index.html#finance">Finance</a>
+      <a class="tab" href="../index.html#llms">Fine-tuned LLMs</a>
+      <a class="tab" href="../index.html#blog" aria-current="page">Blog</a>
+    </nav>
+  </header>
+  <main id="post" class="post post-wide" tabindex="-1">
+    <a class="back" href="../index.html#blog"><span aria-hidden="true">←</span> All posts</a>
+    <p class="post-tag">RAG &amp; Python</p>
+    <h1 class="post-title">The LLM demo that paid dividends</h1>
+    <article class="post-body">
+      <p>The job interview was going really well. I'd been prepared for each question they'd asked.</p>
+      <p>"What does RAG stand for and how is it used?" The interviewer asked.</p>
+      <p>I froze for too long, "I'm not sure. It sounds familiar, but it's not coming to me for some reason." I responded, my hands starting to sweat.</p>
+      <p>"That's okay, you've done really well so far, let's move on." The interviewer turned the page.</p>
+      <p>"Wait!" I interjected, "what does it stand for?" I asked.</p>
+      <p>"RAG stands for retrieval augmented generator."</p>
+      <p>"Oh, right yeah it's used to retrieve document information." I smiled, "are you hoping to develop your own RAG system?" I asked.</p>
+      <p>The interviewer looked to his right at the man in the suit, the one that didn't speak much. A flicker of a smile passed between them. "Something like that." The interviewer said.</p>
+      <p>"How familiar with GitHub are you?" The interviewer moved onto the next question and the moment passed.</p>
+      <p>One week later, I sat down at Rock Bottom Cafe. I gently put my laptop on the table.</p>
+      <p>"Thanks for agreeing to meet with us again, hopefully it's not too much of an intrusion." The man who had interviewed me said. I knew him by his first name now and, if I were hired, he would be my future boss.</p>
+      <p>"No worries at all, I'm super excited that you wanted to meet with me again." I smiled. "I noticed that the resume you had at the interview was a little out of date, so I brought an updated version with me today." I pressed the perfectly white paper with dense black text across the table at them.</p>
+      <p>Neither the interviewer nor the man in the suit looked at it, "I see you brought your laptop along, does that mean you have something to show us?" The interviewer asked, pointing at my densely-stickered laptop.</p>
+      <p>I looked at my laptop nervously, "yeah, you mentioned you might be developing some RAG systems during the interview, so I brought a demo with me to show you today. It'll just take me a few minutes to get set up." I opened the laptop lid and pulled out my phone and fiddled with it nervously trying to turn on my hotspot.</p>
+      <p>"So do you follow sports much?" The interviewer asked.</p>
+      <p>"Not much, I do go to the high school basketball games occasionally."</p>
+      <p>"Really! Which high school?" The man in the suit asked, suddenly alight with energy and almost startling me out of my chair. It was the only time he'd spoken since introducing himself a week earlier.</p>
+      <p>"The one right down the street, it's where I graduated from." I clicked run on the Python file already open on my laptop. I sent a silent prayer that there was a buddha out there that could prevent a hastily written Python file from crashing.</p>
+      <p>"That's where my son goes to school right now, he plays on the basketball team. Number 47?" He grinned at me, waiting for me to come back.</p>
+      <p>"Yeah I know him, he's on the varsity team isn't he?" I said, much more unsure than I hoped it seemed.</p>
+      <p>"Yeah!" He beamed at me and the interviewer, overshadowing us with his smile. I smiled back nervously before looking down at the bright green laptop screen. I turned my laptop around to face the two intimidating men.</p>
+      <p>"I webscraped all 247 public webpages of your website, extracted the text from 73 associated PDFs, and chunked the text into 150-word segments, I used a MiniLM sentence transformer, a ChromaDB embedding layer, KNN to score the chunks based on the supplied prompt, and LM Studio to host a Mistral model as the base." They looked at me like I'd spoken a foreign language. "Try it out." I pushed the laptop towards them.</p>
+      <!-- TODO(Caleb): what happened when they tried it? An ending line here would close the story before the code starts. -->
+      <h2><span class="md-mark" aria-hidden="true">## </span>What was running on that laptop</h2>
+      <p>Behind that demo were four short scripts that run one after the other, top to bottom in a single notebook:</p>
+      <ul><li><code>scrape.py</code> reads the site map, downloads every allowed page and every PDF those pages link to, and saves the text.</li><li><code>chunk.py</code> splits all of that text into overlapping 150-word pieces.</li><li><code>embed.py</code> turns each piece into a vector with a small sentence-transformer model and stores it in ChromaDB.</li><li><code>chatbot.py</code> takes a question, finds the five closest pieces, and hands them to a local LLM in LM Studio as the only context it may answer from.</li></ul>
+      <p>Nothing leaves the laptop except the scrape itself. The embedding model, the vector database and the language model all run locally. Here's every script, in order.</p>
+      <h2><span class="md-mark" aria-hidden="true">## </span>1. Scraping, politely</h2>
+      <p>The first job is getting the website's text without being a nuisance. The settings at the top make the scraper slow and careful on purpose: a random 1 to 3 second pause between requests, a 10-second timeout, a 500 KB cap on pages and a 5 MB cap on PDFs, and an honest User-Agent that says it's a research bot.</p>
+      <figure class="md-code"><figcaption><span class="fence">```python</span> scrape.py</figcaption><pre><code><span class="c"># scrape.py</span>
+<span class="k">import</span> requests
+<span class="k">import</span> fitz  <span class="c"># pip install pymupdf</span>
+<span class="k">from</span> bs4 <span class="k">import</span> BeautifulSoup
+<span class="k">from</span> urllib.parse <span class="k">import</span> urljoin, urlparse
+<span class="k">from</span> urllib.robotparser <span class="k">import</span> RobotFileParser
+<span class="k">import</span> xml.etree.ElementTree <span class="k">as</span> ET
+<span class="k">import</span> json, time, random, io
+
+BASE_URL    = <span class="s">&quot;https://pvrea.coop&quot;</span>
+SITEMAP_URL = <span class="s">&quot;https://pvrea.coop/sitemap_index.xml&quot;</span>
+
+<span class="c"># ── Safety settings ────────────────────────────────────────────────</span>
+MAX_PAGES        = <span class="n">300</span>
+MIN_DELAY        = <span class="n">1.0</span>
+MAX_DELAY        = <span class="n">3.0</span>
+REQUEST_TIMEOUT  = <span class="n">10</span>
+MAX_PAGE_SIZE_KB = <span class="n">500</span>
+MAX_PDF_SIZE_KB  = <span class="n">5120</span>   <span class="c"># 5 MB cap on PDFs</span>
+BOT_NAME         = <span class="s">&quot;research-bot&quot;</span>
+HEADERS = {
+    <span class="s">&quot;User-Agent&quot;</span>: <span class="s">f&quot;Mozilla/5.0 (compatible; {BOT_NAME}/1.0; +local-demo)&quot;</span>
+}
+<span class="c"># ───────────────────────────────────────────────────────────────────</span></code></pre></figure>
+      <p>Before fetching anything, it reads the site's <code>robots.txt</code>. If the site asks for a crawl delay, the script raises its own delays to match. <code>is_allowed</code> checks every URL against the rules for both this bot's name and the wildcard <code>*</code>, so a page is only fetched if both say yes.</p>
+      <figure class="md-code"><figcaption><span class="fence">```python</span> scrape.py</figcaption><pre><code><span class="c"># ── robots.txt ─────────────────────────────────────────────────────</span>
+<span class="k">def</span> <span class="f">load_robots</span>(base_url: str) -&gt; RobotFileParser:
+    <span class="s">&quot;&quot;&quot;
+    Fetch and parse robots.txt for the target domain.
+    Falls back to a permissive parser if the file is unreachable,
+    but logs a warning so you know enforcement may be incomplete.
+    &quot;&quot;&quot;</span>
+    rp = <span class="f">RobotFileParser</span>()
+    robots_url = <span class="f">urljoin</span>(base_url, <span class="s">&quot;/robots.txt&quot;</span>)
+    <span class="f">print</span>(<span class="s">f&quot;🤖 Fetching robots.txt: {robots_url}&quot;</span>)
+    <span class="k">try</span>:
+        r = requests.<span class="f">get</span>(robots_url, headers=HEADERS, timeout=REQUEST_TIMEOUT)
+        <span class="k">if</span> r.status_code == <span class="n">200</span>:
+            rp.<span class="f">parse</span>(r.text.<span class="f">splitlines</span>())
+
+            <span class="c"># ── Crawl-Delay support ────────────────────────────────</span>
+            <span class="c"># urllib.robotparser exposes crawl_delay() in Python 3.x</span>
+            delay = rp.<span class="f">crawl_delay</span>(BOT_NAME) <span class="k">or</span> rp.<span class="f">crawl_delay</span>(<span class="s">&quot;*&quot;</span>)
+            <span class="k">if</span> delay:
+                <span class="k">global</span> MIN_DELAY, MAX_DELAY
+                <span class="c"># Honour the site&#x27;s stated delay; keep our jitter on top</span>
+                MIN_DELAY = <span class="f">max</span>(MIN_DELAY, <span class="f">float</span>(delay))
+                MAX_DELAY = <span class="f">max</span>(MAX_DELAY, <span class="f">float</span>(delay) + <span class="n">2.0</span>)
+                <span class="f">print</span>(<span class="s">f&quot;   Crawl-Delay: {delay}s detected — adjusting delays&quot;</span>)
+
+            <span class="f">print</span>(<span class="s">f&quot;   robots.txt loaded successfully&quot;</span>)
+        <span class="k">else</span>:
+            <span class="f">print</span>(<span class="s">f&quot;⚠️  robots.txt returned HTTP {r.status_code} — proceeding permissively&quot;</span>)
+    <span class="k">except</span> Exception <span class="k">as</span> e:
+        <span class="f">print</span>(<span class="s">f&quot;⚠️  Could not fetch robots.txt ({e}) — proceeding permissively&quot;</span>)
+    <span class="k">return</span> rp
+
+
+<span class="k">def</span> <span class="f">is_allowed</span>(rp: RobotFileParser, url: str) -&gt; bool:
+    <span class="s">&quot;&quot;&quot;
+    Return True only if robots.txt permits BOT_NAME (or *) to fetch url.
+    Blocks the URL if the parser has no rules (fetch failed) for safety.
+    &quot;&quot;&quot;</span>
+    <span class="c"># can_fetch returns True when the parser has no rules, which would</span>
+    <span class="c"># silently allow everything — so we check both bot name and wildcard.</span>
+    <span class="k">return</span> rp.<span class="f">can_fetch</span>(BOT_NAME, url) <span class="k">and</span> rp.<span class="f">can_fetch</span>(<span class="s">&quot;*&quot;</span>, url)
+<span class="c"># ───────────────────────────────────────────────────────────────────</span></code></pre></figure>
+      <p>Rather than crawling links and hoping to find everything, it reads the sitemap. WordPress sites publish a sitemap index that points to more sitemaps (one for posts, one for pages), so the function calls itself on each child sitemap and collects every <code>&lt;loc&gt;</code> URL.</p>
+      <figure class="md-code"><figcaption><span class="fence">```python</span> scrape.py</figcaption><pre><code><span class="k">def</span> <span class="f">get_urls_from_sitemap</span>(sitemap_url):
+    <span class="s">&quot;&quot;&quot;
+    Handles both sitemap indexes (which point to more sitemaps)
+    and regular sitemaps (which point to pages).
+    &quot;&quot;&quot;</span>
+    urls = []
+    <span class="k">try</span>:
+        <span class="f">print</span>(<span class="s">f&quot;📋 Fetching sitemap: {sitemap_url}&quot;</span>)
+        r = requests.<span class="f">get</span>(sitemap_url, headers=HEADERS, timeout=REQUEST_TIMEOUT)
+        root = ET.<span class="f">fromstring</span>(r.content)
+
+        tag = root.tag.<span class="f">split</span>(<span class="s">&quot;}&quot;</span>)[-<span class="n">1</span>] <span class="k">if</span> <span class="s">&quot;}&quot;</span> <span class="k">in</span> root.tag <span class="k">else</span> root.tag
+
+        <span class="k">if</span> tag == <span class="s">&quot;sitemapindex&quot;</span>:
+            <span class="k">for</span> sitemap <span class="k">in</span> root.<span class="f">iter</span>(<span class="s">&quot;{http://www.sitemaps.org/schemas/sitemap/0.9}loc&quot;</span>):
+                child_urls = <span class="f">get_urls_from_sitemap</span>(sitemap.text.<span class="f">strip</span>())
+                urls.<span class="f">extend</span>(child_urls)
+                time.<span class="f">sleep</span>(random.<span class="f">uniform</span>(MIN_DELAY, MAX_DELAY))
+        <span class="k">else</span>:
+            <span class="k">for</span> loc <span class="k">in</span> root.<span class="f">iter</span>(<span class="s">&quot;{http://www.sitemaps.org/schemas/sitemap/0.9}loc&quot;</span>):
+                urls.<span class="f">append</span>(loc.text.<span class="f">strip</span>())
+
+        <span class="f">print</span>(<span class="s">f&quot;   Found {len(urls)} URLs&quot;</span>)
+    <span class="k">except</span> Exception <span class="k">as</span> e:
+        <span class="f">print</span>(<span class="s">f&quot;⚠️  Sitemap error: {e}&quot;</span>)
+    <span class="k">return</span> urls</code></pre></figure>
+      <p><code>scrape_site</code> ties it together. It filters the URL list to the same domain, drops images and other binary files, and removes anything <code>robots.txt</code> blocks. Then it walks the list with a pause before every request, skipping anything that isn't HTML or is too large, and stopping completely if the server ever answers 429 (too many requests). For each page it strips the parts that repeat everywhere (scripts, styles, navigation, headers, footers, sidebars and forms) and keeps the remaining text if there's more than 200 characters of it.</p>
+      <figure class="md-code"><figcaption><span class="fence">```python</span> scrape.py</figcaption><pre><code><span class="k">def</span> <span class="f">scrape_site</span>(base_url, sitemap_url):
+    <span class="c"># ── Step 1: Load and enforce robots.txt ───────────────────────</span>
+    rp = <span class="f">load_robots</span>(base_url)
+
+    <span class="c"># ── Step 2: Collect URLs from sitemap ─────────────────────────</span>
+    all_urls = <span class="f">get_urls_from_sitemap</span>(sitemap_url)
+
+    <span class="c"># ── Step 3: Filter — same domain, allowed, no binary assets ───</span>
+    filtered = [
+        url <span class="k">for</span> url <span class="k">in</span> all_urls
+        <span class="k">if</span> <span class="f">urlparse</span>(url).netloc == <span class="f">urlparse</span>(base_url).netloc
+        <span class="k">and</span> <span class="k">not</span> <span class="f">any</span>(url.<span class="f">lower</span>().<span class="f">endswith</span>(ext) <span class="k">for</span> ext <span class="k">in</span>
+                    [<span class="s">&quot;.pdf&quot;</span>, <span class="s">&quot;.jpg&quot;</span>, <span class="s">&quot;.jpeg&quot;</span>, <span class="s">&quot;.png&quot;</span>, <span class="s">&quot;.gif&quot;</span>,
+                     <span class="s">&quot;.svg&quot;</span>, <span class="s">&quot;.zip&quot;</span>, <span class="s">&quot;.mp4&quot;</span>, <span class="s">&quot;.mp3&quot;</span>, <span class="s">&quot;.css&quot;</span>, <span class="s">&quot;.js&quot;</span>])
+        <span class="k">and</span> <span class="f">is_allowed</span>(rp, url)   <span class="c"># ← robots.txt enforcement</span>
+    ]
+
+    blocked = <span class="f">len</span>(all_urls) - <span class="f">len</span>(filtered)
+    <span class="k">if</span> blocked:
+        <span class="f">print</span>(<span class="s">f&quot;🚫 {blocked} URLs removed by robots.txt or asset filter&quot;</span>)
+
+    <span class="f">print</span>(<span class="s">f&quot;\n🔗 {len(filtered)} pages to scrape (capped at {MAX_PAGES})\n&quot;</span>)
+    filtered = filtered[:MAX_PAGES]
+
+    pages    = []
+    pdf_seen = <span class="f">set</span>()  <span class="c"># global dedup across all pages</span>
+
+    <span class="k">for</span> i, url <span class="k">in</span> <span class="f">enumerate</span>(filtered):
+        <span class="k">try</span>:
+            delay = random.<span class="f">uniform</span>(MIN_DELAY, MAX_DELAY)
+            <span class="f">print</span>(<span class="s">f&quot;⏳ Waiting {delay:.1f}s...&quot;</span>)
+            time.<span class="f">sleep</span>(delay)
+
+            response = requests.<span class="f">get</span>(
+                url,
+                headers=HEADERS,
+                timeout=REQUEST_TIMEOUT,
+                stream=<span class="k">True</span>
+            )
+
+            content_type = response.headers.<span class="f">get</span>(<span class="s">&quot;Content-Type&quot;</span>, <span class="s">&quot;&quot;</span>)
+            <span class="k">if</span> <span class="s">&quot;text/html&quot;</span> <span class="k">not</span> <span class="k">in</span> content_type:
+                <span class="f">print</span>(<span class="s">f&quot;⏭️  Skipping non-HTML: {url}&quot;</span>)
+                <span class="k">continue</span>
+
+            content_length = <span class="f">int</span>(response.headers.<span class="f">get</span>(<span class="s">&quot;Content-Length&quot;</span>, <span class="n">0</span>))
+            <span class="k">if</span> content_length &gt; MAX_PAGE_SIZE_KB * <span class="n">1024</span>:
+                <span class="f">print</span>(<span class="s">f&quot;⏭️  Skipping oversized page: {url}&quot;</span>)
+                <span class="k">continue</span>
+
+            <span class="k">if</span> response.status_code == <span class="n">429</span>:
+                <span class="f">print</span>(<span class="s">&quot;🛑 Rate limited — stopping early&quot;</span>)
+                <span class="k">break</span>
+            <span class="k">if</span> response.status_code != <span class="n">200</span>:
+                <span class="f">print</span>(<span class="s">f&quot;⚠️  HTTP {response.status_code}: {url}&quot;</span>)
+                <span class="k">continue</span>
+
+            soup = <span class="f">BeautifulSoup</span>(response.text, <span class="s">&quot;html.parser&quot;</span>)
+            <span class="k">for</span> tag <span class="k">in</span> <span class="f">soup</span>([<span class="s">&quot;script&quot;</span>, <span class="s">&quot;style&quot;</span>, <span class="s">&quot;nav&quot;</span>, <span class="s">&quot;footer&quot;</span>,
+                             <span class="s">&quot;header&quot;</span>, <span class="s">&quot;aside&quot;</span>, <span class="s">&quot;form&quot;</span>]):
+                tag.<span class="f">decompose</span>()
+
+            text = soup.<span class="f">get_text</span>(separator=<span class="s">&quot; &quot;</span>, strip=<span class="k">True</span>)
+
+            <span class="k">if</span> <span class="f">len</span>(text) &gt; <span class="n">200</span>:
+                page_entry = {<span class="s">&quot;url&quot;</span>: url, <span class="s">&quot;text&quot;</span>: text, <span class="s">&quot;pdfs&quot;</span>: []}
+
+                <span class="c"># ── Step 4: Find and extract PDFs linked on this page ──</span>
+                pdf_links = <span class="f">find_pdf_links</span>(soup, url, rp)
+                <span class="k">for</span> pdf_url <span class="k">in</span> pdf_links:
+                    <span class="k">if</span> pdf_url <span class="k">in</span> pdf_seen:
+                        <span class="f">print</span>(<span class="s">f&quot;   ⏭️  PDF already extracted (dedup): {pdf_url}&quot;</span>)
+                        <span class="k">continue</span>
+                    pdf_seen.<span class="f">add</span>(pdf_url)
+
+                    time.<span class="f">sleep</span>(random.<span class="f">uniform</span>(MIN_DELAY, MAX_DELAY))
+                    pdf_text = <span class="f">extract_pdf_from_url</span>(pdf_url)
+                    <span class="k">if</span> pdf_text:
+                        page_entry[<span class="s">&quot;pdfs&quot;</span>].<span class="f">append</span>({
+                            <span class="s">&quot;url&quot;</span>:  pdf_url,
+                            <span class="s">&quot;text&quot;</span>: pdf_text
+                        })
+
+                pages.<span class="f">append</span>(page_entry)
+                pdf_count = <span class="f">len</span>(page_entry[<span class="s">&quot;pdfs&quot;</span>])
+                pdf_note  = <span class="s">f&quot; + {pdf_count} PDF(s)&quot;</span> <span class="k">if</span> pdf_count <span class="k">else</span> <span class="s">&quot;&quot;</span>
+                <span class="f">print</span>(<span class="s">f&quot;✅ ({i+1}/{len(filtered)}) Scraped: {url}{pdf_note}&quot;</span>)
+
+        <span class="k">except</span> requests.exceptions.Timeout:
+            <span class="f">print</span>(<span class="s">f&quot;⏱️  Timeout: {url}&quot;</span>)
+        <span class="k">except</span> requests.exceptions.ConnectionError:
+            <span class="f">print</span>(<span class="s">f&quot;🔌 Connection error: {url}&quot;</span>)
+        <span class="k">except</span> Exception <span class="k">as</span> e:
+            <span class="f">print</span>(<span class="s">f&quot;⚠️  Error on {url}: {e}&quot;</span>)
+
+    <span class="k">return</span> pages</code></pre></figure>
+      <p>A lot of what a utility actually knows lives in PDFs: forms, rate schedules, reports and handouts. So for every page, <code>find_pdf_links</code> collects the same-domain PDF links that <code>robots.txt</code> allows, and the scraper keeps a global <code>pdf_seen</code> set so a PDF linked from ten pages is only downloaded once.</p>
+      <figure class="md-code"><figcaption><span class="fence">```python</span> scrape.py</figcaption><pre><code><span class="k">def</span> <span class="f">find_pdf_links</span>(soup: BeautifulSoup, page_url: str, rp: RobotFileParser) -&gt; list[str]:
+    <span class="s">&quot;&quot;&quot;
+    Return a deduplicated list of absolute PDF URLs found on a page,
+    filtered to the same domain and allowed by robots.txt.
+    &quot;&quot;&quot;</span>
+    seen = <span class="f">set</span>()
+    pdf_links = []
+    <span class="k">for</span> a <span class="k">in</span> soup.<span class="f">find_all</span>(<span class="s">&quot;a&quot;</span>, href=<span class="k">True</span>):
+        href = a[<span class="s">&quot;href&quot;</span>].<span class="f">strip</span>()
+        <span class="k">if</span> <span class="k">not</span> href.<span class="f">lower</span>().<span class="f">endswith</span>(<span class="s">&quot;.pdf&quot;</span>):
+            <span class="k">continue</span>
+        abs_url = <span class="f">urljoin</span>(page_url, href)
+        <span class="k">if</span> <span class="f">urlparse</span>(abs_url).netloc != <span class="f">urlparse</span>(BASE_URL).netloc:
+            <span class="k">continue</span>  <span class="c"># off-domain PDF</span>
+        <span class="k">if</span> abs_url <span class="k">in</span> seen:
+            <span class="k">continue</span>
+        <span class="k">if</span> <span class="k">not</span> <span class="f">is_allowed</span>(rp, abs_url):
+            <span class="f">print</span>(<span class="s">f&quot;   🚫 PDF blocked by robots.txt: {abs_url}&quot;</span>)
+            <span class="k">continue</span>
+        seen.<span class="f">add</span>(abs_url)
+        pdf_links.<span class="f">append</span>(abs_url)
+    <span class="k">return</span> pdf_links</code></pre></figure>
+      <p><code>extract_pdf_from_url</code> streams each PDF in 8 KB pieces and gives up once it passes the 5 MB cap, checks that the file really starts with the <code>%PDF</code> magic bytes, and pulls the text out with PyMuPDF. If a PDF has fewer than 100 characters of text, it's almost certainly a scanned image, so it's skipped instead of filling the database with noise.</p>
+      <figure class="md-code"><figcaption><span class="fence">```python</span> scrape.py</figcaption><pre><code><span class="c"># ── PDF ingestion ──────────────────────────────────────────────────</span>
+<span class="k">def</span> <span class="f">extract_pdf_from_url</span>(pdf_url: str) -&gt; str | <span class="k">None</span>:
+    <span class="s">&quot;&quot;&quot;
+    Download a PDF and extract its text with PyMuPDF.
+    Returns plain text, or None if the PDF is unreachable / too large /
+    appears to be scanned-only (no selectable text).
+    &quot;&quot;&quot;</span>
+    <span class="k">try</span>:
+        <span class="f">print</span>(<span class="s">f&quot;   📄 Fetching PDF: {pdf_url}&quot;</span>)
+        r = requests.<span class="f">get</span>(
+            pdf_url,
+            headers=HEADERS,
+            timeout=REQUEST_TIMEOUT,
+            stream=<span class="k">True</span>
+        )
+        <span class="k">if</span> r.status_code != <span class="n">200</span>:
+            <span class="f">print</span>(<span class="s">f&quot;   ⚠️  PDF HTTP {r.status_code}: {pdf_url}&quot;</span>)
+            <span class="k">return</span> <span class="k">None</span>
+
+        <span class="c"># Size guard — read up to MAX_PDF_SIZE_KB before bailing</span>
+        chunks = []
+        total  = <span class="n">0</span>
+        <span class="k">for</span> chunk <span class="k">in</span> r.<span class="f">iter_content</span>(chunk_size=<span class="n">8192</span>):
+            total += <span class="f">len</span>(chunk)
+            <span class="k">if</span> total &gt; MAX_PDF_SIZE_KB * <span class="n">1024</span>:
+                <span class="f">print</span>(<span class="s">f&quot;   ⏭️  PDF too large (&gt;{MAX_PDF_SIZE_KB} KB): {pdf_url}&quot;</span>)
+                <span class="k">return</span> <span class="k">None</span>
+            chunks.<span class="f">append</span>(chunk)
+
+        raw = <span class="s">b&quot;&quot;</span>.<span class="f">join</span>(chunks)
+
+        <span class="c"># Validate magic bytes — real PDFs start with %PDF</span>
+        <span class="k">if</span> <span class="k">not</span> raw.<span class="f">startswith</span>(<span class="s">b&quot;%PDF&quot;</span>):
+            <span class="f">print</span>(<span class="s">f&quot;   ⏭️  Not a valid PDF (bad magic bytes): {pdf_url}&quot;</span>)
+            <span class="k">return</span> <span class="k">None</span>
+
+        doc  = fitz.<span class="f">open</span>(stream=raw, filetype=<span class="s">&quot;pdf&quot;</span>)
+        text = <span class="s">&quot;&quot;</span>
+        <span class="k">for</span> page <span class="k">in</span> doc:
+            text += page.<span class="f">get_text</span>()
+        doc.<span class="f">close</span>()
+
+        text = text.<span class="f">strip</span>()
+        <span class="k">if</span> <span class="f">len</span>(text) &lt; <span class="n">100</span>:
+            <span class="c"># Likely a scanned / image-only PDF — skip rather than store noise</span>
+            <span class="f">print</span>(<span class="s">f&quot;   ⏭️  PDF appears to be image-only (no selectable text): {pdf_url}&quot;</span>)
+            <span class="k">return</span> <span class="k">None</span>
+
+        <span class="f">print</span>(<span class="s">f&quot;   ✅ PDF extracted ({len(text):,} chars): {pdf_url}&quot;</span>)
+        <span class="k">return</span> text
+
+    <span class="k">except</span> Exception <span class="k">as</span> e:
+        <span class="f">print</span>(<span class="s">f&quot;   ⚠️  PDF extraction error on {pdf_url}: {e}&quot;</span>)
+        <span class="k">return</span> <span class="k">None</span></code></pre></figure>
+      <p>The last few lines run the whole thing and save the result to <code>scraped.json</code>. On the run in the notebook, the sitemaps listed 247 pages, and the scraper came back with all 247 plus 73 PDFs.</p>
+      <figure class="md-code"><figcaption><span class="fence">```python</span> scrape.py</figcaption><pre><code><span class="c"># ── Run ─────────────────────────────────────────────────────────────</span>
+pages = <span class="f">scrape_site</span>(BASE_URL, SITEMAP_URL)
+
+<span class="k">with</span> <span class="f">open</span>(<span class="s">&quot;scraped.json&quot;</span>, <span class="s">&quot;w&quot;</span>) <span class="k">as</span> f:
+    json.<span class="f">dump</span>(pages, f, indent=<span class="n">2</span>)
+
+total_pdfs = <span class="f">sum</span>(<span class="f">len</span>(p[<span class="s">&quot;pdfs&quot;</span>]) <span class="k">for</span> p <span class="k">in</span> pages)
+<span class="f">print</span>(<span class="s">f&quot;\n📄 Done. {len(pages)} pages + {total_pdfs} PDFs saved to scraped.json&quot;</span>)</code></pre></figure>
+      <figure class="md-code"><figcaption><span class="fence">```text</span> output</figcaption><pre><code>🤖 Fetching robots.txt: https://pvrea.coop/robots.txt
+   robots.txt loaded successfully
+📋 Fetching sitemap: https://pvrea.coop/sitemap_index.xml
+📋 Fetching sitemap: https://pvrea.coop/post-sitemap.xml
+   Found 154 URLs
+📋 Fetching sitemap: https://pvrea.coop/page-sitemap.xml
+   Found 93 URLs
+   Found 247 URLs
+
+🔗 247 pages to scrape (capped at 300)
+
+⏳ Waiting 2.1s...
+...
+...
+✅ (245/247) Scraped: https://pvrea.coop/outages-safety/
+⏳ Waiting 1.6s...
+✅ (246/247) Scraped: https://pvrea.coop/my-community/
+⏳ Waiting 1.2s...
+✅ (247/247) Scraped: https://pvrea.coop/the-co-op/
+
+📄 Done. 247 pages + 73 PDFs saved to scraped.json</code></pre></figure>
+      <h2><span class="md-mark" aria-hidden="true">## </span>2. Chunking</h2>
+      <p>A whole web page is too much to hand a language model as context, and too blurry to search well, so the text gets cut into pieces. <code>chunk_text</code> splits on whitespace and takes 150 words at a time, stepping forward 130 words each time so that neighboring chunks share 20 words. That overlap means a sentence that falls on a boundary still shows up whole in one of the two chunks.</p>
+      <p>Each chunk keeps the URL it came from. PDF chunks point at the PDF itself and also remember the page that linked to it, so an answer can cite the exact document.</p>
+      <figure class="md-code"><figcaption><span class="fence">```python</span> chunk.py</figcaption><pre><code><span class="c"># chunk.py</span>
+<span class="k">import</span> json
+
+<span class="k">def</span> <span class="f">chunk_text</span>(text, chunk_size=<span class="n">150</span>, overlap=<span class="n">20</span>):
+    words = text.<span class="f">split</span>()
+    chunks, i = [], <span class="n">0</span>
+    <span class="k">while</span> i &lt; <span class="f">len</span>(words):
+        chunks.<span class="f">append</span>(<span class="s">&quot; &quot;</span>.<span class="f">join</span>(words[i:i+chunk_size]))
+        i += chunk_size - overlap
+    <span class="k">return</span> chunks
+
+pages = json.<span class="f">load</span>(<span class="f">open</span>(<span class="s">&quot;scraped.json&quot;</span>))
+all_chunks = []
+html_chunks = <span class="n">0</span>
+pdf_chunks  = <span class="n">0</span>
+
+<span class="k">for</span> page <span class="k">in</span> pages:
+    <span class="c"># ── HTML page chunks ──────────────────────────────────────────</span>
+    <span class="k">for</span> chunk <span class="k">in</span> <span class="f">chunk_text</span>(page[<span class="s">&quot;text&quot;</span>]):
+        all_chunks.<span class="f">append</span>({
+            <span class="s">&quot;url&quot;</span>:    page[<span class="s">&quot;url&quot;</span>],
+            <span class="s">&quot;source&quot;</span>: <span class="s">&quot;html&quot;</span>,
+            <span class="s">&quot;text&quot;</span>:   chunk
+        })
+        html_chunks += <span class="n">1</span>
+
+    <span class="c"># ── PDF chunks (nested under their source page) ───────────────</span>
+    <span class="k">for</span> pdf <span class="k">in</span> page.<span class="f">get</span>(<span class="s">&quot;pdfs&quot;</span>, []):
+        <span class="k">for</span> chunk <span class="k">in</span> <span class="f">chunk_text</span>(pdf[<span class="s">&quot;text&quot;</span>]):
+            all_chunks.<span class="f">append</span>({
+                <span class="s">&quot;url&quot;</span>:        pdf[<span class="s">&quot;url&quot;</span>],       <span class="c"># direct PDF URL for citation</span>
+                <span class="s">&quot;source_page&quot;</span>: page[<span class="s">&quot;url&quot;</span>],     <span class="c"># page the PDF was linked from</span>
+                <span class="s">&quot;source&quot;</span>:     <span class="s">&quot;pdf&quot;</span>,
+                <span class="s">&quot;text&quot;</span>:       chunk
+            })
+            pdf_chunks += <span class="n">1</span>
+
+<span class="k">with</span> <span class="f">open</span>(<span class="s">&quot;chunks.json&quot;</span>, <span class="s">&quot;w&quot;</span>) <span class="k">as</span> f:
+    json.<span class="f">dump</span>(all_chunks, f, indent=<span class="n">2</span>)
+
+<span class="f">print</span>(<span class="s">f&quot;✅ Total chunks : {len(all_chunks)}&quot;</span>)
+<span class="f">print</span>(<span class="s">f&quot;   HTML chunks  : {html_chunks}&quot;</span>)
+<span class="f">print</span>(<span class="s">f&quot;   PDF chunks   : {pdf_chunks}&quot;</span>)
+<span class="f">print</span>(<span class="s">f&quot;\n   Sample (HTML):\n{next(c for c in all_chunks if c[&#x27;source&#x27;] == &#x27;html&#x27;)[&#x27;text&#x27;][:300]}&quot;</span>)
+<span class="k">if</span> pdf_chunks:
+    <span class="f">print</span>(<span class="s">f&quot;\n   Sample (PDF):\n{next(c for c in all_chunks if c[&#x27;source&#x27;] == &#x27;pdf&#x27;)[&#x27;text&#x27;][:300]}&quot;</span>)</code></pre></figure>
+      <figure class="md-code"><figcaption><span class="fence">```text</span> output</figcaption><pre><code>✅ Total chunks : 3329
+   HTML chunks  : 1412
+   PDF chunks   : 1917
+
+   Sample (HTML):
+Big Data, Bigger Demands &amp; Growth Done The PVREA Way Skip to Main Content Home ▸ The Co-op ▸ All News April 30, 2026 Big Data, Bigger Demands &amp; Growth Done The PVREA Way PVREA News Big Data, Bigger Demands Many companies are choosing areas served by electric cooperatives for their data centers becau
+
+   Sample (PDF):
+Sales Tax Exempt Certificate Electricity &amp; Gas for Industrial Use Note: If your company is 75% or more exempt from sales taxes, file this form with your utility company. The utility company will cease charging state and RTD/CD sales taxes and state collected local taxes. If your business is less tha</code></pre></figure>
+      <p>That's 3,329 chunks in total: 1,412 from web pages and 1,917 from PDFs. The PDFs, which are only 73 files, produce more searchable text than the 247 pages.</p>
+      <h2><span class="md-mark" aria-hidden="true">## </span>3. Embedding</h2>
+      <p>Next, every chunk becomes a vector. <code>all-MiniLM-L6-v2</code> is a small sentence-transformer model (about 80 MB) that maps a piece of text to 384 numbers, so that chunks with similar meaning end up close together. It runs on the laptop's own hardware. The vectors, the original text and each chunk's URL all go into a persistent ChromaDB collection on disk, so this step only has to run once.</p>
+      <figure class="md-code"><figcaption><span class="fence">```python</span> embed.py</figcaption><pre><code><span class="c"># embed.py</span>
+<span class="k">import</span> json, chromadb
+<span class="k">from</span> sentence_transformers <span class="k">import</span> SentenceTransformer
+
+<span class="c"># Runs entirely on your machine — no server needed</span>
+model = <span class="f">SentenceTransformer</span>(<span class="s">&quot;all-MiniLM-L6-v2&quot;</span>)  <span class="c"># downloads once, ~80MB</span>
+
+chunks = json.<span class="f">load</span>(<span class="f">open</span>(<span class="s">&quot;chunks.json&quot;</span>))
+texts  = [c[<span class="s">&quot;text&quot;</span>] <span class="k">for</span> c <span class="k">in</span> chunks]
+urls   = [c[<span class="s">&quot;url&quot;</span>]  <span class="k">for</span> c <span class="k">in</span> chunks]
+
+<span class="f">print</span>(<span class="s">f&quot;⏳ Embedding {len(texts)} chunks locally...&quot;</span>)
+embeddings = model.<span class="f">encode</span>(texts, show_progress_bar=<span class="k">True</span>).<span class="f">tolist</span>()
+
+db = chromadb.<span class="f">PersistentClient</span>(path=<span class="s">&quot;./chroma_db&quot;</span>)
+collection = db.<span class="f">get_or_create_collection</span>(<span class="s">&quot;company_docs&quot;</span>)
+
+collection.<span class="f">add</span>(
+    documents=texts,
+    embeddings=embeddings,
+    ids=[<span class="s">f&quot;chunk_{i}&quot;</span> <span class="k">for</span> i <span class="k">in</span> <span class="f">range</span>(<span class="f">len</span>(texts))],
+    metadatas=[{<span class="s">&quot;url&quot;</span>: u} <span class="k">for</span> u <span class="k">in</span> urls]
+)
+
+<span class="f">print</span>(<span class="s">f&quot;\n✅ Stored {collection.count()} chunks in ChromaDB&quot;</span>)</code></pre></figure>
+      <figure class="md-code"><figcaption><span class="fence">```text</span> output</figcaption><pre><code>⏳ Embedding 3329 chunks locally...
+
+✅ Stored 3329 chunks in ChromaDB</code></pre></figure>
+      <h2><span class="md-mark" aria-hidden="true">## </span>4. The chatbot</h2>
+      <p>The chatbot is where retrieval meets generation. <code>retrieve</code> embeds the question with the same MiniLM model, then asks ChromaDB for the five nearest chunks. That's the nearest-neighbor search, and it's what decides which parts of the website the model gets to see.</p>
+      <figure class="md-code"><figcaption><span class="fence">```python</span> chatbot.py</figcaption><pre><code><span class="c"># chatbot.py</span>
+<span class="k">import</span> chromadb, requests, json
+<span class="k">from</span> sentence_transformers <span class="k">import</span> SentenceTransformer
+
+<span class="c"># Local embedding model (same one used in embed.py)</span>
+embedder = <span class="f">SentenceTransformer</span>(<span class="s">&quot;all-MiniLM-L6-v2&quot;</span>)
+
+<span class="c"># ChromaDB (local files)</span>
+db = chromadb.<span class="f">PersistentClient</span>(path=<span class="s">&quot;./chroma_db&quot;</span>)
+collection = db.<span class="f">get_collection</span>(<span class="s">&quot;company_docs&quot;</span>)
+
+LM_STUDIO_URL = <span class="s">&quot;http://localhost:1234/v1/chat/completions&quot;</span>
+
+<span class="k">def</span> <span class="f">retrieve</span>(query, top_k=<span class="n">5</span>):
+    embedding = embedder.<span class="f">encode</span>([query]).<span class="f">tolist</span>()
+    results = collection.<span class="f">query</span>(query_embeddings=embedding, n_results=top_k)
+    <span class="k">return</span> results[<span class="s">&quot;documents&quot;</span>][<span class="n">0</span>], results[<span class="s">&quot;metadatas&quot;</span>][<span class="n">0</span>]</code></pre></figure>
+      <p><code>ask</code> joins those five chunks into one context block, caps it at 3,000 characters (about 750 tokens) so it fits comfortably in a small local model, and sends it to LM Studio's OpenAI-compatible endpoint on <code>localhost:1234</code>. The system prompt tells the model to answer only from that context and to say it doesn't know otherwise, and the temperature is set low (0.3) to keep it from getting creative. Every answer is printed with the source URLs it was built from, so you can check it.</p>
+      <figure class="md-code"><figcaption><span class="fence">```python</span> chatbot.py</figcaption><pre><code><span class="k">def</span> <span class="f">ask</span>(query):
+    docs, metas = <span class="f">retrieve</span>(query)
+    context = <span class="s">&quot;\n\n---\n\n&quot;</span>.<span class="f">join</span>(docs)
+    context = context[:<span class="n">3000</span>]  <span class="c"># ← add this — caps context at ~750 tokens</span>
+    sources = <span class="f">list</span>(<span class="f">set</span>(m[<span class="s">&quot;url&quot;</span>] <span class="k">for</span> m <span class="k">in</span> metas))
+
+    payload = {
+        <span class="s">&quot;model&quot;</span>: <span class="s">&quot;local-model&quot;</span>,
+        <span class="s">&quot;temperature&quot;</span>: <span class="n">0.3</span>,
+        <span class="s">&quot;messages&quot;</span>: [
+            {
+                <span class="s">&quot;role&quot;</span>: <span class="s">&quot;system&quot;</span>,
+                <span class="s">&quot;content&quot;</span>: (
+                    <span class="s">&quot;You are a helpful assistant that answers questions about this company &quot;</span>
+                    <span class="s">&quot;using only the context below. If the answer isn&#x27;t in the context, say &quot;</span>
+                    <span class="s">&quot;you don&#x27;t know — do not make anything up.\n\n&quot;</span>
+                    <span class="s">f&quot;CONTEXT:\n{context}&quot;</span>
+                )
+            },
+            {<span class="s">&quot;role&quot;</span>: <span class="s">&quot;user&quot;</span>, <span class="s">&quot;content&quot;</span>: query}
+        ]
+    }
+
+    response = requests.<span class="f">post</span>(LM_STUDIO_URL, json=payload)
+    data = response.<span class="f">json</span>()
+
+    <span class="c"># ── Debug: show raw response if something goes wrong ──</span>
+    <span class="k">if</span> <span class="s">&quot;choices&quot;</span> <span class="k">not</span> <span class="k">in</span> data:
+        <span class="f">print</span>(<span class="s">f&quot;\n⚠️  Unexpected response from LM Studio:&quot;</span>)
+        <span class="f">print</span>(<span class="s">f&quot;   Status code : {response.status_code}&quot;</span>)
+        <span class="f">print</span>(<span class="s">f&quot;   Response    : {data}&quot;</span>)
+        <span class="k">return</span>
+
+    answer = data[<span class="s">&quot;choices&quot;</span>][<span class="n">0</span>][<span class="s">&quot;message&quot;</span>][<span class="s">&quot;content&quot;</span>]
+    <span class="f">print</span>(<span class="s">f&quot;\n🤖 {answer}&quot;</span>)
+    <span class="f">print</span>(<span class="s">f&quot;\n📎 Sources: {&#x27;, &#x27;.join(sources)}\n&quot;</span>)</code></pre></figure>
+      <p>Finally, a simple loop: type a question, get an answer with sources, and type <code>quit</code> to stop. This is the part I turned around and pushed across the table.</p>
+      <figure class="md-code"><figcaption><span class="fence">```python</span> chatbot.py</figcaption><pre><code><span class="c"># --- Main loop ---</span>
+<span class="f">print</span>(<span class="s">&quot;💬 Company Chatbot ready! Type &#x27;quit&#x27; to exit.\n&quot;</span>)
+<span class="k">while</span> <span class="k">True</span>:
+    q = <span class="f">input</span>(<span class="s">&quot;You: &quot;</span>).<span class="f">strip</span>()
+    <span class="k">if</span> q.<span class="f">lower</span>() == <span class="s">&quot;quit&quot;</span>:
+        <span class="k">break</span>
+    <span class="k">if</span> q:
+        <span class="f">ask</span>(q)</code></pre></figure>
+      <!-- TODO(Caleb): a screenshot of the chatbot answering a real question would be great here. -->
+      <h2>Project files</h2>
+      <ul class="files"><li><a href="../assets/projects/rag/rag-demo-notebook.ipynb" download>The full notebook, with outputs</a> <span class="file-meta">IPYNB · 85 KB</span></li></ul>
+      <h2>At a glance</h2>
+      <ul class="glance"><li><strong>What:</strong> A local RAG chatbot over a company website, built as a job-interview demo</li><li><strong>Data:</strong> 247 web pages and 73 PDFs, split into 3,329 chunks</li><li><strong>Tools:</strong> Python, requests, BeautifulSoup, PyMuPDF, sentence-transformers (all-MiniLM-L6-v2), ChromaDB, LM Studio</li><li><strong>Runs:</strong> Entirely on a laptop, apart from the scrape itself</li></ul>
+    </article>
+    <a class="back" href="../index.html#blog"><span aria-hidden="true">←</span> All posts</a>
+  </main>
+  <footer class="site-footer">
+    <div class="foot-links">
+      <a href="mailto:Clebhart2018@gmail.com">Email</a>
+      <a href="https://www.linkedin.com/in/caleb-e-hart" target="_blank" rel="noopener">LinkedIn</a>
+      <a href="https://github.com/DataChart" target="_blank" rel="noopener">GitHub</a>
+    </div>
+    <p class="foot-meta">Hand-written HTML, CSS &amp; a little JS. No frameworks.</p>
+    <div class="foot-right">
+      <span class="updated">Last updated October 2026</span>
+      <button type="button" class="theme-btn" id="theme-btn" aria-label="Switch to light mode">
+        <svg class="icon-sun" aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+        <svg class="icon-moon" aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+      </button>
+    </div>
+  </footer>
+</div>
+<script src="../assets/js/main.js" defer></script>
+</body>
+</html>
