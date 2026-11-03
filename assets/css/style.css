@@ -456,10 +456,10 @@ code, pre { font-family: var(--mono); }
 
 /* Wide posts: code walkthroughs with markdown-style code blocks and split sunset/sunrise views. */
 .post-wide { max-width: 1120px; }
-.post-wide .post-body > p, .post-wide .post-body > h2, .post-wide .hero-pair { max-width: 720px; }
+.post-wide .post-body > p, .post-wide .post-body > h2, .post-wide .post-body > ul, .post-wide .hero-pair { max-width: 720px; }
 .post-wide .post-body h2 { font-size: 24px; font-weight: 500; line-height: 1.3; color: var(--ink); margin-top: 20px; }
 .md-mark { font-family: var(--mono); font-weight: 400; color: var(--muted); }
-.post-wide .post-body p code { font-size: 0.85em; color: var(--ink); background: var(--code-bg); border: 1px solid var(--line); border-radius: 5px; padding: 1px 5px; }
+.post-wide .post-body p code, .post-wide .post-body li code { font-size: 0.85em; color: var(--ink); background: var(--code-bg); border: 1px solid var(--line); border-radius: 5px; padding: 1px 5px; }
 
 .md-code { margin: 0; min-width: 0; border: 1px solid var(--line); border-radius: 12px; background: var(--code-bg); overflow: hidden; }
 .md-code figcaption { display: flex; align-items: center; gap: 8px; padding: 8px 14px; border-bottom: 1px solid var(--line); font-family: var(--mono); font-size: 12px; color: var(--muted); }
