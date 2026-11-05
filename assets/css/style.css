@@ -332,7 +332,7 @@ code, pre { font-family: var(--mono); }
 .cell code { font-size: inherit; color: var(--ink); }
 .out { margin-left: 34px; padding-top: 10px; border-top: 1px solid var(--line); display: flex; flex-direction: column; gap: 8px; }
 .info { display: flex; flex-direction: column; gap: 6px; }
-.info div { display: grid; grid-template-columns: 112px minmax(0, 1fr); gap: 12px; }
+.info div { display: grid; grid-template-columns: 144px minmax(0, 1fr); gap: 12px; }
 .info dt { color: var(--hl-k); white-space: nowrap; }
 .info dt .c { margin-right: 6px; }
 .info dd { color: var(--hl-s); }
