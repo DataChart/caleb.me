@@ -16,7 +16,7 @@ What's next for caleb.me. Check items off as they ship.
 
 Small changes with an outsized effect on how the site comes across to recruiters and hiring managers.
 
-- [ ] **Link preview image.** Add `og:image` (and `twitter:card`) so links shared on LinkedIn, Slack and text show the giraffe and name instead of a blank card. Needs a 1200×630 PNG.
+- [x] **Link preview image.** Add `og:image` (and `twitter:card`) so links shared on LinkedIn, Slack and text show the giraffe and name instead of a blank card. Needs a 1200×630 PNG.
 - [ ] **Canonical URL and custom domain.** Point `caleb.me` (or the chosen domain) at GitHub Pages and add a `<link rel="canonical">`.
 - [ ] **One-line "open to" status** in the side panel (e.g. roles, consulting, speaking) so visitors know what to reach out about.
 - [ ] **Fill the Fine-tuned LLMs tab.** It's a placeholder today. Even one short write-up of a fine-tune (data, base model, eval results) makes the tab worth clicking.
@@ -29,7 +29,7 @@ Small changes with an outsized effect on how the site comes across to recruiters
 
 - [ ] **Speaking and teaching page.** Talks, workshops and classes, with slides or recordings where they exist.
 - [ ] **Case-study format for projects.** Problem, approach, result, with a number wherever possible (time saved, accuracy, users).
-- [ ] **RSS feed** (`feed.xml`) for the blog, and a `sitemap.xml`.
+- [x] **RSS feed** (`feed.xml`) for the blog, and a `sitemap.xml`.
 - [ ] **A 404 page** with the giraffe.
 - [ ] **Refresh the snapshot numbers** in `index.html` for Atlas and the portfolio every month or so (see the README's live data section). Could be automated with a scheduled GitHub Action.
 - [ ] **Privacy-friendly analytics** (e.g. GoatCounter or Plausible) to see which posts and projects people actually open.

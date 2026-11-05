@@ -28,6 +28,10 @@ assets/js/main.js       Tabs, theme toggle and live project data
 assets/js/skills-matrix.js  Skills data and the matrix built from it
 assets/img/             The 16-bit giraffe portraits: sunset for dark mode (also the favicon), sunrise for light mode
 tools/make_giraffe.py   Script that draws the giraffe
+tools/build_seo.py      Regenerates SEO tags, sitemap.xml, feed.xml, llms.txt, llms-full.txt
+robots.txt              Lets search engines and AI crawlers in; points to the sitemap
+humans.txt              Who made the site
+assets/img/og-card.png  1200×630 link-preview image
 ```
 
 ## How the page works
@@ -53,6 +57,16 @@ The HTML holds a snapshot of every figure. If a request fails (for example mid-r
 1. Copy one of the files in `blog/` and rename it with a short slug, e.g. `blog/my-new-post.html`.
 2. Change the `<title>`, the meta description, the tag, the `<h1>`, the "Posted" date under it, the "Originally posted on LinkedIn" link (or delete that box), and the `<article>` body.
 3. Add a card for it to the `<ol class="post-cards">` list in the Blog panel of `index.html`. Give the `<li>` a `data-date="YYYY-MM-DD"` (used for sorting) and a `data-category` matching one of the filter chips (`Projects`, `Work`, `Leadership` or `AI notes`), and put the same date in the card's `<time class="post-date">`. Card order in the file doesn't matter; the Blog tab sorts newest first.
+4. Run `python3 tools/build_seo.py`. It adds the canonical URL, Open Graph, Twitter card and JSON-LD to the new post, and rebuilds `sitemap.xml`, `feed.xml`, `llms.txt` and `llms-full.txt`.
+
+## Search and AI discoverability
+
+- Every page has a `<!-- seo:start -->` block written by `tools/build_seo.py`. Don't edit it by hand; change the script (names, roles, keywords, skills) and rerun it.
+- The home page carries `Person`, `WebSite`, `ProfilePage` and `Blog` structured data. Each post carries `BlogPosting` and `BreadcrumbList`.
+- `llms.txt` (the [llmstxt.org](https://llmstxt.org) format) is a short map of the site for AI assistants; `llms-full.txt` has the full text of every post.
+- **Base URL.** `SITE_URL` in the script is `https://datachart.github.io/caleb.me/`. When a custom domain is set up, change it there, update the `Sitemap:` line in `robots.txt`, and rerun.
+- **robots.txt caveat.** Crawlers only read `robots.txt` at a host's root, so on a GitHub project page (`/caleb.me/`) it isn't picked up. That's fine (GitHub Pages already allows crawling), but it starts working once the site has its own domain.
+- **After deploying**, submit `sitemap.xml` in [Google Search Console](https://search.google.com/search-console) and [Bing Webmaster Tools](https://www.bing.com/webmasters) (Bing also feeds ChatGPT and Copilot search).
 
 ## Regenerate the giraffe
 

@@ -1,0 +1,1695 @@
+# Caleb Hart
+
+> Caleb Hart is a data scientist and data engineer who builds AI, machine learning, RAG and business intelligence solutions in Python, SQL and Power BI, and teaches people how to use AI well.
+
+Roles: Data Scientist, Data Analyst, Data Engineer, AI Solutions Specialist, Business Intelligence Analyst.
+
+Skills: Python, SQL, R and R Shiny, Power BI, SSIS, SSMS, Azure, pandas, Polars, machine learning (XGBoost, LightGBM, random forests), deep learning, reinforcement learning, time series forecasting, NLP and LLM fine-tuning, retrieval-augmented generation (RAG), AI agents and multi-agent orchestration (Claude, ChatGPT, Copilot), data governance, ETL, dashboards, JavaScript, HTML, C#, C++, Git. Works in 13 programming languages.
+
+Also: public speaking coach, programming instructor and AI trainer (trained 60 people at an electric co-op). Data science degree from Oregon Institute of Technology. Based in Colorado, US. Member of Statistics Without Borders, NoCo Cybersecurity and Fort Collins AI Group.
+
+Contact: use the LinkedIn profile or the email link on the home page.
+
+
+---
+
+## The LLM demo that paid dividends
+
+URL: https://datachart.github.io/caleb.me/blog/rag-interview-demo.html  
+Published: 2026-11-03  
+Topic: RAG & Python
+
+The job interview was going really well. I'd been prepared for each question they'd asked.
+
+"What does RAG stand for and how is it used?" The interviewer asked.
+
+I froze for too long, "I'm not sure. It sounds familiar, but it's not coming to me for some reason." I responded, my hands starting to sweat.
+
+"That's okay, you've done really well so far, let's move on." The interviewer turned the page.
+
+"Wait!" I interjected, "what does it stand for?" I asked.
+
+"RAG stands for retrieval augmented generator."
+
+"Oh, right yeah it's used to retrieve document information." I smiled, "are you hoping to develop your own RAG system?" I asked.
+
+The interviewer looked to his right at the man in the suit, the one that didn't speak much. A flicker of a smile passed between them. "Something like that." The interviewer said.
+
+"How familiar with GitHub are you?" The interviewer moved onto the next question and the moment passed.
+
+One week later, I sat down at Rock Bottom Cafe. I gently put my laptop on the table.
+
+"Thanks for agreeing to meet with us again, hopefully it's not too much of an intrusion." The man who had interviewed me said. I knew him by his first name now and, if I were hired, he would be my future boss.
+
+"No worries at all, I'm super excited that you wanted to meet with me again." I smiled. "I noticed that the resume you had at the interview was a little out of date, so I brought an updated version with me today." I pressed the perfectly white paper with dense black text across the table at them.
+
+Neither the interviewer nor the man in the suit looked at it, "I see you brought your laptop along, does that mean you have something to show us?" The interviewer asked, pointing at my densely-stickered laptop.
+
+I looked at my laptop nervously, "yeah, you mentioned you might be developing some RAG systems during the interview, so I brought a demo with me to show you today. It'll just take me a few minutes to get set up." I opened the laptop lid and pulled out my phone and fiddled with it nervously trying to turn on my hotspot.
+
+"So do you follow sports much?" The interviewer asked.
+
+"Not much, I do go to the high school basketball games occasionally."
+
+"Really! Which high school?" The man in the suit asked, suddenly alight with energy and almost startling me out of my chair. It was the only time he'd spoken since introducing himself a week earlier.
+
+"The one right down the street, it's where I graduated from." I clicked run on the Python file already open on my laptop. I sent a silent prayer that there was a buddha out there that could prevent a hastily written Python file from crashing.
+
+"That's where my son goes to school right now, he plays on the basketball team. Number 47?" He grinned at me, waiting for me to come back.
+
+"Yeah I know him, he's on the varsity team isn't he?" I said, much more unsure than I hoped it seemed.
+
+"Yeah!" He beamed at me and the interviewer, overshadowing us with his smile. I smiled back nervously before looking down at the bright green laptop screen. I turned my laptop around to face the two intimidating men.
+
+"I webscraped all 247 public webpages of your website, extracted the text from 73 associated PDFs, and chunked the text into 150-word segments, I used a MiniLM sentence transformer, a ChromaDB embedding layer, KNN to score the chunks based on the supplied prompt, and LM Studio to host a Mistral model as the base." They looked at me like I'd spoken a foreign language. "Try it out." I pushed the laptop towards them.
+
+## ## What was running on that laptop
+
+Behind that demo were four short scripts that run one after the other, top to bottom in a single notebook:
+- scrape.py reads the site map, downloads every allowed page and every PDF those pages link to, and saves the text.
+- chunk.py splits all of that text into overlapping 150-word pieces.
+- embed.py turns each piece into a vector with a small sentence-transformer model and stores it in ChromaDB.
+- chatbot.py takes a question, finds the five closest pieces, and hands them to a local LLM in LM Studio as the only context it may answer from.
+
+Nothing leaves the laptop except the scrape itself. The embedding model, the vector database and the language model all run locally. Here's every script, in order.
+
+## ## 1. Scraping, politely
+
+The first job is getting the website's text without being a nuisance. The settings at the top make the scraper slow and careful on purpose: a random 1 to 3 second pause between requests, a 10-second timeout, a 500 KB cap on pages and a 5 MB cap on PDFs, and an honest User-Agent that says it's a research bot.
+
+```python scrape.py
+
+```
+# scrape.py
+import requests
+import fitz  # pip install pymupdf
+from bs4 import BeautifulSoup
+from urllib.parse import urljoin, urlparse
+from urllib.robotparser import RobotFileParser
+import xml.etree.ElementTree as ET
+import json, time, random, io
+
+BASE_URL    = "https://pvrea.coop"
+SITEMAP_URL = "https://pvrea.coop/sitemap_index.xml"
+
+# ── Safety settings ────────────────────────────────────────────────
+MAX_PAGES        = 300
+MIN_DELAY        = 1.0
+MAX_DELAY        = 3.0
+REQUEST_TIMEOUT  = 10
+MAX_PAGE_SIZE_KB = 500
+MAX_PDF_SIZE_KB  = 5120   # 5 MB cap on PDFs
+BOT_NAME         = "research-bot"
+HEADERS = {
+    "User-Agent": f"Mozilla/5.0 (compatible; {BOT_NAME}/1.0; +local-demo)"
+}
+# ───────────────────────────────────────────────────────────────────
+```
+
+Before fetching anything, it reads the site's robots.txt. If the site asks for a crawl delay, the script raises its own delays to match. is_allowed checks every URL against the rules for both this bot's name and the wildcard *, so a page is only fetched if both say yes.
+
+```python scrape.py
+
+```
+# ── robots.txt ─────────────────────────────────────────────────────
+def load_robots(base_url: str) -> RobotFileParser:
+    """
+    Fetch and parse robots.txt for the target domain.
+    Falls back to a permissive parser if the file is unreachable,
+    but logs a warning so you know enforcement may be incomplete.
+    """
+    rp = RobotFileParser()
+    robots_url = urljoin(base_url, "/robots.txt")
+    print(f"🤖 Fetching robots.txt: {robots_url}")
+    try:
+        r = requests.get(robots_url, headers=HEADERS, timeout=REQUEST_TIMEOUT)
+        if r.status_code == 200:
+            rp.parse(r.text.splitlines())
+
+            # ── Crawl-Delay support ────────────────────────────────
+            # urllib.robotparser exposes crawl_delay() in Python 3.x
+            delay = rp.crawl_delay(BOT_NAME) or rp.crawl_delay("*")
+            if delay:
+                global MIN_DELAY, MAX_DELAY
+                # Honour the site's stated delay; keep our jitter on top
+                MIN_DELAY = max(MIN_DELAY, float(delay))
+                MAX_DELAY = max(MAX_DELAY, float(delay) + 2.0)
+                print(f"   Crawl-Delay: {delay}s detected — adjusting delays")
+
+            print(f"   robots.txt loaded successfully")
+        else:
+            print(f"⚠️  robots.txt returned HTTP {r.status_code} — proceeding permissively")
+    except Exception as e:
+        print(f"⚠️  Could not fetch robots.txt ({e}) — proceeding permissively")
+    return rp
+
+def is_allowed(rp: RobotFileParser, url: str) -> bool:
+    """
+    Return True only if robots.txt permits BOT_NAME (or *) to fetch url.
+    Blocks the URL if the parser has no rules (fetch failed) for safety.
+    """
+    # can_fetch returns True when the parser has no rules, which would
+    # silently allow everything — so we check both bot name and wildcard.
+    return rp.can_fetch(BOT_NAME, url) and rp.can_fetch("*", url)
+# ───────────────────────────────────────────────────────────────────
+```
+
+Rather than crawling links and hoping to find everything, it reads the sitemap. WordPress sites publish a sitemap index that points to more sitemaps (one for posts, one for pages), so the function calls itself on each child sitemap and collects every  URL.
+
+```python scrape.py
+
+```
+def get_urls_from_sitemap(sitemap_url):
+    """
+    Handles both sitemap indexes (which point to more sitemaps)
+    and regular sitemaps (which point to pages).
+    """
+    urls = []
+    try:
+        print(f"📋 Fetching sitemap: {sitemap_url}")
+        r = requests.get(sitemap_url, headers=HEADERS, timeout=REQUEST_TIMEOUT)
+        root = ET.fromstring(r.content)
+
+        tag = root.tag.split("}")[-1] if "}" in root.tag else root.tag
+
+        if tag == "sitemapindex":
+            for sitemap in root.iter("{http://www.sitemaps.org/schemas/sitemap/0.9}loc"):
+                child_urls = get_urls_from_sitemap(sitemap.text.strip())
+                urls.extend(child_urls)
+                time.sleep(random.uniform(MIN_DELAY, MAX_DELAY))
+        else:
+            for loc in root.iter("{http://www.sitemaps.org/schemas/sitemap/0.9}loc"):
+                urls.append(loc.text.strip())
+
+        print(f"   Found {len(urls)} URLs")
+    except Exception as e:
+        print(f"⚠️  Sitemap error: {e}")
+    return urls
+```
+
+scrape_site ties it together. It filters the URL list to the same domain, drops images and other binary files, and removes anything robots.txt blocks. Then it walks the list with a pause before every request, skipping anything that isn't HTML or is too large, and stopping completely if the server ever answers 429 (too many requests). For each page it strips the parts that repeat everywhere (scripts, styles, navigation, headers, footers, sidebars and forms) and keeps the remaining text if there's more than 200 characters of it.
+
+```python scrape.py
+
+```
+def scrape_site(base_url, sitemap_url):
+    # ── Step 1: Load and enforce robots.txt ───────────────────────
+    rp = load_robots(base_url)
+
+    # ── Step 2: Collect URLs from sitemap ─────────────────────────
+    all_urls = get_urls_from_sitemap(sitemap_url)
+
+    # ── Step 3: Filter — same domain, allowed, no binary assets ───
+    filtered = [
+        url for url in all_urls
+        if urlparse(url).netloc == urlparse(base_url).netloc
+        and not any(url.lower().endswith(ext) for ext in
+                    [".pdf", ".jpg", ".jpeg", ".png", ".gif",
+                     ".svg", ".zip", ".mp4", ".mp3", ".css", ".js"])
+        and is_allowed(rp, url)   # ← robots.txt enforcement
+    ]
+
+    blocked = len(all_urls) - len(filtered)
+    if blocked:
+        print(f"🚫 {blocked} URLs removed by robots.txt or asset filter")
+
+    print(f"\n🔗 {len(filtered)} pages to scrape (capped at {MAX_PAGES})\n")
+    filtered = filtered[:MAX_PAGES]
+
+    pages    = []
+    pdf_seen = set()  # global dedup across all pages
+
+    for i, url in enumerate(filtered):
+        try:
+            delay = random.uniform(MIN_DELAY, MAX_DELAY)
+            print(f"⏳ Waiting {delay:.1f}s...")
+            time.sleep(delay)
+
+            response = requests.get(
+                url,
+                headers=HEADERS,
+                timeout=REQUEST_TIMEOUT,
+                stream=True
+            )
+
+            content_type = response.headers.get("Content-Type", "")
+            if "text/html" not in content_type:
+                print(f"⏭️  Skipping non-HTML: {url}")
+                continue
+
+            content_length = int(response.headers.get("Content-Length", 0))
+            if content_length > MAX_PAGE_SIZE_KB * 1024:
+                print(f"⏭️  Skipping oversized page: {url}")
+                continue
+
+            if response.status_code == 429:
+                print("🛑 Rate limited — stopping early")
+                break
+            if response.status_code != 200:
+                print(f"⚠️  HTTP {response.status_code}: {url}")
+                continue
+
+            soup = BeautifulSoup(response.text, "html.parser")
+            for tag in soup(["script", "style", "nav", "footer",
+                             "header", "aside", "form"]):
+                tag.decompose()
+
+            text = soup.get_text(separator=" ", strip=True)
+
+            if len(text) > 200:
+                page_entry = {"url": url, "text": text, "pdfs": []}
+
+                # ── Step 4: Find and extract PDFs linked on this page ──
+                pdf_links = find_pdf_links(soup, url, rp)
+                for pdf_url in pdf_links:
+                    if pdf_url in pdf_seen:
+                        print(f"   ⏭️  PDF already extracted (dedup): {pdf_url}")
+                        continue
+                    pdf_seen.add(pdf_url)
+
+                    time.sleep(random.uniform(MIN_DELAY, MAX_DELAY))
+                    pdf_text = extract_pdf_from_url(pdf_url)
+                    if pdf_text:
+                        page_entry["pdfs"].append({
+                            "url":  pdf_url,
+                            "text": pdf_text
+                        })
+
+                pages.append(page_entry)
+                pdf_count = len(page_entry["pdfs"])
+                pdf_note  = f" + {pdf_count} PDF(s)" if pdf_count else ""
+                print(f"✅ ({i+1}/{len(filtered)}) Scraped: {url}{pdf_note}")
+
+        except requests.exceptions.Timeout:
+            print(f"⏱️  Timeout: {url}")
+        except requests.exceptions.ConnectionError:
+            print(f"🔌 Connection error: {url}")
+        except Exception as e:
+            print(f"⚠️  Error on {url}: {e}")
+
+    return pages
+```
+
+A lot of what a utility actually knows lives in PDFs: forms, rate schedules, reports and handouts. So for every page, find_pdf_links collects the same-domain PDF links that robots.txt allows, and the scraper keeps a global pdf_seen set so a PDF linked from ten pages is only downloaded once.
+
+```python scrape.py
+
+```
+def find_pdf_links(soup: BeautifulSoup, page_url: str, rp: RobotFileParser) -> list[str]:
+    """
+    Return a deduplicated list of absolute PDF URLs found on a page,
+    filtered to the same domain and allowed by robots.txt.
+    """
+    seen = set()
+    pdf_links = []
+    for a in soup.find_all("a", href=True):
+        href = a["href"].strip()
+        if not href.lower().endswith(".pdf"):
+            continue
+        abs_url = urljoin(page_url, href)
+        if urlparse(abs_url).netloc != urlparse(BASE_URL).netloc:
+            continue  # off-domain PDF
+        if abs_url in seen:
+            continue
+        if not is_allowed(rp, abs_url):
+            print(f"   🚫 PDF blocked by robots.txt: {abs_url}")
+            continue
+        seen.add(abs_url)
+        pdf_links.append(abs_url)
+    return pdf_links
+```
+
+extract_pdf_from_url streams each PDF in 8 KB pieces and gives up once it passes the 5 MB cap, checks that the file really starts with the %PDF magic bytes, and pulls the text out with PyMuPDF. If a PDF has fewer than 100 characters of text, it's almost certainly a scanned image, so it's skipped instead of filling the database with noise.
+
+```python scrape.py
+
+```
+# ── PDF ingestion ──────────────────────────────────────────────────
+def extract_pdf_from_url(pdf_url: str) -> str | None:
+    """
+    Download a PDF and extract its text with PyMuPDF.
+    Returns plain text, or None if the PDF is unreachable / too large /
+    appears to be scanned-only (no selectable text).
+    """
+    try:
+        print(f"   📄 Fetching PDF: {pdf_url}")
+        r = requests.get(
+            pdf_url,
+            headers=HEADERS,
+            timeout=REQUEST_TIMEOUT,
+            stream=True
+        )
+        if r.status_code != 200:
+            print(f"   ⚠️  PDF HTTP {r.status_code}: {pdf_url}")
+            return None
+
+        # Size guard — read up to MAX_PDF_SIZE_KB before bailing
+        chunks = []
+        total  = 0
+        for chunk in r.iter_content(chunk_size=8192):
+            total += len(chunk)
+            if total > MAX_PDF_SIZE_KB * 1024:
+                print(f"   ⏭️  PDF too large (>{MAX_PDF_SIZE_KB} KB): {pdf_url}")
+                return None
+            chunks.append(chunk)
+
+        raw = b"".join(chunks)
+
+        # Validate magic bytes — real PDFs start with %PDF
+        if not raw.startswith(b"%PDF"):
+            print(f"   ⏭️  Not a valid PDF (bad magic bytes): {pdf_url}")
+            return None
+
+        doc  = fitz.open(stream=raw, filetype="pdf")
+        text = ""
+        for page in doc:
+            text += page.get_text()
+        doc.close()
+
+        text = text.strip()
+        if len(text) < 100:
+            # Likely a scanned / image-only PDF — skip rather than store noise
+            print(f"   ⏭️  PDF appears to be image-only (no selectable text): {pdf_url}")
+            return None
+
+        print(f"   ✅ PDF extracted ({len(text):,} chars): {pdf_url}")
+        return text
+
+    except Exception as e:
+        print(f"   ⚠️  PDF extraction error on {pdf_url}: {e}")
+        return None
+```
+
+The last few lines run the whole thing and save the result to scraped.json. On the run in the notebook, the sitemaps listed 247 pages, and the scraper came back with all 247 plus 73 PDFs.
+
+```python scrape.py
+
+```
+# ── Run ─────────────────────────────────────────────────────────────
+pages = scrape_site(BASE_URL, SITEMAP_URL)
+
+with open("scraped.json", "w") as f:
+    json.dump(pages, f, indent=2)
+
+total_pdfs = sum(len(p["pdfs"]) for p in pages)
+print(f"\n📄 Done. {len(pages)} pages + {total_pdfs} PDFs saved to scraped.json")
+```
+
+```text output
+
+```
+🤖 Fetching robots.txt: https://pvrea.coop/robots.txt
+   robots.txt loaded successfully
+📋 Fetching sitemap: https://pvrea.coop/sitemap_index.xml
+📋 Fetching sitemap: https://pvrea.coop/post-sitemap.xml
+   Found 154 URLs
+📋 Fetching sitemap: https://pvrea.coop/page-sitemap.xml
+   Found 93 URLs
+   Found 247 URLs
+
+🔗 247 pages to scrape (capped at 300)
+
+⏳ Waiting 2.1s...
+...
+...
+✅ (245/247) Scraped: https://pvrea.coop/outages-safety/
+⏳ Waiting 1.6s...
+✅ (246/247) Scraped: https://pvrea.coop/my-community/
+⏳ Waiting 1.2s...
+✅ (247/247) Scraped: https://pvrea.coop/the-co-op/
+
+📄 Done. 247 pages + 73 PDFs saved to scraped.json
+```
+
+## ## 2. Chunking
+
+A whole web page is too much to hand a language model as context, and too blurry to search well, so the text gets cut into pieces. chunk_text splits on whitespace and takes 150 words at a time, stepping forward 130 words each time so that neighboring chunks share 20 words. That overlap means a sentence that falls on a boundary still shows up whole in one of the two chunks.
+
+Each chunk keeps the URL it came from. PDF chunks point at the PDF itself and also remember the page that linked to it, so an answer can cite the exact document.
+
+```python chunk.py
+
+```
+# chunk.py
+import json
+
+def chunk_text(text, chunk_size=150, overlap=20):
+    words = text.split()
+    chunks, i = [], 0
+    while i < len(words):
+        chunks.append(" ".join(words[i:i+chunk_size]))
+        i += chunk_size - overlap
+    return chunks
+
+pages = json.load(open("scraped.json"))
+all_chunks = []
+html_chunks = 0
+pdf_chunks  = 0
+
+for page in pages:
+    # ── HTML page chunks ──────────────────────────────────────────
+    for chunk in chunk_text(page["text"]):
+        all_chunks.append({
+            "url":    page["url"],
+            "source": "html",
+            "text":   chunk
+        })
+        html_chunks += 1
+
+    # ── PDF chunks (nested under their source page) ───────────────
+    for pdf in page.get("pdfs", []):
+        for chunk in chunk_text(pdf["text"]):
+            all_chunks.append({
+                "url":        pdf["url"],       # direct PDF URL for citation
+                "source_page": page["url"],     # page the PDF was linked from
+                "source":     "pdf",
+                "text":       chunk
+            })
+            pdf_chunks += 1
+
+with open("chunks.json", "w") as f:
+    json.dump(all_chunks, f, indent=2)
+
+print(f"✅ Total chunks : {len(all_chunks)}")
+print(f"   HTML chunks  : {html_chunks}")
+print(f"   PDF chunks   : {pdf_chunks}")
+print(f"\n   Sample (HTML):\n{next(c for c in all_chunks if c['source'] == 'html')['text'][:300]}")
+if pdf_chunks:
+    print(f"\n   Sample (PDF):\n{next(c for c in all_chunks if c['source'] == 'pdf')['text'][:300]}")
+```
+
+```text output
+
+```
+✅ Total chunks : 3329
+   HTML chunks  : 1412
+   PDF chunks   : 1917
+
+   Sample (HTML):
+Big Data, Bigger Demands & Growth Done The PVREA Way Skip to Main Content Home ▸ The Co-op ▸ All News April 30, 2026 Big Data, Bigger Demands & Growth Done The PVREA Way PVREA News Big Data, Bigger Demands Many companies are choosing areas served by electric cooperatives for their data centers becau
+
+   Sample (PDF):
+Sales Tax Exempt Certificate Electricity & Gas for Industrial Use Note: If your company is 75% or more exempt from sales taxes, file this form with your utility company. The utility company will cease charging state and RTD/CD sales taxes and state collected local taxes. If your business is less tha
+```
+
+That's 3,329 chunks in total: 1,412 from web pages and 1,917 from PDFs. The PDFs, which are only 73 files, produce more searchable text than the 247 pages.
+
+## ## 3. Embedding
+
+Next, every chunk becomes a vector. all-MiniLM-L6-v2 is a small sentence-transformer model (about 80 MB) that maps a piece of text to 384 numbers, so that chunks with similar meaning end up close together. It runs on the laptop's own hardware. The vectors, the original text and each chunk's URL all go into a persistent ChromaDB collection on disk, so this step only has to run once.
+
+```python embed.py
+
+```
+# embed.py
+import json, chromadb
+from sentence_transformers import SentenceTransformer
+
+# Runs entirely on your machine — no server needed
+model = SentenceTransformer("all-MiniLM-L6-v2")  # downloads once, ~80MB
+
+chunks = json.load(open("chunks.json"))
+texts  = [c["text"] for c in chunks]
+urls   = [c["url"]  for c in chunks]
+
+print(f"⏳ Embedding {len(texts)} chunks locally...")
+embeddings = model.encode(texts, show_progress_bar=True).tolist()
+
+db = chromadb.PersistentClient(path="./chroma_db")
+collection = db.get_or_create_collection("company_docs")
+
+collection.add(
+    documents=texts,
+    embeddings=embeddings,
+    ids=[f"chunk_{i}" for i in range(len(texts))],
+    metadatas=[{"url": u} for u in urls]
+)
+
+print(f"\n✅ Stored {collection.count()} chunks in ChromaDB")
+```
+
+```text output
+
+```
+⏳ Embedding 3329 chunks locally...
+
+✅ Stored 3329 chunks in ChromaDB
+```
+
+## ## 4. The chatbot
+
+The chatbot is where retrieval meets generation. retrieve embeds the question with the same MiniLM model, then asks ChromaDB for the five nearest chunks. That's the nearest-neighbor search, and it's what decides which parts of the website the model gets to see.
+
+```python chatbot.py
+
+```
+# chatbot.py
+import chromadb, requests, json
+from sentence_transformers import SentenceTransformer
+
+# Local embedding model (same one used in embed.py)
+embedder = SentenceTransformer("all-MiniLM-L6-v2")
+
+# ChromaDB (local files)
+db = chromadb.PersistentClient(path="./chroma_db")
+collection = db.get_collection("company_docs")
+
+LM_STUDIO_URL = "http://localhost:1234/v1/chat/completions"
+
+def retrieve(query, top_k=5):
+    embedding = embedder.encode([query]).tolist()
+    results = collection.query(query_embeddings=embedding, n_results=top_k)
+    return results["documents"][0], results["metadatas"][0]
+```
+
+ask joins those five chunks into one context block, caps it at 3,000 characters (about 750 tokens) so it fits comfortably in a small local model, and sends it to LM Studio's OpenAI-compatible endpoint on localhost:1234. The system prompt tells the model to answer only from that context and to say it doesn't know otherwise, and the temperature is set low (0.3) to keep it from getting creative. Every answer is printed with the source URLs it was built from, so you can check it.
+
+```python chatbot.py
+
+```
+def ask(query):
+    docs, metas = retrieve(query)
+    context = "\n\n---\n\n".join(docs)
+    context = context[:3000]  # ← add this — caps context at ~750 tokens
+    sources = list(set(m["url"] for m in metas))
+
+    payload = {
+        "model": "local-model",
+        "temperature": 0.3,
+        "messages": [
+            {
+                "role": "system",
+                "content": (
+                    "You are a helpful assistant that answers questions about this company "
+                    "using only the context below. If the answer isn't in the context, say "
+                    "you don't know — do not make anything up.\n\n"
+                    f"CONTEXT:\n{context}"
+                )
+            },
+            {"role": "user", "content": query}
+        ]
+    }
+
+    response = requests.post(LM_STUDIO_URL, json=payload)
+    data = response.json()
+
+    # ── Debug: show raw response if something goes wrong ──
+    if "choices" not in data:
+        print(f"\n⚠️  Unexpected response from LM Studio:")
+        print(f"   Status code : {response.status_code}")
+        print(f"   Response    : {data}")
+        return
+
+    answer = data["choices"][0]["message"]["content"]
+    print(f"\n🤖 {answer}")
+    print(f"\n📎 Sources: {', '.join(sources)}\n")
+```
+
+Finally, a simple loop: type a question, get an answer with sources, and type quit to stop. This is the part I turned around and pushed across the table.
+
+```python chatbot.py
+
+```
+# --- Main loop ---
+print("💬 Company Chatbot ready! Type 'quit' to exit.\n")
+while True:
+    q = input("You: ").strip()
+    if q.lower() == "quit":
+        break
+    if q:
+        ask(q)
+```
+
+## Project files
+- The full notebook, with outputs IPYNB · 85 KB
+
+## At a glance
+- What: A local RAG chatbot over a company website, built as a job-interview demo
+- Data: 247 web pages and 73 PDFs, split into 3,329 chunks
+- Tools: Python, requests, BeautifulSoup, PyMuPDF, sentence-transformers (all-MiniLM-L6-v2), ChromaDB, LM Studio
+- Runs: Entirely on a laptop, apart from the scrape itself
+
+
+---
+
+## My time at Poudre Valley REA
+
+URL: https://datachart.github.io/caleb.me/blog/my-time-at-poudre-valley-rea.html  
+Published: 2026-10-29  
+Topic: Work
+
+In May 2026 I joined Poudre Valley REA as an AI & BI Specialist I, on a three-person AI and BI team. The job sits right where my interests meet: data engineering, automation, dashboards and applied AI, plus a lot of teaching.
+
+## Data governance and DataOps
+
+I co-lead enterprise data governance for the team. That means setting standards and auditing everything we own (databases, ETL pipelines, reports, automations, scripts and AI assets) for utilization, performance, lineage and lifecycle management.
+
+I also brought Git and GitHub source control to hundreds of analytics assets and set the DataOps standards around it. In my first six months I contributed more than 100 commits, averaging 32 a week. I wrote 6 operational procedures the department now uses routinely, covering data quality, documentation, source control, lifecycle management and AI readiness.
+
+## Automation and integrations
+
+I architected and delivered 8 end-to-end automation initiatives, from requirements gathering through development, validation and deployment. Together they eliminate more than 200 hours of manual work a year. Four of them are API-driven data integrations that combine ETL, authentication, data modeling and cybersecurity controls to fully automate what used to be manual data entry. Along the way I wrote 13 automation scripts in Python, PowerShell and C# for ETL, APIs, data processing and system automation.
+
+The data underneath is large: multiple datasets over 100 GB and relational environments with more than 500 tables, which I work across for transformation, reporting and performance optimization.
+
+## Dashboards and the cloud
+
+I've delivered more than 35 customized dashboards for business users: over 20 Power BI reports, 11 HTML dashboards and 4 Azure-hosted applications. I also led the move to the cloud for real-time dashboards, Azure applications, machine-learning forecasting and secure cloud data infrastructure.
+
+## AI at work
+
+On the AI side, I develop and maintain RAG systems for enterprise document retrieval and LLM-enabled workflows using OneDrive, SharePoint and Microsoft Copilot. I also led AI training for 60 employees across 9 departments, building role-specific workflows for each group, and effective AI usage went up 300%.
+
+## At a glance
+- Role: AI & BI Specialist I, full-time
+- Where: Poudre Valley REA
+- When: May 2026 to present
+- Tools: Power BI, SQL, Python, PowerShell, C#, Azure, Git and GitHub, Microsoft Copilot
+- Results: 8 automations saving 200+ hours a year; 35+ dashboards; AI training for 60 employees; effective AI usage up 300%
+
+
+---
+
+## My thoughts on Brené Brown's Dare to Lead
+
+URL: https://datachart.github.io/caleb.me/blog/dare-to-lead-thoughts.html  
+Published: 2026-10-27  
+Topic: Leadership & Books
+
+Overall, this is a great read on leadership skills and deconstructing false beliefs about vulnerability, shame, courage, and how your values make you a better leader. There were a few particular topics that really hit home for me.
+
+## Vulnerability
+
+Brené spends a lot of the book discussing how most people have been raised to fear vulnerability. She encourages the audience to fill in the sentence for their household: "Vulnerability is ___." Phrases like "vulnerability is the first step to being betrayed" resonated with a lot of people. I answered with the phrase:
+
+"Vulnerability is the last option once you've tried everything else."
+
+I particularly appreciate her discussion about how engineers often try to engineer their way out of vulnerability with smart apps and message boards. She fights this idea passionately, and it's a sentiment I can agree with. As a Data Scientist, I am well accustomed to taking historical data and trying to draw conclusions from it, vulnerability included. It just doesn't work. There is no way to predict what your loved ones are going to do, and there's no way to escape the vulnerability when you truly love someone.
+
+## Trust is built one marble at a time
+
+Many people only want to be vulnerable with people they trust, but building trust takes being vulnerable. Trust is also built in small doses, not large grand gestures: "one marble at a time," with small doses of vulnerability.
+
+Brené also deconstructs the idea that being vulnerable means oversharing or being brutally honest. She says that leaders do need to open up to their teams, especially about their personal lives, but within reason. It doesn't work just for the sake of being honest or building trust, especially if you try it when things are already escalating. You have to build trust beforehand so that you can depend on it later, not in the heat of the moment when trust is already fractured.
+
+## Rumbling
+
+One practice that really hit home for me is what Brené calls "rumbling." This is an informal meeting style that encourages questions and openness, and thrives on not being over-prepared.
+
+## Courage, armor, and a strong spine
+
+The second section is about having the courage and bravery to lead. Many people hold back the truth because they think it is kind, but Brené argues that holding back the truth is not only unkind, it is bad leadership. Holding back can come in a few ways, including half-truths, talking behind someone's back, or promising to do something and then not doing it.
+
+This is often just a personal defense mechanism to keep yourself from having to be vulnerable, or what Brené calls "armor." She describes it as heavy armor and a weak spine: we defend ourselves from the front with heavy layers of armor so that nothing can hurt us, but eventually something will surprise us and reveal our weak spine. Effective leaders have a strong spine and no armor. After all, leadership is about helping others, not protecting ourselves.
+
+## Living into our values
+
+A big part of the book is living into our values and finding which values make us strong leaders. This heavily resonated with me. As a lifelong introvert, I was prone to thinking that introverts just weren't meant to be strong leaders. I realized just how wrong I was when Brené herself revealed that she is an extreme introvert, more introverted than I consider myself to be.
+
+Brené really disregards the idea that introversion or extroversion has anything to do with being a strong leader at all. Instead, she grounds the discussion in which values you should be leaning into. She identifies faith and courage as her strongest values and leans into them as her foundation as a leader. She is able to use these values to assess where she is strong and where she is weak. Her courage empowers her to speak up when she feels that something is wrong, a powerful trait in a leader. But it is also a weakness, because she can often be distracted by unproductive discussions, since she can't ignore things that she believes are wrong.
+
+## Finding my root value
+
+Brené encourages readers to narrow their values down to just two, which I found particularly challenging. I had to spend a lot of time thinking, mapping out, and discussing my values in order to decide which ones were most important to me.
+
+I easily narrowed my core values down to love, honesty, curiosity, balance, growth, and freedom. However, after nearly a week of thought, writing out lists, posing impossibly difficult questions to myself, and asking friends, family, and colleagues about their values, I landed on the conclusion that I really have only one root value: love.
+- All of my desire for freedom, balance, and growth is rooted in self-love and self-compassion.
+- All of my desire for curiosity and honesty is rooted in my love for my family, my friends, and the world.
+
+I really resonated with a line that I wrote while journaling about the topic:
+
+"In order to do right by the unending love that others have shown me, I must love myself, and I must show the world unconditional compassion that will flow through me."
+
+## Accomplish, acquire, collapse, repeat
+
+Brené ends the book with a very wholehearted plea for her readers to look at their lives and look for what truly makes them happy and joyful. Leaders often push themselves toward things that don't benefit their happiness: "Accomplish, acquire, collapse, repeat." A never-ending checklist of tasks that become meaningless once they're complete.
+
+
+---
+
+## Two skies, one giraffe: a code walkthrough of my pixel-art portrait
+
+URL: https://datachart.github.io/caleb.me/blog/pixel-giraffe-sunrise-sunset.html  
+Published: 2026-10-27  
+Topic: Python & Pixel Art
+
+Sunset · dark mode
+
+Sunrise · light mode
+
+The giraffe in the corner of my homepage isn't a PNG I drew in an image editor. It's a Python script. Every pixel is a number in a 48×48 numpy array, and the script writes it out as an SVG the browser can scale without blurring. When I added a light mode, it felt wrong to show a giraffe at dusk on a bright white page, so I taught the script a second scene: sunrise.
+
+This post walks through the whole script, top to bottom. Most of it is shared between the two versions, since the giraffe itself never changes. Wherever the code does differ, you'll get a split view: sunset on the left, sunrise on the right. The full file is tools/make_giraffe.py if you want to follow along.
+
+## ## 1. The canvas
+
+Everything starts with an empty 48×48 grid of RGB pixels. hexc turns a CSS-style hex color into an RGB tuple, because I think in hex and numpy thinks in integers. ys, xs are coordinate grids, so later I can write a shape as a single vectorized expression instead of a loop.
+
+```python make_giraffe.py
+
+```
+import math, sys
+import numpy as np
+from PIL import Image
+
+N = 48
+H = W = N
+
+def hexc(h):
+    h = h.lstrip('#'); return tuple(int(h[i:i+2], 16) for i in (0, 2, 4))
+
+img = np.zeros((H, W, 3), dtype=np.uint8)
+ys, xs = np.mgrid[0:H, 0:W]
+```
+
+## ## 2. Picking a scene
+
+The script takes an optional second argument. No argument means sunset, which keeps the original command working exactly as before. Then each scene picks its own palette: ten sky bands from top to horizon, three sun colors, two ground colors and a tree color. This little block is the entire personality of each version.
+
+```python make_giraffe.py
+
+```
+SCENE = sys.argv[2] if len(sys.argv) > 2 else 'sunset'
+```
+
+```python Sunset · dark mode
+
+```
+sky = ['#160f2b', '#1d1438', '#261a49', '#33205c', '#46276b',
+       '#5e2e75', '#7c3878', '#a04673', '#c95c62', '#ec8250']
+SUN = ('#ffd27a', '#ffb25c', '#f08a4b')
+GROUND = ('#2b1840', '#1e1233')
+TREE = '#120a22'
+```
+
+```python Sunrise · light mode
+
+```
+sky = ['#6fa8dc', '#82b4e2', '#98c1e8', '#b0cdec', '#cad7ea',
+       '#e3dbe0', '#f4d3c8', '#fbcaa8', '#fed592', '#ffe6a8']
+SUN = ('#fff1b8', '#ffc75e', '#ffa94d')  # core, rim, scanline gaps
+GROUND = ('#a07a4e', '#86643f')          # top edge, below
+TREE = '#4a3426'
+```
+
+Sunset runs from deep indigo down to a hot orange at the horizon. Sunrise flips the temperature: a clear blue up top that warms through lavender and peach into pale gold. The ground and tree go from near-black silhouettes to warm browns, because in morning light you can actually see them.
+
+## ## 3. A dithered sky
+
+Ten flat stripes of color would look like a flag, not a sky. The fix is ordered dithering, the same trick 16-bit consoles used to fake gradients with tiny palettes. A 4×4 Bayer matrix gives every pixel a threshold between 0 and 1. As you move down a band, the fraction f grows, and more pixels cross their threshold and flip to the next color. The result is that checkerboard-y blend you can see between each band.
+
+```python make_giraffe.py
+
+```
+bayer = np.array([[0, 8, 2, 10], [12, 4, 14, 6], [3, 11, 1, 9], [15, 7, 13, 5]]) / 16.0
+band_h = 40 / (len(sky) - 1)
+for y in range(H):
+    for x in range(W):
+        t = min(y, 39.99) / band_h
+        i = int(t); f = t - i
+        j = min(i + 1, len(sky) - 1)
+        c = sky[j] if f > bayer[y % 4, x % 4] else sky[i]
+        img[y, x] = hexc(c)
+```
+
+This loop is identical for both scenes. The only thing that changes is which sky list it reads from, which is exactly why the palette block above carries so much weight.
+
+## ## 4. What fills the sky
+
+Here's the biggest real difference in the code. Sunset gets a scatter of stars, plus one larger star drawn as a little plus sign. Sunrise gets three pixel clouds, each three rows tall (a bright white top, a pink middle and a shadowed underside catching the light), and two birds. Each bird is just three pixels in a V.
+
+```python Sunset · dark mode
+
+```
+# stars
+for (sx, sy, c) in [(4, 3, '#ffffff'), (13, 6, '#cbbdf5'),
+                    (40, 4, '#ffffff'), (45, 10, '#cbbdf5'),
+                    (35, 2, '#cbbdf5'), (8, 12, '#9d8fd0'),
+                    (44, 18, '#9d8fd0'), (2, 20, '#9d8fd0')]:
+    img[sy, sx] = hexc(c)
+# one bigger star
+img[3, 3] = img[3, 5] = img[2, 4] = img[4, 4] = hexc('#8f7fd0')
+```
+
+```python Sunrise · light mode
+
+```
+# pixel clouds catching the first light, and two birds
+for (cx0, cy0, w) in [(3, 7, 9), (30, 4, 11), (38, 15, 7)]:
+    for x in range(cx0, min(cx0 + w, W)):
+        img[cy0 + 1, x] = hexc('#f7e4e6')
+    for x in range(cx0 + 2, min(cx0 + w - 2, W)):
+        img[cy0, x] = hexc('#ffffff')
+    for x in range(cx0 + 1, min(cx0 + w - 1, W)):
+        img[cy0 + 2, x] = hexc('#e9c3c4')
+for (bx, by) in [(39, 23), (43, 21)]:
+    img[by, bx] = img[by, bx + 2] = img[by + 1, bx + 1] = hexc('#3b2a40')
+```
+
+## ## 5. The sun
+
+Both suns are the same circle of radius 6, with a two-tone fill: a bright core and a slightly darker rim. The horizontal "scanline gaps" are a nod to retro synthwave suns. The difference is height. The setting sun sits right on the horizon, and the rising sun has cleared it by two pixels, so the gaps move up with it.
+
+```python Sunset · dark mode
+
+```
+cx, cy, r = 9, 38, 6   # sitting on the horizon
+gaps = (35, 37)
+```
+
+```python Sunrise · light mode
+
+```
+cx, cy, r = 9, 36, 6   # two pixels higher
+gaps = (33, 35)
+```
+
+```python make_giraffe.py
+
+```
+for y in range(H):
+    for x in range(W):
+        d = math.hypot(x - cx, y - cy)
+        if d <= r:
+            c = SUN[0] if d < r - 2 else SUN[1]
+            # retro scanline gaps on the sun
+            if y in gaps:
+                c = SUN[2]
+            img[y, x] = hexc(c)
+```
+
+## ## 6. Ground and acacia tree
+
+The ground is two rows of color with a dotted top edge, so it reads as grass instead of a ruler line. The acacia is a flat-topped canopy on a one-pixel trunk, because a savanna needs an acacia. The shapes are shared, and only the colors come from each scene's palette.
+
+```python make_giraffe.py
+
+```
+# ground
+ground_top = 41
+for y in range(ground_top, H):
+    for x in range(W):
+        img[y, x] = hexc(GROUND[1] if y > ground_top else GROUND[0])
+for gx in range(0, W, 3):
+    img[ground_top - 1, gx] = hexc(GROUND[0])
+
+# acacia tree silhouette (right)
+tree = TREE
+for y in range(31, 34):
+    for x in range(37, 48):
+        if not ((y == 31 and (x < 39 or x > 46)) or (y == 33 and (x < 38))):
+            img[y, x] = hexc(tree)
+for y in range(34, ground_top):
+    img[y, 42] = hexc(tree)
+img[34, 41] = img[35, 41] = img[34, 43] = hexc(tree)
+```
+
+## ## 7. Building the giraffe out of masks
+
+From here on, the code is the same for both versions. The giraffe is built from boolean masks, 48×48 arrays of True and False that say "this pixel belongs to the neck" or "this pixel is an ear". ellipse handles rotated ovals (the head and muzzle are tilted −34° so the giraffe looks down and to the left), and poly borrows Pillow's polygon fill for the neck, skull and mane. The two ossicones (the horns) are just thin rectangles with darker knobs on top.
+
+```python make_giraffe.py
+
+```
+def ellipse(cx, cy, rx, ry, ang):
+    a = math.radians(ang)
+    dx, dy = xs - cx, ys - cy
+    u = dx * math.cos(a) + dy * math.sin(a)
+    v = -dx * math.sin(a) + dy * math.cos(a)
+    return (u / rx) ** 2 + (v / ry) ** 2 <= 1.0
+
+def poly(pts):
+    from PIL import ImageDraw
+    m = Image.new('L', (W, H), 0)
+    ImageDraw.Draw(m).polygon(pts, fill=1)
+    return np.array(m).astype(bool)
+
+neck = poly([(18, 48), (38, 48), (33, 30), (31, 20), (24, 19), (23, 30)])
+head = ellipse(20.5, 16.5, 10, 5.4, -34)
+skull = poly([(23, 9), (30, 11), (33, 21), (25, 22), (21, 14)])
+muzzle = ellipse(13, 22, 4.8, 3.8, -34)
+ear = ellipse(33, 11.5, 3.6, 1.5, -18)
+oss1 = (xs >= 24) & (xs <= 25) & (ys >= 5) & (ys <= 10)
+oss2 = (xs >= 28) & (xs <= 29) & (ys >= 4) & (ys <= 10)
+knob1 = (xs >= 23) & (xs <= 26) & (ys >= 4) & (ys <= 5)
+knob2 = (xs >= 27) & (xs <= 30) & (ys >= 3) & (ys <= 4)
+mane = poly([(31, 19), (34, 19), (38.5, 44), (36, 44)]) & ~neck
+
+face = head | muzzle | skull
+body = neck | face | ear
+horns = oss1 | oss2 | knob1 | knob2
+allm = body | horns | mane
+```
+
+Combining masks with | and & ~ is basically set algebra on pixels. allm ends up as "everything that is giraffe", and the last step uses it to draw the outline.
+
+## ## 8. Palettes and the reticulated pattern
+
+Each part of the giraffe gets a three-step palette: highlight, base and shadow. The pattern on the neck is a Voronoi diagram. I scatter seed points on a jittered grid with a fixed random seed (so the giraffe looks identical on every run), then for each pixel compare the distance to its nearest and second-nearest seed. Where those two are almost equal, you're on a border between cells, and that's a light line. Everywhere else is a dark patch. Real reticulated giraffes look a lot like Voronoi diagrams, which still delights me.
+
+```python make_giraffe.py
+
+```
+TAN = ['#ffe3a6', '#f4bf63', '#cf8f3e']
+PATCH = ['#c46f2c', '#9f5422', '#76391a']
+LINE = ['#fcebc4', '#f6dca8', '#d9b47a']
+MUZ = ['#fbead0', '#e9cfa3', '#c4a374']
+EAR = ['#ffe3a6', '#f4bf63', '#cf8f3e']
+OUT = '#2b140c'
+
+# reticulated pattern via voronoi seeds (neck + back of skull)
+rng = np.random.default_rng(7)
+seeds = []
+for gy in range(8, 50, 5):
+    for gx in range(14, 42, 5):
+        seeds.append((gx + rng.uniform(-1.6, 1.6) + (2.5 if (gy // 5) % 2 else 0), gy + rng.uniform(-1.4, 1.4)))
+seeds = np.array(seeds)
+d = np.sqrt((xs[..., None] - seeds[:, 0]) ** 2 + (ys[..., None] - seeds[:, 1]) ** 2)
+ds = np.sort(d, axis=2)
+is_line = (ds[..., 1] - ds[..., 0]) < 1.25
+```
+
+## ## 9. Shading with one rule
+
+Pixel artists usually light from the upper left, so tone does too. If a pixel's right or bottom neighbor is outside the shape, it's in shadow. If its left or top neighbor is outside, it's in highlight. Otherwise it gets the base color. Checking two pixels to the right gives the shadow a bit more thickness, which makes the neck look round instead of flat.
+
+```python make_giraffe.py
+
+```
+def tone(mask, y, x):
+    # light from upper-left: highlight where left/up is outside, shadow where right/down is outside
+    left = x - 1 < 0 or not mask[y, x - 1]
+    up = y - 1 < 0 or not mask[y - 1, x]
+    r1 = x + 1 >= W or not mask[y, x + 1]
+    r2 = x + 2 >= W or not mask[y, x + 2]
+    dn = y + 1 >= H or not mask[y + 1, x]
+    if r1 or r2 or dn:
+        return 2
+    if left or up:
+        return 0
+    return 1
+```
+
+Then one big loop paints every giraffe pixel, deciding which part it belongs to in priority order: mane, horns, ear, muzzle, patterned neck, then plain face.
+
+```python make_giraffe.py
+
+```
+patterned = (neck | (skull & ~head & ~muzzle))
+for y in range(H):
+    for x in range(W):
+        if not allm[y, x]:
+            continue
+        if mane[y, x]:
+            c = '#6e3416' if (y % 3) else '#8f4a1c'
+        elif horns[y, x]:
+            c = '#3d2012' if (knob1[y, x] or knob2[y, x]) else ('#a8693a' if x in (24, 28) else '#7a4421')
+        elif ear[y, x] and not face[y, x]:
+            c = EAR[tone(ear, y, x)]
+            if 32 <= x <= 35 and y == 11:
+                c = '#e39a7a'  # inner ear
+        elif muzzle[y, x] and not head[y, x] or (muzzle[y, x] and x < 15):
+            c = MUZ[tone(face, y, x)]
+        elif patterned[y, x] and not head[y, x]:
+            t = tone(body, y, x)
+            c = LINE[t] if is_line[y, x] else PATCH[t]
+        else:
+            t = tone(face, y, x)
+            c = TAN[t]
+        img[y, x] = hexc(c)
+```
+
+## ## 10. The details that make it a face
+
+A few hand-placed pixels do a lot of work here: freckle spots on the face, an eye with a white highlight pixel and a lash line above it, a nostril, and a mouth line that dips by one pixel. Then the outline pass walks every giraffe pixel and darkens any pixel that touches the outside. One rule, and suddenly it's a sprite.
+
+```python make_giraffe.py
+
+```
+# small face spots
+for (sx, sy) in [(25, 13), (26, 14), (19, 12), (28, 17), (29, 16), (23, 18)]:
+    if face[sy, sx]:
+        img[sy, sx] = hexc('#b8692a')
+
+# eye with highlight + lash
+img[14, 21] = img[14, 22] = img[15, 21] = img[15, 22] = hexc('#1a0b06')
+img[14, 21] = hexc('#ffffff')
+img[13, 20] = img[13, 21] = img[13, 22] = hexc('#5a2c14')
+# nostril + mouth
+img[21, 11] = hexc('#5a2c14'); img[20, 11] = hexc('#8a5a34')
+for mx in range(11, 16):
+    my = 24 + (1 if mx > 13 else 0)
+    if muzzle[my, mx]:
+        img[my, mx] = hexc('#8a5a34')
+
+# outline: mask pixels touching outside
+for y in range(H):
+    for x in range(W):
+        if not allm[y, x]:
+            continue
+        edge = False
+        for dy, dx in ((0, 1), (0, -1), (1, 0), (-1, 0)):
+            yy, xx = y + dy, x + dx
+            if 0 <= yy < H and 0 <= xx < W and not allm[yy, xx]:
+                edge = True
+        if edge:
+            img[y, x] = hexc(OUT)
+```
+
+## ## 11. From array to SVG
+
+A 48×48 PNG would look blurry when scaled up, so the script writes an SVG instead. Each row is run-length encoded: consecutive pixels of the same color become one rectangle, and all rectangles of one color share a single . That keeps the file to about 40 paths instead of 2,304 squares. shape-rendering="crispEdges" tells the browser not to anti-alias the edges, so the pixels stay sharp at any size.
+
+```python make_giraffe.py
+
+```
+runs = {}
+for y in range(H):
+    x = 0
+    while x < W:
+        c = tuple(img[y, x]); x0 = x
+        while x < W and tuple(img[y, x]) == c:
+            x += 1
+        runs.setdefault(c, []).append(f'M{x0} {y}h{x - x0}v1h-{x - x0}z')
+parts = [f'')
+open(sys.argv[1] + '.svg', 'w').write('\n'.join(parts) + '\n')
+```
+
+The only scene-specific bit here is the accessible title baked into the file:
+
+```svg Sunset · dark mode
+
+```
+<span class="n">16</span>-bit pixel-art portrait of a giraffe at dusk
+```
+
+```svg Sunrise · light mode
+
+```
+<span class="n">16</span>-bit pixel-art portrait of a giraffe at dawn
+```
+
+Running it twice gives both files:
+
+```sh terminal
+
+```
+python3 tools/make_giraffe.py assets/img/giraffe-16bit              # sunset
+python3 tools/make_giraffe.py assets/img/giraffe-16bit-day sunrise  # sunrise
+```
+
+## ## 12. Swapping them on the page
+
+Both images sit in the portrait frame on the homepage, and CSS shows one of them. The rules mirror the ones that already switch the site's colors: an explicit choice from the theme button wins, and otherwise the system setting decides. It doesn't need any JavaScript of its own, so flipping the theme swaps the giraffe instantly.
+
+```html index.html
+
+```
+
+```
+
+```css style.css
+
+```
+.viewfinder .vf-day { display: none; }
+:root[data-theme="light"] .viewfinder .vf-night { display: none; }
+:root[data-theme="light"] .viewfinder img.vf-day { display: block; }
+:root[data-theme="light"] .viewfinder span.vf-day { display: inline; }
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme="dark"]) .viewfinder .vf-night { display: none; }
+  :root:not([data-theme="dark"]) .viewfinder img.vf-day { display: block; }
+```
+
+## ## Why bother?
+
+Honestly? Because it's fun, and because I like that my portrait is something you can read, diff and version-control. Changing the time of day was eight lines of palette and a handful of clouds. Everything else, from the Voronoi spots to the outline pass, came along for free. That's my favorite kind of code: the part that matters is small, and the rest just works.
+
+
+---
+
+## Manager or facilitator? What a LinkedIn course taught me about leading
+
+URL: https://datachart.github.io/caleb.me/blog/facilitation-skills-for-leaders.html  
+Published: 2026-10-03  
+Topic: Leadership
+
+I recently completed LinkedIn's course "Facilitation Skills for Managers and Leaders". As someone who constantly finds myself stepping into leadership roles, its great to take a step away from the keyboard and work on an area where I still have a lot to learn. Real talk: I can debug a pipeline at 2 a.m., but getting a room full of people to agree on one is a whole different skill.
+
+The course emphasized that good leaders need to move between being a manager and being a facilitator. While both roles are important, they serve very different purposes. I'll admit I'd been blurring the two together for years without really noticing.
+
+As a manager, you're focused on outcomes. You establish goals, define priorities, set expectations, track progress, and help your team deliver on their commitments. This is the part most of us are comfortable with, because it's easy to measure.
+
+As a facilitator, you're focused on the process. Your role is to create a safe environment for discussion, encourage participation, recognize the strengths of your team, empower ownership, and help people work together toward a common goal. It's a lot less about you talking and a lot more about everyone else getting a word in.
+
+What resonated with me most is that good leadership requires switching between these two mindsets. First, you help establish where the team is going. Then, you help the team figure out how to get there. The trick is knowing which hat you're wearing at any given moment.
+
+The course also introduced two simple questions that I think every leader should regularly ask themselves:
+- Does everyone understand the goal?
+- Does everyone have the information they need?
+
+They sound almost too simple, right? But when a project goes sideways, one of them is usually a quiet "no."
+
+Another lesson that stood out to me is that good facilitation isn't about having all the answers. It's about listening carefully, asking good questions, connecting people to the resources they need, and helping the team uncover solutions together. Honestly, that one stung a little (in a good way).
+
+Whether you're managing a project, leading a meeting, or guiding a team through change, the best leaders seem to balance structure with flexibility. They know how to resolve conflict, adapt when circumstances change, and avoid the temptation to micromanage. Micromanaging is sneaky, too. It usually starts with good intentions.
+
+As I continue leading teams towards success, I'm going to focus more on finding and creating the conditions that allow others to succeed. In practice that means more questions, more listening, and fewer moments where I just grab the keyboard and fix it myself.
+
+Anyway, that's my big takeaway. What's one leadership lesson keeps surprising you? Let me know on LinkedIn!
+
+
+---
+
+## MIT's report on AI and education, and why it matters beyond the classroom
+
+URL: https://datachart.github.io/caleb.me/blog/mit-report-ai-and-education.html  
+Published: 2026-10-03  
+Topic: AI & Education
+
+I recently read MIT's new report on AI and Education, and it made me happy to see a strong stance being taken in education. Honestly, it was refreshing. So much of the conversation about AI in schools swings between panic and hype, so a thoughtful middle ground was a welcome change. While the report focuses on education, the same discussion needs to be happening everywhere.
+
+AI capabilities have been advancing faster than many of our policies, standards, and regulations. We need clear opinions more than ever from influential institutions like MIT to help guide what changes are needed most. Right now a lot of people, teachers included, are basically making it up as they go.
+
+As someone who works heavily with AI, software development, and data, as well as having gone through my education during the rise of AI. I've seen firsthand how tumultuous this change has been for my professors, peers, and coworkers. I've watched professors rewrite whole syllabi mid-semester, and I've watched classmates quietly wonder whether the skills they were paying to learn would even matter by graduation. That's a lot of uncertainty to carry around. These changes pose important questions about learning, critical thinking, and long-term skill development.
+
+One passage from the report particularly stood out to me:
+
+"A fundamental danger... is that AI can allow students to bypass learning. Equally concerning is that students may internalize a transactional model in which assignments are outputs, teachers are evaluators, peers are optional, and knowledge (or an MIT degree) is an optimizable commodity to be acquired or produced as efficiently as possible."
+
+Read that last bit again. "An optimizable commodity." Oof.
+
+This is a mindset that I have struggled with my entire life. It is almost a natural instinct to try to 'gamify' life and maximize output without taking the time to think critically about what is really important. I'm a data person, so of course I want to measure everything and find the shortest path. But the shortest path to a grade and the shortest path to actually understanding something are rarely the same road.
+
+Students using AI to complete assignments is simply a symptom of the greater problem. The greater risk is that we begin treating learning as a by-product of output, rather than a goal in and of itself. If an assignment can be fully handed off to a chatbot, that tells us something about the assignment, and maybe about what we've been rewarding all along. It is all too easy to turn life into an optimization problem rather than a developmental process. The true value of education, learning, and development has always been building critical thinking, collaboration, communication, creativity, and the ability to find and solve one's own problems.
+
+MIT's report recommends three key areas of focus:
+- Adapt education for an 'AI-aware' world by redesigning assessments and teaching students how to use AI responsibly.
+- Center people, community, and human connection by emphasizing collaboration, mentorship, discussion, and hands-on experiences.
+- Create systems for continuous reflection and improvement since AI technology is evolving too quickly for static policies.
+
+None of these are flashy, and that's kind of the point. They're about people and process, not just about which tool to ban or allow this semester.
+
+I believe these recommendations apply far beyond universities. The same thinking works on a dev team, in a training program, or around the kitchen table. The challenge isn't whether AI will become part of our daily work and learning. It already has. The challenge is ensuring it provides us with its benefits while negating its downsides. AI should make us sharper, not lazier.
+
+We're all figuring this out in real time, so I'd really love to hear how other people are approaching it. I'll leave you with a simple question, how are you going to educate your children on how to use AI?
+
+Read the full report on MIT's website: https://lnkd.in/gY4Q6452
+
+
+---
+
+## Foundation Model Spotlight: why Chronos-2 is still everywhere
+
+URL: https://datachart.github.io/caleb.me/blog/chronos-2-foundation-model-spotlight.html  
+Published: 2026-09-03  
+Topic: Forecasting
+
+💡 Foundational Model Spotlight 💡 Chronos-2 💡
+
+Why is Chronos-2 still being used heavily to create new foundation models?
+
+Most foundation models are quickly surpassed by newer architectures, yet Chronos-2 continues to show up inside state-of-the-art forecasting systems and benchmarking leaders. Seriously, it keeps popping up in papers and leaderboards long after most models from its era got quietly retired. Why tho? Because Chronos-2 solved a fundamental challenge that many forecasting foundation models still struggle with today: learning across multi-variate data, leveraging future-known variables, and generalizing to entirely new forecasting tasks.
+
+Chronos-2 is Amazon's universal time-series foundation model, designed for zero-shot forecasting across univariate, multivariate, and covariate-informed prediction tasks. Built on a transformer architecture inspired by T5, it extends beyond traditional forecasting approaches by 'universally' modeling related signals and external variables to produce probabilistic forecasts that generalize across domains. In plain terms: you hand it a time series it has never seen before, and it gives you back a forecast with uncertainty bands, no retraining required.
+
+At its core, Chronos-2 treats time-series values as tokens, applying language-model-style transformer reasoning to forecasting problems.
+
+```
+For LLMs:    ["The weather tomorrow will be] predicts [sunny.]
+For TSFMs:  [100.1, 102.4, 104.8] predicts [105.9]
+```
+
+Same idea, different vocabulary. Instead of words, the "vocabulary" is numbers, and the model learns what tends to come next.
+
+Its most important architectural innovation is Group Attention, which enables information sharing across related time series, targets, and covariates during inference. Think of it like the model getting to read the whole group chat instead of one person's messages in isolation.
+
+It's second innovation was covariate support. Energy demand is explained by weather forecasts, retail demand is explained by promotions, and cloud computing utilization is explained by holidays. If you've ever built a forecast that fell apart the week of a big sale, you already know why this matters. Chronos-2 natively incorporates both historical and future-known covariates, allowing the model to learn relationships from known future events rather than simply extrapolating patterns from the target variable alone.
+
+Chronos-2 supports an 8,192-step context window and forecasts up to 1,024 future steps, still a competitive feat today. For context, that's more than 22 years of daily data in a single pass.
+
+One of the most underappreciated innovations behind Chronos-2 is its training methodology. High-quality multivariate forecasting datasets are scarce, making it difficult to train a truly general-purpose model. Amazon addressed this by generating large-scale synthetic datasets that impose realistic relationships between targets, covariates, and correlated time series. It's a clever workaround, and honestly one of the parts I'd point anyone to if they want to understand why the model generalizes so well. When you can't find enough good data, sometimes you build it.
+
+The lasting impact of Chronos-2 is not that it was the first forecasting foundation model. It is that it was one of the first to convincingly show that forecasting could move beyond specialized task-specific models and toward truly universal time-series intelligence. That shift is a big deal, and it's why Chronos-2 is still worth knowing about today.
+
+Let me know what you think! Have you tried it on your own data yet?
+
+Chronos-2: https://lnkd.in/gRdGi5sX
+
+ Benchmarks: https://lnkd.in/gw5n87Zd
+
+
+---
+
+## My time as an applied data scientist and professional poker player
+
+URL: https://datachart.github.io/caleb.me/blog/my-time-as-a-poker-data-scientist.html  
+Published: 2026-04-30  
+Topic: Work
+
+From August 2025 to April 2026 I worked independently as an applied data scientist and professional poker player, on-site in Blackhawk, Colorado. Alongside playing, I built a research setup to study the game the way I'd study any decision problem: with simulation, reinforcement learning and careful evaluation.
+
+## The environment
+
+I built a custom reinforcement-learning environment in Python on the OpenAI Gym interface that simulates an agent playing 8-player No-Limit Texas Hold'em. Defining it meant pinning down the game-state observations, the legal action space, the reward function, opponent behavior, betting transitions and terminal conditions.
+
+It's the same kind of work as my Minesweeper agent, just with hidden information and seven opponents.
+
+## Simulation and solvers
+
+On top of the environment I engineered a game-theoretic simulation pipeline that ran 10 million simulated games and generated more than 150 million records, 22 GB in total. I benchmarked tabular counterfactual regret minimization (CFR) against Deep CFR, and trained a PPO actor-critic agent to learn decision policies and approximate equilibrium strategies.
+
+## Measuring it honestly
+
+I evaluated policies with bb/100 win rates and 5 other performance metrics, using bootstrap-derived 95% confidence intervals. The optimized policies generated 5 times the cash returns of a naive baseline, and the deep-learning approach beat tabular CFR by 40% on bb/100.
+
+Finally, I used KPIs from the simulations to train an XGBoost model that forecasts long-term returns. On an external validation dataset it reached 95% forecast accuracy, measured as 1 minus MAPE.
+
+## At a glance
+- Role: Applied Data Scientist and Professional Poker Player, independent
+- Where: Blackhawk, Colorado
+- When: August 2025 to April 2026
+- Methods: Custom OpenAI Gym environment, tabular CFR, Deep CFR, PPO, XGBoost, bootstrap confidence intervals
+- Results: 10M simulated games (22 GB); 5x a naive baseline; Deep beat tabular CFR by 40% on bb/100; 95% forecast accuracy
+
+
+---
+
+## My time at Hart2Chart
+
+URL: https://datachart.github.io/caleb.me/blog/my-time-at-hart2chart.html  
+Published: 2026-04-30  
+Topic: Work
+
+From July 2025 to April 2026 I ran Hart2Chart, my own freelance web development and consulting practice. Clients found me through Fiverr, TaskRabbit, LinkedIn and direct referrals, and I built custom HTML, CSS and JavaScript for them, specializing in data-focused websites, professional portfolios, interactive dashboards and real-time monitoring interfaces.
+
+## How I worked
+
+I ran projects on an accelerated one-week development cycle, with customer meetings twice a week to gather requirements, review progress, fold in feedback and validate the final deliverable. I handled the whole client lifecycle myself: requirements, UI design, development, testing, feedback, revisions, payments and final delivery. I kept a 5-star customer rating throughout.
+
+## What I built
+- 2 professional resume websites and 3 project portfolio websites.
+- 4 interactive financial dashboards that turned financial data into browser-based reports.
+- 2 low-latency, real-time data monitoring dashboards with sub-second refresh and rendering.
+
+## A framework of my own
+
+Building the same pieces for different clients pushed me to make them reusable. I created a source-controlled, open-source HTML dashboard framework with templates, selectors, buttons, charts, UI components and tutorials for building interactive web reports. I later expanded and rebranded it as AtlasHTMLCharts on GitHub.
+
+## At a glance
+- Role: Web Developer and Consultant, self-employed
+- Where: Hart2Chart, remote
+- When: July 2025 to April 2026
+- Tools: HTML, CSS, JavaScript
+- Results: 5-star rating; 11 websites and dashboards delivered; AtlasHTMLCharts framework
+
+
+---
+
+## My time at the Oregon Tech Peer Tutoring Center
+
+URL: https://datachart.github.io/caleb.me/blog/my-time-at-oregon-tech-peer-tutoring-center.html  
+Published: 2025-06-13  
+Topic: Work
+
+From February 2022 to June 2025, alongside my data science degree, I worked as a Public Speaking Tutor at the Peer Tutoring Center at Oregon Institute of Technology.
+
+## What the job was
+
+Each semester I supported up to four classes. Students came to me for three kinds of help: coaching on how they delivered a speech, help drafting the speech itself, and help with speaking anxiety.
+
+## How it went
+
+I kept a 100% satisfaction rate across student feedback and formal evaluations for the whole time I was there.
+
+## What I took from it
+
+I've written more about teaching and leading a room in facilitation skills for leaders.
+
+## At a glance
+- Role: Public Speaking Tutor
+- Where: Peer Tutoring Center, Oregon Institute of Technology
+- When: February 2022 to June 2025
+- Scope: Up to 4 classes per semester
+- Results: 100% satisfaction rate in student feedback and formal evaluations
+
+
+---
+
+## Store sales forecasting with gradient boosting, delivered to your inbox
+
+URL: https://datachart.github.io/caleb.me/blog/store-sales-gradient-boosting.html  
+Published: 2025-06-13  
+Topic: Forecasting
+
+For Regression and Time Series (STAT412, Spring 2025), I built forecasting models for retail store sales. Retail data is high-dimensional in the most annoying way: lots of stores, lots of products, holidays, promotions, and every one of them nudging the numbers.
+
+## Why gradient boosting
+
+I used XGBoost as the main model. Gradient boosting builds a long chain of small decision trees, where each new tree focuses on the mistakes of the ones before it. It handles lots of features and messy interactions well, which is exactly what retail data throws at you.
+
+To keep myself honest, I built dynamic visual dashboards that compared XGBoost against other gradient boosting methods like LightGBM, so it was easy to see where each one did better.
+
+## From model to something people use
+
+Then came the last mile. I automated the evaluation metrics and dashboards so the forecasts were emailed directly to the user. Nobody had to open a notebook or rerun anything. In total, that saved 10 hours of work per week.
+
+## Results
+
+The models achieved high predictive performance for metrics up to one week in advance.
+
+## At a glance
+- Course: STAT412 Regression and Time Series, Oregon Institute of Technology
+- When: Spring 2025
+- Models: XGBoost, compared with LightGBM and other gradient boosting methods
+- Results: Strong forecasts up to 1 week ahead; automated forecast emails saved 10 hours a week
+
+
+---
+
+## Teaching an agent to play Minesweeper
+
+URL: https://datachart.github.io/caleb.me/blog/minesweeper-reinforcement-learning.html  
+Published: 2025-06-09  
+Topic: Reinforcement Learning
+
+For Reinforcement Learning (STAT407, Spring 2025), I built an agent that plays Minesweeper. It's a perfect RL playground. The rules are tiny, the board is a grid, and every click is a decision under uncertainty: reveal a safe square and you learn something, guess wrong and the episode is over.
+
+## Building the environment
+
+I wrote a custom environment with the Gymnasium (OpenAI Gym) API. The board is 9×9 with 20 mines. The agent sees the board as revealed so far, as a 9×9 grid of values between −1 and 1, and its action is simply which tile to click. Episodes are capped at 200 steps so a confused agent can't loop forever.
+
+The rewards do most of the teaching:
+- Win: +50
+- Lose (hit a mine): −10
+- Progress (reveal new safe tiles): +1
+- Guess (click with no information to go on): −0.3
+- No progress (click something already revealed): −0.1
+
+I optimized them for two things at once: win rate, and solving efficiency, meaning clearing the board without wasted moves. The last version of the notebook also adds a fixed-mine mode, which places the mines in the same spots every game so you can check that the agent is really learning before you make the problem harder.
+
+## Three ways to learn
+
+The core agent uses REINFORCE, a Monte Carlo policy gradient method. A small policy network (flatten, two 128-unit layers with ReLU, and a softmax over every tile) outputs a probability for each click. After each game, the returns are discounted (γ = 0.99) and normalized, and the network is nudged toward the clicks that led to good outcomes, using Adam with a 0.001 learning rate. There's no separate value network: it learns directly from how each game turned out.
+
+I compared it against value-based methods, a Deep Q-Network (DQN) and SARSA, both with ε-greedy exploration that starts fully random and decays toward 1%. The question underneath is exploration versus exploitation: how often should the agent try something new to learn, and how often should it cash in on what it already knows? In Minesweeper, too much exploration means clicking mines, and too little means never finding the patterns that make the game solvable.
+
+## Results
+
+The deep reinforcement learning strategies won overall. The models converged after about 900 training episodes, with an average of 27 minutes of compute time.
+
+## Project files
+- Write-up: environment, agent and parameters PDF · 39 KB
+- Notebook v4: Monte Carlo REINFORCE Notebook · 363 KB
+- Notebook v5: SARSA and DQN Notebook · 458 KB
+- Notebook v6: fixed-board environment Notebook · 367 KB
+- Repository GitHub
+
+## At a glance
+- Course: STAT407 Reinforcement Learning, Oregon Institute of Technology
+- When: Spring 2025
+- Methods: Custom Gymnasium environment (9×9, 20 mines); REINFORCE, DQN and SARSA
+- Tools: Python, PyTorch, Gymnasium
+- Results: Deep RL won; converged in about 900 episodes at about 27 minutes of compute on average
+
+
+---
+
+## Forecasting a year of USDA meat and poultry production
+
+URL: https://datachart.github.io/caleb.me/blog/usda-meat-poultry-forecasting.html  
+Published: 2025-03-18  
+Topic: Forecasting
+
+For my Statistical Machine Learning II final project at Oregon Tech (STAT442, Winter 2025), I took on USDA meat and poultry production statistics. It's a great forecasting dataset because it's long and seasonal, and the seasons are correlated across products. Production of one thing moves with the calendar, and often with production of the others.
+
+The goal was simple to say and harder to do: forecast production as far ahead as possible, and figure out which kind of model actually earns its complexity.
+
+## The data
+
+The source is the USDA's historical meat statistics table, which catalogs U.S. meat production by month all the way back to 1921. The variables are beef, veal, pork, lamb and mutton, total red meat, broilers, other chicken, turkey, total poultry, and total red meat and poultry, all in millions of pounds.
+
+Cleaning was its own project. For the first model I cropped the data to January 2001 through December 2024, the span with no missing values. Then I stripped the commas out of every number (an Excel moment), cast everything to numeric, and normalized with a MinMaxScaler so nothing went negative. For the second model I went back further, to 1977, keeping only federally inspected meat so I could use the longest clean history.
+
+## Model one: a variational autoencoder
+
+My first approach was a variational autoencoder (VAE) built in PyTorch. An LSTM encoder squeezes each window of history into a 20-dimensional latent space, and an LSTM decoder turns samples from that space back into the next 12 months of production. The appeal is that a VAE learns the shape of the data and can generate realistic new sequences from it.
+
+It trained for 20 epochs, with the test loss falling from 6.76 to about 2.5. The forecasts captured the broad trends, but they weren't sensitive enough to the month-to-month swings. My honest takeaway from the write-up still stands: VAEs are very finicky, and getting them accurate takes a lot of trial and error.
+
+## Model two: a transformer, plus anomaly detection
+
+So I built a transformer-based forecaster next, trained on the longer 1977–2025 history, along with an anomaly detection pass over the data. Over about two hours of training, the pipeline flagged 1.2% of the data as outliers, and the models produced forecasts up to one year in advance. The transformer improved on the VAE by using the extra history, though there's still accuracy left on the table.
+
+I automated the data pipelines in Python so re-running experiments stayed cheap, which mattered a lot with models this fiddly.
+
+The project poster. Click to open the full-size PDF.
+
+## What I learned
+
+Every meat category is strongly correlated with the others, which makes sense since production follows national trends. The annual peaks and dips are easy to see, and so is the long decline in some categories. Both deep models can forecast a time series, but they're hard to train, tune and understand. Next time I'd spend more time on hyperparameter tuning and compare against simpler baselines.
+
+## Project files
+- Final write-up (VAE predictor) PDF · 924 KB
+- Research poster PDF · 202 KB
+- Slides: anomalies and transformers PDF · 363 KB
+- Repository GitHub
+
+## At a glance
+- Course: STAT442, Oregon Institute of Technology
+- When: Winter 2025
+- Models: Variational autoencoder (LSTM encoder and decoder), transformer-based forecaster
+- Tools: Python, pandas, NumPy, PyTorch, Keras, seaborn, Matplotlib
+- Results: Forecasts up to 1 year ahead; 1.2% of the data flagged as outliers; about 2 hours of training
+
+
+---
+
+## What 2 million RuneScape hiscores say about players
+
+URL: https://datachart.github.io/caleb.me/blog/runescape-hiscores-analysis.html  
+Published: 2024-12-10  
+Topic: Statistics
+
+For Statistical Machine Learning I at Oregon Tech, I got to combine two things I love: statistics and video games. The dataset was the Old School RuneScape (OSRS) hiscores, the public leaderboards that track every player's levels, experience and achievements.
+
+## The data
+
+I started from Luke Arend's open scrape of the top 2 million players on the OSRS hiscores. The raw file is about 1.5 GB: 2,007,339 rows by 198 columns, covering XP, rank and level in every skill, plus scores for clue scrolls, minigames and bosses. After deduplication, 1,999,625 players remained.
+
+I dropped the rank columns, timestamps and usernames, then kept total XP plus every score column. The username was a tough one to drop, because it carries a hidden signal. OSRS has a limited pool of names, so very short ones (the minimum is three characters) tend to belong to old accounts.
+
+## The question
+
+Can you predict a player's total XP from how many times they've killed each in-game boss, even though that data is extremely sparse? Most players have never touched most bosses, so the feature matrix is mostly zeros, and the target is heavily skewed by a few maxed-out accounts.
+
+## The model
+
+I built a scikit-learn pipeline: fill missing kill counts with 0, standardize, keep the k best features (5, 10 or 15) by an F-test, then fit a random forest regressor, with linear regression as a baseline. A grid search tried 216 combinations of tree count, depth, split and leaf sizes, and bootstrapping, with 3-fold cross-validation (648 fits).
+
+The best random forest used 200 trees with a maximum depth of 10 and the 15 best features, and it scored an R² of 0.76 on the held-out test set. In other words, boss kill counts alone explain about three quarters of the variation in total XP. An earlier run with a randomized search landed at 0.70.
+
+## Clustering for storytelling
+
+I also ran an unsupervised clustering analysis with K-means. Clustering doesn't need labels: it groups players who look alike across all those variables. The result was great for visualization and storytelling, because each cluster becomes a kind of player you can describe.
+
+## What I would do next
+- Go back to a full grid search with wider hyperparameter ranges
+- Try gradient boosting, plus Lasso and Ridge regression
+- Use group-based imputation instead of filling with zeros
+- Log-transform the skewed target
+- Engineer features like total boss kills and low-level boss kills
+
+## Project files
+- Final presentation PDF · 1.6 MB
+- Notebook: preparation and exploration PDF · 956 KB
+- Notebook: pipeline and analysis PDF · 221 KB
+- Repository GitHub
+
+## At a glance
+- Course: STAT441 Statistical Machine Learning I, Oregon Institute of Technology
+- When: Notebooks dated December 2024
+- Data: Top 2 million OSRS hiscores (Luke Arend); 2,007,339 × 198 raw
+- Methods: Random forest and linear regression in a scikit-learn pipeline, grid search, K-means clustering
+- Results: R² of 0.76 on the test set; training kept under 2 hours
+
+
+---
+
+## Designing a trading card price scanner
+
+URL: https://datachart.github.io/caleb.me/blog/trading-card-price-scanner.html  
+Published: 2024-12-06  
+Topic: Systems Design
+
+For MIS 312, Intro to System Analysis and Design, Josh Aguayo, Sam Thach and I designed an app to make selling trading cards less painful.
+
+## The problem
+
+If you're selling a stack of cards, you have to find the valuable ones by typing each card's name into an online marketplace, one at a time. It's slow, and it's the main reason individual sellers leave money on the table.
+
+## The idea
+
+A phone app that does it for you: take a picture of a card, a pre-trained machine learning model recognizes it, and the app looks up the card's price on aftermarket sites and shows it to you. We scoped the first version to Pokémon cards, using a large Pokémon card dataset we found on Kaggle.
+
+## The design
+
+Most of the project was the analysis and design work that comes before code:
+- A feasibility study covering technical, economic and operational feasibility
+- A use case diagram: capture image, process image, retrieve price
+- An activity diagram of the whole detection flow, from capture through preprocessing and the model to displaying the price
+- A data flow diagram and an entity-relationship diagram
+- A UML class diagram and a sequence diagram for the recognition system
+
+Our project poster. Click to open the full-size PDF.
+
+The open question we flagged was economic: there's clear demand, but we hadn't worked out how to market the app well enough to cover its costs.
+
+## Project files
+- Project poster PDF · 1.3 MB
+- Repository GitHub
+
+## At a glance
+- Course: MIS 312 Intro to System Analysis and Design, Oregon Institute of Technology
+- Team: Josh Aguayo, Caleb Hart, Sam Thach
+- Deliverables: Feasibility study; use case, activity, data flow, ER, UML class and sequence diagrams
+- Scope: Pokémon cards first, with a Kaggle dataset
+
+
+---
+
+## A writing tracker in R Shiny: 151,170 words in six months
+
+URL: https://datachart.github.io/caleb.me/blog/writing-tracker-shiny-app.html  
+Published: 2024-06-30  
+Topic: R & Dashboards
+
+Outside of data science, I write science fiction. I've written two novels, and the hardest part was never the ideas, it was showing up every day. So I did what a data scientist does: I logged it, and then I built a dashboard for it.
+
+## The data
+
+Every day went into a simple spreadsheet with the date, a daily word count, and how those words split across three kinds of writing: personal writing, outlines and ideas, and the official story. Each day had a goal of 1,000 words. A second sheet rolled everything up by month with a monthly goal.
+
+From January to June 2024 that log covers 150 days and 151,170 words.
+
+Words written Monthly goal
+
+Monthly totals from the app's own data file, January to June 2024.
+
+January was the only month that beat its goal (22,006 words against 20,000). After that I kept raising the bar faster than I could clear it, which is either ambition or a bug in my goal-setting. The best month was April, with 36,311 words, and nearly 17,000 of them went into the official story.
+
+## The app
+
+The dashboard is an R Shiny app with four tabs:
+- Day: a radar chart (fmsb) comparing today against my all-time average and the last 30 days across all three kinds of writing, plus a small summary table.
+- Month: pick a month and a category and get an interactive plotly bar chart of every day, next to the full data table.
+- Year: a grouped bar chart of word count by category for every month, so you can see where the words actually went.
+- Input: a placeholder for logging words straight from the app, which is still on the to-do list.
+
+Under the hood it's tidyverse for the reshaping (a pivot_longer turns the monthly sheet into one row per category), ggplot2 wrapped in plotly for the interactive charts, DT for the tables, and a sandstone theme from shinythemes.
+
+## Project files
+- app.R (the whole Shiny app) GitHub
+- Daily writing log (CSV) GitHub
+- Repository GitHub
+
+## At a glance
+- Type: Personal project
+- When: January to June 2024 of data
+- Tools: R, Shiny, tidyverse, ggplot2, plotly, fmsb, DT, bslib
+- Results: 151,170 words tracked over 150 days
+
+
+---
+
+## Fine-tuning T5 to comment Python code
+
+URL: https://datachart.github.io/caleb.me/blog/code-commenting-llm.html  
+Published: 2024-06-07  
+Topic: NLP
+
+This was a team project with Joshua Aguayo, Parker Pratt and Sam Thach: build a natural language processing tool, take it from proposal to working prototype, and present it at the end of the term.
+
+## Picking the project
+
+We pitched six ideas: image-to-text translation, audio-to-text translation, text-to-text translation, an auto "essay" typer, automatic report documentation, and a code commenter. The translation ideas fell through because none of us spoke another language fluently and good tools already exist. The essay typer raised plagiarism concerns. Report documentation wasn't really an NLP problem.
+
+The code commenter won. It was useful to us as developers, non-proprietary code was easy to find online, and it was an NLP problem in disguise.
+
+## Scope changes
+
+The original plan was to generate a comment for every line of Python using Microsoft's CodeBERT. Partway through, we switched to T5 (building on a CodeT5 fine-tuning notebook for docstrings) and narrowed the scope to function definitions: the app reads a file, finds each function, and writes a docstring above it. We fine-tuned on a 10,000-example Python subset of CodeSearchNet from Hugging Face, in PyTorch, and wrapped it in a tkinter desktop app.
+
+## How well did it work?
+
+Each of us hand-scored over 90 generated comments on a 0–2 scale (0 bad, 1 neutral, 2 good). The team average was 1.43, and my own ratings averaged 1.56. It works best on large volumes of undocumented functions, but it only handles function definitions, and the code has to start out uncommented.
+
+## Lessons learned
+- It was a translation problem the whole time: code in, English out.
+- A lot of this already exists online, so research early.
+- Scope creep is real, and so is scope change.
+- Shared lab hardware cost us a lot of time; we'd skip it next time.
+
+We also estimated what the project would cost as a real engagement: about $6,750 in labor at $50 an hour and $10,300 in equipment, $16,750 in total.
+
+## Project files
+- Final presentation PDF · 225 KB
+- Repository GitHub
+
+## At a glance
+- Team: Joshua Aguayo, Caleb Hart, Parker Pratt, Sam Thach
+- Model: T5 (CodeT5-style docstring fine-tuning), after starting with CodeBERT
+- Data: CodeSearchNet Python, 10,000 examples (Hugging Face)
+- Tools: Python, PyTorch, Hugging Face, tkinter
+- Results: Average comment score of 1.43 out of 2 across 90+ functions
+
+
+---
+
+## Bringing solar light to 24 homes in rural Kenya
+
+URL: https://datachart.github.io/caleb.me/blog/kenya-solar-installation.html  
+Published: 2019-07-31  
+Topic: Engineering & Teaching
+
+From January to July 2019, I worked as an Associate Engineer and Teacher with Windsor FTC Robotics through STEM Education Inc. It's a very different kind of project from the rest of this blog, with no data science involved.
+
+## The solar project
+
+I co-led the full lifecycle of a solar installation project, from start to finish, and together we delivered light to 24 rural homes in Kenya.
+
+## Teaching
+
+Alongside the installation, I taught programming, robotics and engineering concepts to high school classes in rural Kenya. Teaching something forces you to understand it properly.
+
+## At a glance
+- Role: Associate Engineer and Teacher, Windsor FTC Robotics (STEM Education Inc.)
+- When: January to July 2019
+- Where: Rural Kenya
+- Results: Solar light delivered to 24 rural homes; taught programming, robotics and engineering to high school classes
+
+
+---
+
+## My time at Windsor FTC Robotics
+
+URL: https://datachart.github.io/caleb.me/blog/my-time-at-windsor-ftc-robotics.html  
+Published: 2019-07-31  
+Topic: Work
+
+From January to July 2019, I worked as an Associate Engineer and Teacher with Windsor FTC Robotics, through STEM Education Inc.
+
+## Teaching
+
+A big part of the job was teaching. I taught programming, robotics and engineering concepts to high school classes in rural Kenya.
+
+## Engineering
+
+The engineering side was a solar installation project that I co-led through its full lifecycle, from planning to delivering light to 24 rural homes. I wrote that project up on its own in Bringing solar light to 24 homes in rural Kenya.
+
+## What I took from it
+
+## At a glance
+- Role: Associate Engineer and Teacher
+- Where: Windsor FTC Robotics, STEM Education Inc.
+- When: January to July 2019
+- Work: Taught programming, robotics and engineering in rural Kenya; co-led a solar install for 24 homes

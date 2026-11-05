@@ -1,0 +1,12 @@
+/* TEAM */
+Name: Caleb Hart
+Role: Data Scientist, Data Engineer, AI Solutions Specialist
+Site: https://datachart.github.io/caleb.me/
+LinkedIn: https://www.linkedin.com/in/caleb-e-hart
+GitHub: https://github.com/DataChart
+
+/* SITE */
+Standards: HTML5, CSS3, JavaScript
+Components: none (no framework, no build step)
+Fonts: Space Grotesk, JetBrains Mono
+Portrait: 16-bit giraffe drawn in Python (tools/make_giraffe.py)
