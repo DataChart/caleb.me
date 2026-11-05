@@ -12,55 +12,61 @@ const LEVELS = [
 ];
 
 const DATA = {
-  // Manually set: total projects ever delivered (not all are listed as cards).
-  projectsDelivered: 42,
+  // Total projects delivered, worked out from the counts below without double counting:
+  //   230 software projects (the Project management count, see below)
+  // +  18 public speaking engagements and 9 teaching engagements (talks and classes, not software)
+  // = 257. Data engineering, cloud and AI tool counts are not added on top, because those tools
+  //   were used inside the software projects already counted. The "+" carries over from SQL's "50+".
+  projectsDelivered: "257+",
   yearsLeading: 2,
 
   areas: [
     // ---- Left column ----
     { name: "Leadership", column: "left", skills: [
-      { name: "Public speaking",    level: 5, projects: 10 },
-      { name: "Project management", level: 3, projects: 16 },
-      { name: "Teaching",           level: 3, projects: 2 },
-      { name: "Data governance",    level: 3, projects: 1 },
+      { name: "Public speaking",    level: 5, projects: 18 },
+      // Sum of every Software development count below: 50 + 22 + 35 + 10 + 30 + 35 + 12 + 18 + 8 + 7 + 1 + 1 + 1 = 230
+      { name: "Project management", level: 3, projects: "230+" },
+      { name: "Teaching",           level: 3, projects: 9 },
+      { name: "Data governance",    level: 3, projects: 3 },
     ]},
     { name: "Cloud Services", column: "left", skills: [
-      { name: "Azure",        level: 3, projects: 12, certs: 1 },
+      { name: "Azure",        level: 3, projects: 8, certs: 1 },
       { name: "AWS",          level: 1, projects: 0 },
       { name: "Google Cloud", level: 1, projects: 0 },
     ]},
     { name: "Data engineering", column: "left", skills: [
-      { name: "Power BI",        level: 5, projects: 20, certs: 1 },
-      { name: "SSMS",            level: 5, projects: 18 },
-      { name: "SQL",             level: 5, projects: 0, certs: 1 },  // project count not given yet
-      { name: "Pandas",          level: 4, projects: 12, certs: 1 },
-      { name: "SSIS",            level: 3, projects: 15 },
+      { name: "Power BI",        level: 5, projects: 38, certs: 1 },
+      { name: "SSMS",            level: 5, projects: 38 },
+      { name: "Pandas",          level: 4, projects: 21, certs: 1 },
+      { name: "SSIS",            level: 3, projects: 12 },
       { name: "API integration", level: 3, projects: 4 },
-      { name: "ArcGIS",          level: 2, projects: 4 },
-      { name: "Polars",          level: 1, projects: 4 },
+      { name: "ArcGIS",          level: 2, projects: 12 },
+      { name: "Polars",          level: 1, projects: 2 },
     ]},
 
     // ---- Right column ----
     { name: "Applied AI", column: "right", skills: [
       { name: "Claude",              level: 5, projects: 13 },
-      { name: "Copilot",             level: 5, projects: 1 },
-      { name: "Machine learning",    level: 4, projects: 6 },
+      { name: "Copilot",             level: 5, projects: 12 },
+      { name: "Machine learning",    level: 4, projects: 12 },
       { name: "Agent orchestration", level: 3, projects: 4 },
-      { name: "ChatGPT",             level: 2, projects: 12 },
-      { name: "RAG",                 level: 2, projects: 2 },
+      { name: "ChatGPT",             level: 2, projects: 3 },
+      { name: "RAG",                 level: 2, projects: 8 },
     ]},
     { name: "Software development", column: "right", skills: [
+      { name: "SQL",              level: 5, projects: "50+", certs: 1 },
       { name: "Python",           level: 5, projects: 22, certs: 1 },
-      { name: "HTML",             level: 5, projects: 10 },
+      { name: "HTML",             level: 5, projects: 35 },
       { name: "R",                level: 4, projects: 10 },
-      { name: "Git",              level: 4, projects: 0 },
-      { name: "JavaScript",       level: 3, projects: 11 },
-      { name: "C#",               level: 3, projects: 4 },
-      { name: "C++",              level: 2, projects: 11 },
-      { name: "PowerShell(Bash)", level: 2, projects: 0 },
-      { name: "Rust",             level: 1, projects: 0 },
-      { name: "COBOL",            level: 1, projects: 0 },
-      { name: "Java",             level: 1, projects: 0 },
+      { name: "Git",              level: 4, projects: 30 },
+      { name: "JavaScript",       level: 3, projects: 35 },
+      { name: "C#",               level: 3, projects: 12 },
+      { name: "CSS",              level: 2, projects: 18 },
+      { name: "C++",              level: 2, projects: 8 },
+      { name: "PowerShell(Bash)", level: 2, projects: 7 },
+      { name: "Rust",             level: 1, projects: 1 },
+      { name: "COBOL",            level: 1, projects: 1 },
+      { name: "Java",             level: 1, projects: 1 },
     ]},
   ],
 
