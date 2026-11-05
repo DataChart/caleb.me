@@ -12,20 +12,15 @@ const LEVELS = [
 ];
 
 const DATA = {
-  // Total projects delivered, worked out from the counts below without double counting:
-  //   230 software projects (the Project management count, see below)
-  // +  18 public speaking engagements and 9 teaching engagements (talks and classes, not software)
-  // = 257. Data engineering, cloud and AI tool counts are not added on top, because those tools
-  //   were used inside the software projects already counted. The "+" carries over from SQL's "50+".
-  projectsDelivered: "257+",
+  // Manually set: total projects ever delivered (not all are listed as cards).
+  projectsDelivered: 110,
   yearsLeading: 2,
 
   areas: [
     // ---- Left column ----
     { name: "Leadership", column: "left", skills: [
       { name: "Public speaking",    level: 5, projects: 18 },
-      // Sum of every Software development count below: 50 + 22 + 35 + 10 + 30 + 35 + 12 + 18 + 8 + 7 + 1 + 1 + 1 = 230
-      { name: "Project management", level: 3, projects: "230+" },
+      { name: "Project management", level: 3, projects: 40 },
       { name: "Teaching",           level: 3, projects: 9 },
       { name: "Data governance",    level: 3, projects: 3 },
     ]},
