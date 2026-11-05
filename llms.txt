@@ -1,0 +1,48 @@
+# Caleb Hart
+
+> Caleb Hart is a data scientist and data engineer who builds AI, machine learning, RAG and business intelligence solutions in Python, SQL and Power BI, and teaches people how to use AI well.
+
+Roles: Data Scientist, Data Analyst, Data Engineer, AI Solutions Specialist, Business Intelligence Analyst.
+
+Skills: Python, SQL, R and R Shiny, Power BI, SSIS, SSMS, Azure, pandas, Polars, machine learning (XGBoost, LightGBM, random forests), deep learning, reinforcement learning, time series forecasting, NLP and LLM fine-tuning, retrieval-augmented generation (RAG), AI agents and multi-agent orchestration (Claude, ChatGPT, Copilot), data governance, ETL, dashboards, JavaScript, HTML, C#, C++, Git. Works in 13 programming languages.
+
+Also: public speaking coach, programming instructor and AI trainer (trained 60 people at an electric co-op). Data science degree from Oregon Institute of Technology. Based in Colorado, US. Member of Statistics Without Borders, NoCo Cybersecurity and Fort Collins AI Group.
+
+Contact: use the LinkedIn profile or the email link on the home page.
+
+## Profile
+
+- [Home page and skills](https://datachart.github.io/caleb.me/): portfolio, skills matrix, live projects and blog
+- [LinkedIn](https://www.linkedin.com/in/caleb-e-hart): work history
+- [GitHub](https://github.com/DataChart): source code, including this site
+- [Full text for LLMs](https://datachart.github.io/caleb.me/llms-full.txt): every post below as plain text
+
+## Projects
+
+- [Atlas Research Desk](https://datachart.github.io/AtlasResearchDesk/): frontier AI research written and checked by a team of AI agents, every claim traceable to a source; redeploys daily
+- [Agent Stock Portfolio](https://datachart.github.io/AgentStockPortfolio/): a paper-trading stock portfolio run entirely by Claude agents, with a live dashboard; trades every US trading day
+
+## Work experience
+
+- [My time at Poudre Valley REA](https://datachart.github.io/caleb.me/blog/my-time-at-poudre-valley-rea.html): AI and BI at an electric co-op: data governance, source control for hundreds of analytics assets, automation, RAG systems and AI training for 60 people.
+- [My time as an applied data scientist and professional poker player](https://datachart.github.io/caleb.me/blog/my-time-as-a-poker-data-scientist.html): Nine months playing poker professionally and building a reinforcement-learning lab for it: 10 million simulated games, CFR versus Deep CFR, PPO and an XGBoost returns forecast.
+- [My time at Hart2Chart](https://datachart.github.io/caleb.me/blog/my-time-at-hart2chart.html): Running my own web development and consulting practice: one-week delivery cycles, portfolios and dashboards for clients, a 5-star rating, and the framework that became AtlasHTMLCharts.
+- [My time at the Oregon Tech Peer Tutoring Center](https://datachart.github.io/caleb.me/blog/my-time-at-oregon-tech-peer-tutoring-center.html): Three and a half years as a public speaking tutor: speech coaching, drafting and speaking anxiety, for up to four classes a semester.
+- [My time at Windsor FTC Robotics](https://datachart.github.io/caleb.me/blog/my-time-at-windsor-ftc-robotics.html): Six months as an associate engineer and teacher with STEM Education Inc., teaching robotics in rural Kenya and co-leading a solar install.
+
+## Blog posts and case studies
+
+- [The LLM demo that paid dividends](https://datachart.github.io/caleb.me/blog/rag-interview-demo.html): I blanked on what RAG stood for in a job interview, so a week later I showed up with one: a local chatbot over the company's 247 web pages and 73 PDFs. Here's the story and every line of the code.
+- [My thoughts on Brené Brown's Dare to Lead](https://datachart.github.io/caleb.me/blog/dare-to-lead-thoughts.html): Overall, Dare to Lead is a great read on leadership skills and deconstructing false beliefs about vulnerability, shame, courage, and how your values make you a better leader.
+- [Two skies, one giraffe: a code walkthrough of my pixel-art portrait](https://datachart.github.io/caleb.me/blog/pixel-giraffe-sunrise-sunset.html): How a 48×48 numpy array becomes the sunset giraffe in dark mode and the sunrise giraffe in light mode, walked through line by line.
+- [Manager or facilitator? What a LinkedIn course taught me about leading](https://datachart.github.io/caleb.me/blog/facilitation-skills-for-leaders.html): I recently completed LinkedIn's course "Facilitation Skills for Managers and Leaders".
+- [MIT's report on AI and education, and why it matters beyond the classroom](https://datachart.github.io/caleb.me/blog/mit-report-ai-and-education.html): I recently read MIT's new report on AI and Education, and it made me happy to see a strong stance being taken in education.
+- [Foundation Model Spotlight: why Chronos-2 is still everywhere](https://datachart.github.io/caleb.me/blog/chronos-2-foundation-model-spotlight.html): Why is Chronos-2 still being used heavily to create new foundation models?
+- [Store sales forecasting with gradient boosting, delivered to your inbox](https://datachart.github.io/caleb.me/blog/store-sales-gradient-boosting.html): XGBoost on high-dimensional retail data, LightGBM comparisons on a live dashboard, and automated forecast emails that saved 10 hours a week.
+- [Teaching an agent to play Minesweeper](https://datachart.github.io/caleb.me/blog/minesweeper-reinforcement-learning.html): A custom Gymnasium environment, REINFORCE versus DQN and SARSA, and what about 900 training episodes taught me about exploration.
+- [Forecasting a year of USDA meat and poultry production](https://datachart.github.io/caleb.me/blog/usda-meat-poultry-forecasting.html): A VAE and a transformer on decades of seasonal USDA production data, with automated pipelines, outlier detection and an honest look at the results.
+- [What 2 million RuneScape hiscores say about players](https://datachart.github.io/caleb.me/blog/runescape-hiscores-analysis.html): Can boss kill counts predict a player's total XP? Random forests, sparse data, K-means clustering and an R² of 0.76 on Old School RuneScape hiscores.
+- [Designing a trading card price scanner](https://datachart.github.io/caleb.me/blog/trading-card-price-scanner.html): A system analysis and design project for a phone app that recognizes a trading card from a photo and looks up its market price.
+- [A writing tracker in R Shiny: 151,170 words in six months](https://datachart.github.io/caleb.me/blog/writing-tracker-shiny-app.html): The R Shiny dashboard I built to track my daily writing across personal writing, outlines and my novel, with radar charts and monthly goals.
+- [Fine-tuning T5 to comment Python code](https://datachart.github.io/caleb.me/blog/code-commenting-llm.html): A four-person team project: picking from six NLP ideas, switching from CodeBERT to T5 mid-project, and a tkinter app that writes docstrings.
+- [Bringing solar light to 24 homes in rural Kenya](https://datachart.github.io/caleb.me/blog/kenya-solar-installation.html): Co-leading a solar installation from start to finish, and teaching programming and robotics to high school classes in rural Kenya.
