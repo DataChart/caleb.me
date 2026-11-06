@@ -138,10 +138,11 @@ const DATA = {
   ];
   $("sm-kpis").innerHTML = kpis.map(([v, l]) => `<div class="sm-kpi"><b>${esc(v)}</b><span>${esc(l)}</span></div>`).join("");
 
-  // Legend
-  $("sm-legend").innerHTML =
-    `<span class="sm-legend-scale">Hobbyist ${LEVELS.map(l => `<i style="background:${l.color}"></i>`).join("")} Master</span>` +
-    `<span><span class="sm-cert" aria-hidden="true">✓</span> One per certification</span>`;
+  // Hide legend
+   const legend = $("sm-legend");
+   if (legend) {
+     legend.style.display = "none";
+   }
 
   // Fixed two-column layout (set by each area's `column` property)
   const columns = [
@@ -150,8 +151,9 @@ const DATA = {
   ];
 
   const headerHTML = `<div class="sm-head" aria-hidden="true"><span></span>` +
-    LEVELS.map((l, i) => `<span><em data-level="${i}">${l.name}</em></span>`).join("") +
-    `<span><em>Projects</em></span><span></span></div>`;
+  LEVELS.map((l, i) => `<span><em data-level="${i}">${l.name}</em></span>`).join("") +
+  `<span><em>Projects</em></span>` +
+  `<span><em>Certifications</em></span></div>`;
 
   const certHTML = s => {
     const c = certsOf(s);
