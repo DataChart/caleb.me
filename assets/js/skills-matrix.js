@@ -1,6 +1,6 @@
-/* Skills matrix: edit LEVELS and DATA below. The KPIs, legend, table and cards are all generated from them.
-   Certifications: `certs` is a count (1–3) or a list of up to three certificate names, e.g.
-   certs: ["AZ-900", "DP-100"]. Names show as a tooltip on the check marks.
+/* Skills matrix: edit LEVELS and DATA below. The KPIs, table, cards and the Certifications section are all generated from them.
+   Certifications: list each one once in DATA.certifications with the skill names it covers. Each skill gets one
+   check mark per certification that names it (up to three), and the names show as a tooltip on the checks.
    Layout: each area has `column: "left"` or `column: "right"`; areas render top-to-bottom in the order listed. */
 
 const LEVELS = [
@@ -25,14 +25,14 @@ const DATA = {
       { name: "Data governance",    level: 3, projects: 3 },
     ]},
     { name: "Cloud Services", column: "left", skills: [
-      { name: "Azure",        level: 3, projects: 8, certs: 1 },
+      { name: "Azure",        level: 3, projects: 8 },
       { name: "AWS",          level: 1, projects: 0 },
       { name: "Google Cloud", level: 1, projects: 0 },
     ]},
     { name: "Data engineering", column: "left", skills: [
-      { name: "Power BI",        level: 5, projects: 38, certs: 1 },
+      { name: "Power BI",        level: 5, projects: 38 },
       { name: "SSMS",            level: 5, projects: 38 },
-      { name: "Pandas",          level: 4, projects: 21, certs: 1 },
+      { name: "Pandas",          level: 4, projects: 21 },
       { name: "SSIS",            level: 3, projects: 12 },
       { name: "API integration", level: 3, projects: 4 },
       { name: "ArcGIS",          level: 2, projects: 12 },
@@ -49,8 +49,8 @@ const DATA = {
       { name: "RAG",                 level: 2, projects: 8 },
     ]},
     { name: "Software development", column: "right", skills: [
-      { name: "SQL",              level: 5, projects: "50+", certs: 1 },
-      { name: "Python",           level: 5, projects: 22, certs: 1 },
+      { name: "SQL",              level: 5, projects: "50+" },
+      { name: "Python",           level: 5, projects: 22 },
       { name: "HTML",             level: 5, projects: 35 },
       { name: "R",                level: 4, projects: 10 },
       { name: "Git",              level: 4, projects: 30 },
@@ -63,6 +63,19 @@ const DATA = {
       { name: "COBOL",            level: 1, projects: 1 },
       { name: "Java",             level: 1, projects: 1 },
     ]},
+  ],
+
+  // Certifications, shown as check marks on the skills above and as cards in the Certifications section.
+  // `skills` must use names that exactly match skill names above. `issuer`, `year` and `url` are optional.
+  // TODO(Maxwell): replace the bracketed placeholder names with the real certification names.
+  certifications: [
+    { name: "[Azure certification 1]",           skills: ["Azure"] },
+    { name: "[Azure certification 2]",           skills: ["Azure"] },
+    { name: "[Power BI certification]",          skills: ["Power BI"] },
+    { name: "[Pandas certification]",            skills: ["Pandas"] },
+    { name: "[SQL certification]",               skills: ["SQL"] },
+    { name: "[Python certification]",            skills: ["Python"] },
+    { name: "[Machine learning certification]",  skills: ["Machine learning"] },
   ],
 
   // Featured projects. `skills` must use names that exactly match skill names above.
@@ -112,37 +125,30 @@ const DATA = {
   const esc = (s) => String(s).replace(/[&<>"]/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;" }[c]));
   const allSkills = DATA.areas.flatMap(a => a.skills);
   const MAX_CERTS = 3;
-  const certsOf = s => {
-    const c = Array.isArray(s.certs) ? s.certs : Array(Math.max(0, s.certs | 0)).fill("");
-    return c.slice(0, MAX_CERTS);
-  };
+  const CERTS = DATA.certifications || [];
+  const allCertsOf = s => CERTS.filter(c => c.skills.includes(s.name)).map(c => c.name);
+  const certsOf = s => allCertsOf(s).slice(0, MAX_CERTS);
   const skillNames = new Set(allSkills.map(s => s.name));
 
   // Validation (warn only)
   allSkills.forEach(s => {
     if (!(s.level >= 1 && s.level <= 5)) console.warn(`[skills] ${s.name}: level must be 1–5`);
-    const n = Array.isArray(s.certs) ? s.certs.length : (s.certs | 0);
-    if (n > MAX_CERTS) console.warn(`[skills] ${s.name}: at most ${MAX_CERTS} certifications are shown`);
+    if (allCertsOf(s).length > MAX_CERTS) console.warn(`[skills] ${s.name}: at most ${MAX_CERTS} certifications are shown`);
   });
   DATA.areas.forEach(a => {
     if (a.column !== "left" && a.column !== "right") console.warn(`[skills] area "${a.name}": column must be "left" or "right"`);
   });
   DATA.projects.forEach(p => p.skills.forEach(n => { if (!skillNames.has(n)) console.warn(`[skills] "${p.title}" references unknown skill "${n}"`); }));
+  CERTS.forEach(c => c.skills.forEach(n => { if (!skillNames.has(n)) console.warn(`[skills] certification "${c.name}" references unknown skill "${n}"`); }));
 
   // KPIs
   const kpis = [
     [DATA.projectsDelivered, "Projects delivered"],
     [allSkills.length, "Core competencies"],
-    [allSkills.reduce((n, s) => n + certsOf(s).length, 0), "Certifications"],
+    [CERTS.length, "Certifications"],
     [`${DATA.yearsLeading} yrs`, "Leading delivery"],
   ];
   $("sm-kpis").innerHTML = kpis.map(([v, l]) => `<div class="sm-kpi"><b>${esc(v)}</b><span>${esc(l)}</span></div>`).join("");
-
-  // Hide legend
-   const legend = $("sm-legend");
-   if (legend) {
-     legend.style.display = "none";
-   }
 
   // Fixed two-column layout (set by each area's `column` property)
   const columns = [
@@ -151,9 +157,8 @@ const DATA = {
   ];
 
   const headerHTML = `<div class="sm-head" aria-hidden="true"><span></span>` +
-  LEVELS.map((l, i) => `<span><em data-level="${i}">${l.name}</em></span>`).join("") +
-  `<span><em>Projects</em></span>` +
-  `<span><em>Certifications</em></span></div>`;
+    LEVELS.map((l, i) => `<span><em data-level="${i}">${l.name}</em></span>`).join("") +
+    `<span><em>Projects</em></span><span><em>Certifications</em></span></div>`;
 
   const certHTML = s => {
     const c = certsOf(s);
@@ -185,6 +190,19 @@ const DATA = {
       `<div class="sm-outcome">${esc(p.outcome)}</div>` +
       `<div class="sm-skills">${p.skills.map(esc).join(" · ")}</div></div>`
   ).join("");
+
+  // Certifications section (full width, below the skills)
+  const certList = $("cert-list");
+  if (certList) {
+    certList.innerHTML = CERTS.map(c => {
+      const meta = [c.issuer, c.year].filter(Boolean).join(" · ");
+      const title = c.url ? `<a href="${esc(c.url)}" target="_blank" rel="noopener">${esc(c.name)} <span aria-hidden="true">↗</span></a>` : esc(c.name);
+      return `<li class="cert-card"><span class="cert-check" aria-hidden="true">✓</span>` +
+        `<div><div class="cert-name">${title}</div>` +
+        (meta ? `<div class="cert-meta">${esc(meta)}</div>` : "") +
+        `<div class="cert-skills">${c.skills.map(esc).join(" · ")}</div></div></li>`;
+    }).join("");
+  }
 
   // ---- Two-way linking ----
   const root = document.querySelector(".sm");
