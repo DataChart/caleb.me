@@ -139,6 +139,140 @@ The archive, the rejected posts, the cycle reviews and the metrics all stay onli
 
 ---
 
+## Turning my old mining rig into a local LLM server
+
+URL: https://datachart.github.io/caleb.me/blog/mining-rig-local-llm-server.html  
+Published: 2026-11-10  
+Topic: Local LLMs
+
+I had four RTX 4070s sitting in a mining rig that wasn't mining anymore. I could have sold the cards. Instead I asked a more fun question: how close can I get to a Claude Code style coding agent that runs entirely on hardware I own, with no API bill and no code leaving the house?
+
+This post is the plan, the software map I landed on, and the reasoning behind it. The build is still in progress, so treat every speed and memory number here as an estimate until I've measured it on the rig itself.
+
+## What I started with
+- GPUs: 4 × NVIDIA RTX 4070, 12 GB each, no NVLink
+- CPU and memory: Intel i5-14400F, 32 GB RAM
+- Storage: 2 TB SSD
+- OS: Windows 11
+
+On paper that's 48 GB of VRAM, which sounds like plenty. The catch is that four 12 GB cards don't behave like one 48 GB card. Every time a model is split across two cards, data has to cross the PCIe bus between them, and there's no NVLink to speed that up.
+
+That's where the mining history matters. Mining barely uses PCIe, so mining boards often run cards on x1 risers and nobody notices. Language models are the opposite: split one across a card on an x1 link and the whole thing slows to that link's pace. So the very first item on my list isn't installing anything. It's reading the motherboard manual and running nvidia-smi topo -m to find out what each slot actually negotiates.
+
+## The software map
+
+Here's the whole stack on one page. A request starts at the top, in my editor or terminal, and works its way down to the GPUs. The last row runs alongside everything and watches it.
+
+Interface
+- VS CodeOn Windows 11, frontend only
+- OpenCodeDaily-driver terminal agent
+- AiderFallback for edit-and-commit work
+
+Orchestration
+- LangGraphPlanner → executor → reviewer graph
+- PrefectSchedules, retries, run history
+- Git worktreesOne branch per agent
+- asyncio semaphores1 main slot, 2 fast slots
+
+Harness & tools
+- Python harnessTool registry, exact-match patches, permission policy
+- MCP serversFiles locked to one worktree, read-only Git
+- Docker sandboxNon-root, read-only, network off
+
+Gateway
+- LiteLLM proxy :4000One OpenAI-style API with three aliases: local-coder, local-fast, local-reviewer
+
+Inference
+- llama-server :8001Qwen3-Coder-30B-A3B, Q4_K_M. The main coder.
+- llama-server :8002gpt-oss-20b, MXFP4. Planner, reviewer, summaries.
+
+Hardware
+- GPU 0 + GPU 12 × RTX 4070, 24 GB together
+- GPU 2 + GPU 32 × RTX 4070, 24 GB together
+- Hosti5-14400F, 32 GB RAM, 2 TB SSD, WSL2 Ubuntu 24.04
+
+Watching every layer
+- OpenTelemetrySpans from the harness
+- LangfusePrompt and tool traces
+- Prometheus + DCGMGateway and GPU metrics
+- GrafanaDashboards
+
+Two model servers, one gateway, and a harness that does the actual agent work. Everything runs inside WSL2 except the editor.
+
+## Why WSL2 and not Windows or dual boot
+
+I went back and forth on this one. Windows-native is comfortable, but most inference servers, sandboxes, GPU exporters and MCP servers are built for Linux first. Dual booting Ubuntu would be the fastest option, but then I can't use Windows and Linux at the same time, and that gets old fast on a daily driver.
+
+WSL2 with Ubuntu 24.04 is the compromise: real Linux CUDA, Docker and shell tools, with VS Code on the Windows side. The one rule I'm holding myself to is to keep repositories inside the WSL disk (/home/caleb/src) and never run agent-heavy work from /mnt/c, where file access is much slower. If WSL benchmarks badly, dual boot is the fallback.
+
+## Two models, two GPUs each
+
+The tempting move is to spread one big model across all four cards. I decided against it. With no NVLink and unknown slot widths, a four-way split puts the most traffic on the weakest part of the system, and it leaves nothing free for a second agent.
+
+Instead the rig runs two independent servers, each on its own pair of cards:
+- GPUs 0 and 1: Qwen3-Coder-30B-A3B-Instruct, the main coder. It's a mixture-of-experts model with 30.5B parameters but only 3.3B active per token, which is what makes it practical here. At Q4_K_M with a 64K context, I expect it to need about 20 to 23 GB.
+- GPUs 2 and 3: gpt-oss-20b, the fast model for planning, review, summaries and subagents. It's also mixture-of-experts, with 21B total and 3.6B active.
+
+That split gives me real concurrency (the coder and the reviewer can work at the same time), predictable routing, and failure isolation: if one server falls over, the other keeps going. Both run on llama.cpp's llama-server, splitting layers across the pair instead of tensors, which is the safer choice when PCIe is the bottleneck. vLLM and SGLang are on the list to benchmark later. I'm starting at 32K context and only moving to 64K once it survives repeated requests without running out of memory.
+
+## One gateway in front of everything
+
+LiteLLM sits on port 4000 in front of both servers and gives every tool the same OpenAI-style API. Clients ask for local-coder, local-fast or local-reviewer and never need to know which port or GPU is behind the name. It also gives me rate limits, retries and Prometheus metrics for free.
+
+One thing I'm deliberately not counting on: Claude-specific features. Prompt caching, extended thinking and Anthropic's exact streaming events don't exist on a local server, and clients that assume a 200K context will happily overrun a local KV cache. So the OpenAI-style chat endpoint is the source of truth, and anything fancier has to pass tool-call tests first.
+
+## The agent itself
+
+OpenCode is the daily driver. It's terminal-first, works with any OpenAI-style endpoint, and reads an AGENTS.md file for project instructions (I symlink it to CLAUDE.md so both kinds of tools find it). Aider is the fallback for straightforward edit-and-commit work.
+
+Alongside it, I'm writing my own small Python harness. That's the part I'm most excited about, because it's where I get to decide how the agent behaves: a typed tool registry, exact-match patching instead of whole-file rewrites, commands passed as argument lists instead of shell strings, history compaction, and a hard cap of 40 steps before it has to stop and hand back.
+
+For bigger jobs, LangGraph runs a planner, executor and reviewer loop: the fast model plans, the coder does the work, tests run, the fast model reviews, the coder repairs, and then I approve before anything is committed. Each agent gets its own Git worktree, and Prefect handles scheduled jobs. Semaphores keep it honest about the hardware: one request at a time on the main model, two on the fast one.
+
+## Security is code, not a prompt
+
+This is the rule I care about most. An agent's permissions should be enforced by code it can't talk its way around, not by a paragraph in its instructions.
+- Commands run in a non-root Docker container with a read-only filesystem, no network, all capabilities dropped and limits on CPU, memory and processes.
+- Reading files, git status and running tests are auto-approved. Installing packages, fetching from the network and deleting files need my confirmation. git push always does.
+- Anything outside the worktree, .env files, SSH keys and the Docker socket are blocked outright.
+- MCP servers are scoped down: the filesystem server sees one worktree, and the Git server has no push credentials.
+- Fetched web content is never promoted to a system message, and gitleaks runs before every commit.
+
+## Measuring it honestly
+
+I don't want to judge this by vibes, so the plan includes a small private test suite: a bug fix that needs tests, a refactor across four to six files, and a test-writing task with a subtle edge case. Each one runs five times, and I'll track pass rate, wall-clock time, tool-call parse failures, unrelated files changed, and peak VRAM and energy per successful task. Public benchmarks like SWE-bench Verified are useful reference points, but the numbers only compare when the scaffold, prompt, quantization and context all match.
+
+## What I don't expect it to do
+
+I want to be upfront about this. A 30B open model on consumer cards is not a frontier model, and it won't be Claude Code. I expect it to be weaker at finding the right abstraction in big repositories, less reliable over 30 to 50 tool calls, and more easily misled by a bad test. The mitigations are mostly about keeping each agent's job small: one narrow goal per executor, tests after every meaningful edit, reviewers that see the diff and the test output rather than the whole transcript, and a re-plan after two failed test runs.
+
+The hardware has limits too. 32 GB of system RAM is marginal for two model servers plus Docker and builds, so 64 GB is the first upgrade. Four 4070s can pull around 800 W together, so I'm starting with conservative power limits and watching temperatures before anything runs unattended. A mining frame is built for several cards running flat out with plenty of airflow between them, which is one thing the rig's old life has going for it.
+
+## The build plan
+
+I split the work into nine weekly phases, each with a concrete "done" test:
+- Hardware and WSL baseline. All four GPUs visible, link widths recorded, 30 minutes of stable CUDA load.
+- llama.cpp and the coder. At least 18 of 20 tool calls parse, and no out-of-memory errors over 30 requests.
+- Second model and gateway. Both models answer at the same time and route correctly.
+- Daily-driver CLI. One real bug fixed with a reviewable diff.
+- Sandbox and policy. No network by default, no path escapes, security tests pass.
+- Custom harness. Plan mode writes nothing, and loops always terminate.
+- Multi-agent worktrees. Two branches run safely with only one main-model request active.
+- Scheduling and MCP. Schedules never push on their own.
+- Observability and evaluation. One measured, pinned configuration chosen.
+
+The full implementation guide, with every config file and launch script, is in the repository linked above. I'll write a follow-up once the rig has real numbers to report.
+
+## At a glance
+- Goal: A fully local, Claude Code style coding agent with multi-agent orchestration, scheduling, MCP, sandboxing and observability
+- Hardware: A retired mining rig with 4 × RTX 4070 (12 GB each), i5-14400F, 32 GB RAM
+- Models: Qwen3-Coder-30B-A3B-Instruct (main coder) and gpt-oss-20b (planner and reviewer)
+- Tools: WSL2 Ubuntu 24.04, llama.cpp, LiteLLM, OpenCode, Aider, LangGraph, Prefect, Docker, MCP, OpenTelemetry, Prometheus, Grafana
+- Status: Plan and guide finished; build in progress
+
+
+---
+
 ## The LLM demo that paid dividends
 
 URL: https://datachart.github.io/caleb.me/blog/rag-interview-demo.html  
