@@ -66,16 +66,24 @@ const DATA = {
   ],
 
   // Certifications, shown as check marks on the skills above and as cards in the Certifications section.
-  // `skills` must use names that exactly match skill names above. `issuer`, `year` and `url` are optional.
-  // TODO(Maxwell): replace the bracketed placeholder names with the real certification names.
+  // `skills` must use names that exactly match skill names above (or be empty). `issuer`, `issued`, `expires`,
+  // `credentialId` and `url` are optional.
+  // `issued` and `expires` are display text such as "Nov 2026". Newest first.
   certifications: [
-    { name: "[Azure certification 1]",           skills: ["Azure"] },
-    { name: "[Azure certification 2]",           skills: ["Azure"] },
-    { name: "[Power BI certification]",          skills: ["Power BI"] },
-    { name: "[Pandas certification]",            skills: ["Pandas"] },
-    { name: "[SQL certification]",               skills: ["SQL"] },
-    { name: "[Python certification]",            skills: ["Python"] },
-    { name: "[Machine learning certification]",  skills: ["Machine learning"] },
+    { name: "Microsoft Certified: Azure AI Fundamentals (AI-900)", issuer: "Microsoft", issued: "Nov 2026",
+      skills: ["Azure", "Machine learning"] },
+    { name: "Microsoft Certified: Azure Fundamentals (AZ-900)", issuer: "Microsoft", issued: "Oct 2026",
+      credentialId: "6BE9B7EF7103213A", skills: ["Azure"] },
+    { name: "Introduction to Cognitive Project Management in AI", issuer: "Project Management Institute", issued: "Sep 2026", expires: "Sep 2029",
+      skills: ["Project management"] },
+    { name: "Facilitation Skills for Managers and Leaders", issuer: "LinkedIn", issued: "Aug 2026", skills: [] },
+    { name: "Advanced SQL", issuer: "Kaggle", issued: "Aug 2026", skills: ["SQL"] },
+    { name: "Irreplaceable: The Art of Standing Out in the Age of AI", issuer: "LinkedIn", issued: "Aug 2026", skills: [] },
+    { name: "Complete Guide to Power BI for Data Analysts by Microsoft Press (2024)", issuer: "LinkedIn", issued: "Aug 2026",
+      skills: ["Power BI"] },
+    { name: "Data Cleaning", issuer: "Kaggle", issued: "Jun 2023", skills: ["Pandas"] },
+    { name: "Pandas", issuer: "Kaggle", issued: "Nov 2021", skills: ["Pandas"] },
+    { name: "Python", issuer: "Kaggle", issued: "Nov 2021", skills: ["Python"] },
   ],
 
   // Featured projects. `skills` must use names that exactly match skill names above.
@@ -195,12 +203,13 @@ const DATA = {
   const certList = $("cert-list");
   if (certList) {
     certList.innerHTML = CERTS.map(c => {
-      const meta = [c.issuer, c.year].filter(Boolean).join(" · ");
+      const meta = [c.issuer, c.issued && `Issued ${c.issued}`, c.expires && `Expires ${c.expires}`,
+        c.credentialId && `ID ${c.credentialId}`].filter(Boolean).join(" · ");
       const title = c.url ? `<a href="${esc(c.url)}" target="_blank" rel="noopener">${esc(c.name)} <span aria-hidden="true">↗</span></a>` : esc(c.name);
       return `<li class="cert-card"><span class="cert-check" aria-hidden="true">✓</span>` +
         `<div><div class="cert-name">${title}</div>` +
         (meta ? `<div class="cert-meta">${esc(meta)}</div>` : "") +
-        `<div class="cert-skills">${c.skills.map(esc).join(" · ")}</div></div></li>`;
+        (c.skills.length ? `<div class="cert-skills">${c.skills.map(esc).join(" · ")}</div>` : "") + `</div></li>`;
     }).join("");
   }
 
