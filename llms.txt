@@ -33,6 +33,7 @@ Contact: use the LinkedIn profile or the email link on the home page.
 ## Blog posts and case studies
 
 - [A month of letting three AI agents run a research desk](https://datachart.github.io/caleb.me/blog/atlas-research-desk-month-of-agents.html): From October 11 to November 7, three Claude agents researched, fact-checked and published 68 posts on frontier AI. What worked, what broke, and what I'd change.
+- [Turning my old mining rig into a local LLM server](https://datachart.github.io/caleb.me/blog/mining-rig-local-llm-server.html): How I'm turning a retired four-GPU mining rig into a fully local, Claude Code style coding agent: the hardware, the software map, and why each piece is there.
 - [The LLM demo that paid dividends](https://datachart.github.io/caleb.me/blog/rag-interview-demo.html): I blanked on what RAG stood for in a job interview, so a week later I showed up with one: a local chatbot over the company's 247 web pages and 73 PDFs. Here's the story and every line of the code.
 - [My thoughts on Brené Brown's Dare to Lead](https://datachart.github.io/caleb.me/blog/dare-to-lead-thoughts.html): Overall, Dare to Lead is a great read on leadership skills and deconstructing false beliefs about vulnerability, shame, courage, and how your values make you a better leader.
 - [Two skies, one giraffe: a code walkthrough of my pixel-art portrait](https://datachart.github.io/caleb.me/blog/pixel-giraffe-sunrise-sunset.html): How a 48×48 numpy array becomes the sunset giraffe in dark mode and the sunrise giraffe in light mode, walked through line by line.

@@ -252,6 +252,12 @@
         },
         {
           "@type": "BlogPosting",
+          "headline": "Turning my old mining rig into a local LLM server",
+          "url": "https://datachart.github.io/caleb.me/blog/mining-rig-local-llm-server.html",
+          "datePublished": "2026-11-10"
+        },
+        {
+          "@type": "BlogPosting",
           "headline": "MIT's report on AI and education, and why it matters beyond the classroom",
           "url": "https://datachart.github.io/caleb.me/blog/mit-report-ai-and-education.html",
           "datePublished": "2026-10-03"
@@ -366,7 +372,7 @@
       <a class="tab" href="#main" data-tab="main">Main</a>
       <a class="tab" href="#research" data-tab="research">Research Desk</a>
       <a class="tab" href="#finance" data-tab="finance">Finance</a>
-      <a class="tab" href="#llms" data-tab="llms">Fine-tuned LLMs</a>
+      <a class="tab" href="#llms" data-tab="llms">LLMs</a>
       <a class="tab" href="#blog" data-tab="blog">Blog</a>
     </nav>
   </header>
@@ -593,8 +599,75 @@
 
   <!-- ===================== OTHER TABS ===================== -->
   <section class="panel llms" id="llms" data-panel="llms" tabindex="-1" aria-labelledby="llms-h">
-    <h2 id="llms-h">Fine-tuned LLMs</h2>
-    <p class="soon-sub">Two small language-model projects, each with three example prompts.</p>
+    <h2 id="llms-h">LLMs</h2>
+    <p class="soon-sub">Language-model projects I've built: a local coding-agent server, a RAG chatbot and a fine-tuned code commenter.</p>
+
+    <article class="llm-demo" aria-labelledby="llm-rig-h">
+      <header class="llm-head">
+        <p class="post-tag">Local inference server</p>
+        <h3 id="llm-rig-h">Mining rig LLM server</h3>
+        <a href="blog/mining-rig-local-llm-server.html">Read the write-up <span aria-hidden="true">→</span></a>
+      </header>
+      <ul class="llm-features"><li><b>Model</b><span>A fully local, Claude Code style coding agent served from a retired mining rig with four RTX 4070s. No API bill, and no code leaves the house.</span></li><li><b>Training process</b><span>No weights trained. Two quantized open-weight models each get their own pair of GPUs behind one OpenAI-style gateway, so the coder and the reviewer can run at the same time.</span></li><li><b>Tools</b><span>WSL2 Ubuntu 24.04, llama.cpp, LiteLLM, OpenCode, LangGraph, Prefect, Docker, MCP, Prometheus, Grafana</span></li><li><b>Base model</b><span>Qwen3-Coder-30B-A3B-Instruct (Q4_K_M) as the main coder; gpt-oss-20b as planner and reviewer</span></li></ul>
+      <div class="stack-map" role="group" aria-label="Software map of the local LLM server, from the editor at the top down to the GPUs">
+      <div class="stk-layer">
+        <p class="stk-label">Interface</p>
+        <ul class="stk-nodes">
+          <li><b>VS Code</b><span>On Windows 11, frontend only</span></li>
+          <li class="stk-hot"><b>OpenCode</b><span>Daily-driver terminal agent</span></li>
+          <li><b>Aider</b><span>Fallback for edit-and-commit work</span></li>
+        </ul>
+      </div>
+      <div class="stk-layer">
+        <p class="stk-label">Orchestration</p>
+        <ul class="stk-nodes">
+          <li><b>LangGraph</b><span>Planner → executor → reviewer graph</span></li>
+          <li><b>Prefect</b><span>Schedules, retries, run history</span></li>
+          <li><b>Git worktrees</b><span>One branch per agent</span></li>
+          <li><b>asyncio semaphores</b><span>1 main slot, 2 fast slots</span></li>
+        </ul>
+      </div>
+      <div class="stk-layer">
+        <p class="stk-label">Harness &amp; tools</p>
+        <ul class="stk-nodes">
+          <li class="stk-hot"><b>Python harness</b><span>Tool registry, exact-match patches, permission policy</span></li>
+          <li><b>MCP servers</b><span>Files locked to one worktree, read-only Git</span></li>
+          <li><b>Docker sandbox</b><span>Non-root, read-only, network off</span></li>
+        </ul>
+      </div>
+      <div class="stk-layer">
+        <p class="stk-label">Gateway</p>
+        <ul class="stk-nodes">
+          <li class="stk-hot stk-wide"><b>LiteLLM proxy <code>:4000</code></b><span>One OpenAI-style API with three aliases: local-coder, local-fast, local-reviewer</span></li>
+        </ul>
+      </div>
+      <div class="stk-layer">
+        <p class="stk-label">Inference</p>
+        <ul class="stk-nodes stk-pair">
+          <li class="stk-hot"><b>llama-server <code>:8001</code></b><span>Qwen3-Coder-30B-A3B, Q4_K_M. The main coder.</span></li>
+          <li class="stk-hot"><b>llama-server <code>:8002</code></b><span>gpt-oss-20b, MXFP4. Planner, reviewer, summaries.</span></li>
+        </ul>
+      </div>
+      <div class="stk-layer">
+        <p class="stk-label">Hardware</p>
+        <ul class="stk-nodes stk-pair">
+          <li class="stk-gpu"><b>GPU 0 + GPU 1</b><span>2 × RTX 4070, 24 GB together</span></li>
+          <li class="stk-gpu"><b>GPU 2 + GPU 3</b><span>2 × RTX 4070, 24 GB together</span></li>
+          <li class="stk-wide"><b>Host</b><span>i5-14400F, 32 GB RAM, 2 TB SSD, WSL2 Ubuntu 24.04</span></li>
+        </ul>
+      </div>
+      <div class="stk-layer stk-side">
+        <p class="stk-label">Watching every layer</p>
+        <ul class="stk-nodes">
+          <li><b>OpenTelemetry</b><span>Spans from the harness</span></li>
+          <li><b>Langfuse</b><span>Prompt and tool traces</span></li>
+          <li><b>Prometheus + DCGM</b><span>Gateway and GPU metrics</span></li>
+          <li><b>Grafana</b><span>Dashboards</span></li>
+        </ul>
+      </div>
+      </div>
+      <p class="llm-note">Software map of the build. It's in progress, so speed and memory figures in the write-up are estimates until they're measured on the rig.</p>
+    </article>
 
     <article class="llm-demo" aria-labelledby="llm-rag-h">
       <header class="llm-head">
@@ -658,6 +731,12 @@
     <p class="blog-count" id="blog-count" aria-live="polite"></p>
     <p class="blog-empty" id="blog-empty" hidden>No posts match. Try a different search or category.</p>
     <ol class="post-cards">
+      <li class="post-card" data-date="2026-11-10" data-category="Projects">
+        <div class="post-card-meta"><p class="post-tag">Local LLMs</p><time class="post-date" datetime="2026-11-10">Nov 10, 2026</time></div>
+        <h3><a href="blog/mining-rig-local-llm-server.html">Turning my old mining rig into a local LLM server</a></h3>
+        <p class="post-excerpt">Four RTX 4070s, two open-weight models and one gateway: the software map and reasoning behind my fully local, Claude Code style coding agent.</p>
+        <a class="read-more" href="blog/mining-rig-local-llm-server.html" aria-label="Read: Turning my old mining rig into a local LLM server">Read post <span aria-hidden="true">→</span></a>
+      </li>
       <li class="post-card" data-date="2026-11-10" data-category="Projects">
         <div class="post-card-meta"><p class="post-tag">AI Agents</p><time class="post-date" datetime="2026-11-10">Nov 10, 2026</time></div>
         <h3><a href="blog/atlas-research-desk-month-of-agents.html">A month of letting three AI agents run a research desk</a></h3>

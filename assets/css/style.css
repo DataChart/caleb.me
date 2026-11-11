@@ -456,6 +456,9 @@ code, pre { font-family: var(--mono); }
 .origin h2 { font-size: 12px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); }
 .post-body { display: flex; flex-direction: column; gap: 20px; font-size: 18px; line-height: 1.75; color: var(--ink-2); margin: 12px 0 24px; }
 .post-body ul { list-style: disc; padding-left: 22px; display: flex; flex-direction: column; gap: 8px; }
+.post-body ol { list-style: decimal; padding-left: 26px; display: flex; flex-direction: column; gap: 8px; }
+.post-body ol li::marker { font-family: var(--mono); font-size: 0.85em; }
+.post-body p code, .post-body li code { font-size: 0.85em; color: var(--ink); background: var(--code-bg); border: 1px solid var(--line); border-radius: 5px; padding: 1px 5px; overflow-wrap: anywhere; }
 .post-body li::marker { color: var(--accent); }
 .post-body blockquote { margin: 0; padding: 4px 0 4px 20px; border-left: 3px solid var(--accent); color: var(--ink); font-style: italic; }
 .post-body .term { font-size: 14px; overflow-x: auto; white-space: pre; }
@@ -549,7 +552,7 @@ code, pre { font-family: var(--mono); }
   .btn:hover { transform: none; }
 }
 
-/* Fine-tuned LLMs tab: one demo per model, with a feature list and sample chat. */
+/* LLMs tab: one demo per model, with a feature list and sample chat. */
 .llms { display: flex; flex-direction: column; gap: 16px; }
 .llms h2 { font-size: 44px; font-weight: 700; }
 .llm-demo { display: flex; flex-direction: column; gap: 16px; margin-top: 24px; padding-top: 28px; border-top: 1px solid var(--line); }
@@ -594,3 +597,27 @@ code, pre { font-family: var(--mono); }
 .post-card-meta { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
 .post-card .post-date { font-family: var(--mono); font-size: 12px; color: var(--muted); white-space: nowrap; }
 .post > .post-date { font-family: var(--mono); font-size: 13px; color: var(--muted); margin-top: -8px; }
+
+/* Software map: a layered stack diagram, top (editor) to bottom (GPUs). Plain HTML so it reflows on phones. */
+.stack-map { display: flex; flex-direction: column; gap: 0; padding: 16px; border: 1px solid var(--line); border-radius: 12px; background: var(--code-bg); }
+.stk-layer { position: relative; display: grid; grid-template-columns: 132px minmax(0, 1fr); gap: 12px; align-items: start; padding: 12px 0; }
+.stk-layer + .stk-layer::before { content: ""; position: absolute; top: -6px; left: 50%; width: 0; height: 12px; border-left: 2px solid var(--line-2); }
+.stk-layer + .stk-layer::after { content: ""; position: absolute; top: 3px; left: calc(50% - 4px); border: 5px solid transparent; border-top-color: var(--line-2); }
+.stk-side { margin-top: 10px; padding: 12px; border: 1px dashed var(--line-2); border-radius: 10px; }
+.stk-side::before, .stk-side::after { display: none; }
+.stk-label { font-family: var(--mono); font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); padding-top: 10px; }
+.stack-map .stk-nodes { list-style: none; padding: 0; margin: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 8px; }
+.stack-map .stk-pair { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.stack-map .stk-nodes li { display: flex; flex-direction: column; gap: 2px; padding: 9px 12px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface-2); font-size: 13px; line-height: 1.45; color: var(--ink-2); min-width: 0; }
+.stk-nodes b { font-family: var(--mono); font-size: 13px; font-weight: 500; color: var(--ink); overflow-wrap: anywhere; }
+.stack-map .stk-nodes b code { font-size: inherit; background: none; border: 0; padding: 0; color: var(--accent-hi); }
+.stack-map .stk-nodes .stk-hot { border-color: var(--accent); }
+.stack-map .stk-nodes .stk-gpu { border-color: var(--sw); }
+.stack-map .stk-nodes .stk-wide { grid-column: 1 / -1; }
+@media (max-width: 560px) {
+  .stack-map { padding: 12px; }
+  .stk-layer { grid-template-columns: minmax(0, 1fr); gap: 6px; }
+  .stk-label { padding-top: 0; }
+  .stack-map .stk-pair { grid-template-columns: minmax(0, 1fr); }
+}
+.stack-map .stk-nodes li::marker { content: none; }

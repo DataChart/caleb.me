@@ -125,6 +125,9 @@ const DATA = {
     { title: "Interview RAG demo", outcome: "Local chatbot over 247 web pages and 73 PDFs, built for an interview",
       linkLabel: "Blog post", url: "blog/rag-interview-demo.html",
       skills: ["Python", "RAG", "Machine learning"] },
+    { title: "Mining rig LLM server", outcome: "Four-GPU local coding agent: two open models behind one gateway",
+      linkLabel: "Blog post", url: "blog/mining-rig-local-llm-server.html",
+      skills: ["Python", "Agent orchestration", "Git"] },
   ],
 };
 

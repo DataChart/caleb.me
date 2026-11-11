@@ -16,6 +16,14 @@
       <description>From October 11 to November 7, three Claude agents researched, fact-checked and published 68 posts on frontier AI. What worked, what broke, and what I'd change.</description>
     </item>
     <item>
+      <title>Turning my old mining rig into a local LLM server</title>
+      <link>https://datachart.github.io/caleb.me/blog/mining-rig-local-llm-server.html</link>
+      <guid isPermaLink="true">https://datachart.github.io/caleb.me/blog/mining-rig-local-llm-server.html</guid>
+      <pubDate>Tue, 10 Nov 2026 12:00:00 +0000</pubDate>
+      <category>Local LLMs</category>
+      <description>How I'm turning a retired four-GPU mining rig into a fully local, Claude Code style coding agent: the hardware, the software map, and why each piece is there.</description>
+    </item>
+    <item>
       <title>The LLM demo that paid dividends</title>
       <link>https://datachart.github.io/caleb.me/blog/rag-interview-demo.html</link>
       <guid isPermaLink="true">https://datachart.github.io/caleb.me/blog/rag-interview-demo.html</guid>
