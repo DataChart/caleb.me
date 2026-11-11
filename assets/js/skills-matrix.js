@@ -74,8 +74,6 @@ const DATA = {
       skills: ["Azure", "Machine learning"] },
     { name: "Microsoft Certified: Azure Fundamentals (AZ-900)", issuer: "Microsoft", issued: "Oct 2026",
       credentialId: "6BE9B7EF7103213A", skills: ["Azure"] },
-    { name: "Introduction to Cognitive Project Management in AI", issuer: "Project Management Institute", issued: "Sep 2026", expires: "Sep 2029",
-      skills: ["Project management"] },
     { name: "Facilitation Skills for Managers and Leaders", issuer: "LinkedIn", issued: "Aug 2026", skills: [] },
     { name: "Advanced SQL", issuer: "Kaggle", issued: "Aug 2026", skills: ["SQL"] },
     { name: "Irreplaceable: The Art of Standing Out in the Age of AI", issuer: "LinkedIn", issued: "Aug 2026", skills: [] },
