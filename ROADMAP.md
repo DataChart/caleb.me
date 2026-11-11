@@ -20,7 +20,7 @@ Small changes with an outsized effect on how the site comes across to recruiters
 - [ ] **Canonical URL and custom domain.** Point `caleb.me` (or the chosen domain) at GitHub Pages and add a `<link rel="canonical">`.
 - [ ] **One-line "open to" status** in the side panel (e.g. roles, consulting, speaking) so visitors know what to reach out about.
 - [ ] **Fill the Fine-tuned LLMs tab.** It's a placeholder today. Even one short write-up of a fine-tune (data, base model, eval results) makes the tab worth clicking.
-- [ ] **Certifications and courses list.** The LinkedIn facilitation course and any others, with links, as proof points next to the skills.
+- [x] **Certifications and courses list.** The LinkedIn facilitation course and any others, with links, as proof points next to the skills.
 - [ ] **Pin repos on GitHub.** Pin AtlasResearchDesk, AgentStockPortfolio and caleb.me on the DataChart profile, each with a README and a link back here.
 - [ ] **Cross-post.** Add a "Read the full post at caleb.me" line to the LinkedIn originals so traffic flows to the site.
 - [ ] **Accessibility and speed pass.** Run Lighthouse on the main page and one post and aim for 95+ on accessibility, best practices and SEO.
