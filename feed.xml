@@ -6,7 +6,15 @@
     <atom:link href="https://datachart.github.io/caleb.me/feed.xml" rel="self" type="application/rss+xml"/>
     <description>Caleb Hart is a data scientist and data engineer who builds AI, machine learning, RAG and business intelligence solutions in Python, SQL and Power BI, and teaches people how to use AI well.</description>
     <language>en-us</language>
-    <lastBuildDate>Tue, 03 Nov 2026 12:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Tue, 10 Nov 2026 12:00:00 +0000</lastBuildDate>
+    <item>
+      <title>A month of letting three AI agents run a research desk</title>
+      <link>https://datachart.github.io/caleb.me/blog/atlas-research-desk-month-of-agents.html</link>
+      <guid isPermaLink="true">https://datachart.github.io/caleb.me/blog/atlas-research-desk-month-of-agents.html</guid>
+      <pubDate>Tue, 10 Nov 2026 12:00:00 +0000</pubDate>
+      <category>AI Agents</category>
+      <description>From October 11 to November 7, three Claude agents researched, fact-checked and published 68 posts on frontier AI. What worked, what broke, and what I'd change.</description>
+    </item>
     <item>
       <title>The LLM demo that paid dividends</title>
       <link>https://datachart.github.io/caleb.me/blog/rag-interview-demo.html</link>

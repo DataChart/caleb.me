@@ -124,6 +124,8 @@
         var m = res[0], posts = res[1];
         setText(atlasStats, 'posts', m.output.research_posts);
         setText(atlasStats, 'reviews', m.output.cycle_reviews);
+        if (m.qa) setText(atlasStats, 'claims', m.qa.claims_checked.toLocaleString('en-US'));
+        if (m.sources) setText(atlasStats, 'sources', m.sources.sources_checked.toLocaleString('en-US'));
         setText(atlasStats, 'words', Math.round(m.output.words_published / 1000) + 'k');
         setText(atlasStats, 'clean', (m.pipeline.clean_run_rate * 100).toFixed(1) + '%');
         var list = document.getElementById('atlas-posts');
@@ -137,7 +139,7 @@
             list.appendChild(li);
           });
         }
-        document.getElementById('atlas-source').textContent = 'Live from the site’s public API · generated ' + ago(m.generated_at) + '.';
+        document.getElementById('atlas-source').textContent = 'Final figures from the site’s public API · generated ' + ago(m.generated_at) + '.';
       })
       .catch(function () {});
   }

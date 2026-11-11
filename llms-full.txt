@@ -13,6 +13,132 @@ Contact: use the LinkedIn profile or the email link on the home page.
 
 ---
 
+## A month of letting three AI agents run a research desk
+
+URL: https://datachart.github.io/caleb.me/blog/atlas-research-desk-month-of-agents.html  
+Published: 2026-11-10  
+Topic: AI Agents
+
+For four weeks this fall, I handed a research blog to three Claude agents and mostly stayed out of the way. From October 11 to November 7, Atlas Research Desk picked timely results in frontier AI, wrote them up, fact-checked every claim against its sources and published on a schedule. The run is over now, and the agents and I wrote up a full set of conclusions from the logs.
+
+This post is the personal version: why I built it, what I'm proud of, what went wrong, and what I'd do differently. The short answer is that the agents were the most reliable part of the system. The plumbing around them, and the human who was supposed to look after them (me), were not.
+
+## Why I built it
+
+I read a lot of AI research, and most of the coverage I find falls into two camps. Some of it is fast and shallow, a headline number and a hot take. The rest is careful, but it shows up weeks later. I wanted to know whether agents could close that gap: write graduate-level coverage of a new result within days, and make every claim traceable to a source a reader can open.
+
+The trust part mattered most to me. Anyone can get a language model to write 2,000 confident words about a paper. The interesting question is whether you can build a system that catches its own mistakes before a reader does, and shows its work when it doesn't.
+
+## How it worked
+
+I committed the spec on October 7. It described three agents with three very different jobs:
+- Research (Opus 5.5) picked one timely result from the last 60 days and wrote a fully sourced post of 1,800 to 3,000 words covering the method, the evidence and its weaknesses.
+- QA (Opus 5.5) opened every source, checked every claim, graded each source from A to D and annotated the post in place. Nothing shipped without its pass.
+- Manager (Sonnet 5.5) wrote a public cycle review after every three published posts and steered the topics for the next three.
+
+The system lived in two repositories. A private engine held the agents, their instructions, the pipeline state and every draft. A public site got only what passed QA, through an export step that failed closed: if anything looked like private material, nothing went out. All of the state lived in files and all of the history lived in Git, so any run could start from a fresh clone and pick up exactly where the last one left off.
+
+Before a single reader saw a post, I ran three calibration dry runs on October 8. They caught several problems I would otherwise have shipped, and I'd now call them non-negotiable for a project like this.
+
+## The month in numbers
+
+Over 28 days the desk produced 74 finished research posts. QA published 68 of them and rejected 6, and the manager wrote 22 cycle reviews. Along the way QA checked 3,405 individual claims against 958 sources from 118 domains, and it found no fabricated source in any published post.
+
+Source quality held up too. The spec asked for at least 8 sources per post with at least 60% graded A or B. Posts ran from 8 to 20 sources (14.1 on average), the weakest published post was still 71% A or B, and the month overall came in at 92.6%. Most posts landed on evaluation and benchmarks, then agents, LLM-as-judge, open-weight releases and mixture-of-experts models.
+
+Of the runs that actually started, 62 of 64 finished cleanly, which is 96.9% against a 95% target. That last number looks great, and it hides the biggest lesson of the whole project. More on that below.
+
+## The part I'm proudest of: independent QA
+
+The single design choice I'd keep in any future version is that the QA agent was independent by construction. It received only a file path. It never saw the research agent's reasoning, its search history or the orchestrator's opinion of the draft. It had to read the post cold, open the sources itself and decide whether each sentence was true.
+
+That made it a real check rather than a rubber stamp. QA corrected 44 sentences over the month and found at least one contradicted claim in 21 of the 68 published posts, about 31%. Of the 3,405 claims it checked, 86.9% were verified outright, 12.2% needed a caveat, and 27 were flatly contradicted by their own sources. It also added 229 callouts (notes, tips, warnings and cautions) right in the text, so readers could see exactly where the evidence was thin.
+
+The research agent earned some credit here too. When it couldn't fetch a source, it dropped it instead of citing from memory. That's a big part of why the fabricated-source count stayed at zero.
+
+The other decision I'm glad I made was publishing the failures. The six rejected posts are online with QA's findings attached. It felt a little uncomfortable at first to put "this post was wrong" on my own project's site, but it's the most convincing evidence that the checks were actually doing something. A QA layer that never rejects anything is indistinguishable from no QA at all.
+
+## Where it fell short: runs that never happened
+
+The throughput goal was at least 4 finished posts a day, with 5 as the stretch. The month averaged 2.6.
+
+Finished posts per day Goal: 4 a day
+
+From the desk's own metrics file. The empty stretches are runs that never started.
+
+What stings is that the design could hit the target. On the days the routine fired five times and each run produced two posts, the desk turned out 5 to 7 finished posts a day. Moving from one post per run to two was one of the best changes of the month and raised output per run almost fivefold. The problem was that the scheduled runs often didn't start. Only 64 runs were logged against roughly 140 planned, including a gap of about 67 hours from October 19 to 21 and another of about 129 hours from October 25 to 30. From October 30 the schedule settled at two runs a day.
+
+The conclusions put it in one line that I keep coming back to:
+
+"The design could meet the target. The schedule didn't deliver the runs."
+
+Here's the part I really want other builders to hear. A run that fails leaves a log, an error, something to notice. A run that never starts leaves nothing. I had planned health checks that would have caught the gaps, but they never ran either, and nothing outside the system was watching. Those two gaps alone cost somewhere around 45 to 50 posts. My 96.9% clean-run rate was true, and it was measuring the wrong thing.
+
+## The quieter failures
+
+A few other problems taught me just as much, because none of them announced themselves:
+- A broken dependency. The script QA used to check sources crashed in 67 of 74 QA jobs, because of a simple environment problem. The setup script always exited with a success code, so nothing ever flagged it. QA did its job anyway, by hand, at a higher cost.
+- Absence claims. The hardest sentences to get right were the ones that say something isn't there: "the paper reports no code," "the authors only test on one benchmark." Four of the six rejections were absence claims that turned out to be false. I added a targeted prompt rule, and it didn't stop them. The fix is a tool, not a rule: give the agent full-text search over the paper and its appendices before it's allowed to say "no."
+- A verdict scale nobody used. Every one of the 68 published posts got "pass with notes." A scale where everything lands in one bucket doesn't tell a reader anything. Next time I'd separate clean passes from posts that needed corrections.
+- Bookkeeping drift. Timestamps ended up in a mix of time zones, including one wrong offset, and a couple of counters disagreed with the logs. None of it was dramatic, but it's exactly the kind of thing that makes a month of data harder to trust.
+
+## The human in the loop was me
+
+This is the section I least wanted to write. Over the month, the agents filed nine improvement proposals: concrete, well-argued suggestions for making the system better. I applied none of them.
+
+One of them was the environment fix for that crashing source-check script. It would have taken minutes. The manager agent noticed the problem, wrote it up, and handed it to the one part of the system with no schedule and no alerting: a person with a full-time job and a lot of other projects.
+
+It's humbling, but I think it's the most honest finding in the whole write-up. We spend a lot of time talking about keeping humans in the loop with AI systems. This project showed me that the loop only works if the human's part is scheduled and treated as a real job. Next time there's a weekly 30-minute review on my calendar, and proposals turn into draft pull requests with a deadline instead of notes in a folder.
+
+## What it cost
+
+I measured cost per finished post from day one, and I'm glad I did. Across the month the subagents used about 32.1 million tokens, or roughly 440,000 tokens per finished post. A typical run took about 35 minutes, and the longest took 55. That number makes the trade-offs concrete: every rejected post and every run spent working around a broken tool shows up in the bill.
+
+## What the cycle reviews kept saying
+
+One thing I didn't expect was for the manager's reviews to develop a point of view. Across 22 reviews, it kept coming back to one theme: a headline number often depends on what it's compared against. A benchmark score means one thing against last year's best model and another against a tuned baseline. That's a lesson I've learned over and over in my own data work, and it was oddly satisfying to watch an agent arrive at it from a month of reading papers.
+
+## What I'd change for version two
+
+The conclusions list ten improvements. These are the five that matter most:
+- Monitor from outside. An external heartbeat that alerts me when no new run log appears for six hours. This alone would have caught both long gaps.
+- Make the orchestrator a script. Scheduling and bookkeeping should be deterministic code. The language models should do what they're good at: research, checking and judgment.
+- Give agents a full-text tool. Let them search the papers, appendices included, before they make an absence claim.
+- Use a verdict scale that carries information. Separate clean passes from corrected ones, and treat the TL;DR as a central claim.
+- Schedule the human. A weekly review slot for the agents' proposals, with a deadline.
+
+## Advice if you're building something like this
+- Watch for missing runs, not just failed ones. Silence was my most expensive failure.
+- Make your checker independent of the author. Give it the artifact and nothing else.
+- Prefer deterministic tools to prompt rules for mistakes that keep recurring.
+- Keep state in files and history in Git.
+- Do practice runs before anyone is watching.
+- Publish your failures, not just your successes.
+- Measure cost per finished artifact from the first day.
+- Fail closed at the public boundary, and test that the rules still match the product.
+
+## Closing thoughts
+
+I set out to see whether agents could write and check a month of graduate-level research coverage with sources a reader can trust. On quality, I think they largely did: no fabricated sources, a QA layer that visibly caught its own system's mistakes, and an archive I'm happy to stand behind. On operations, the project fell short, and mostly for reasons that had nothing to do with the agents.
+
+The last line of the conclusions is the one I'm taking with me into the next project. A second version should
+
+"spend less effort on the prompts and more on the plumbing and on the person who looks after it."
+
+The archive, the rejected posts, the cycle reviews and the metrics all stay online as the record of the month. If you're curious, start with the conclusions, then pick any post and read QA's notes alongside it. That's where the project is at its best.
+
+## At a glance
+- Project: Atlas Research Desk, a research blog written and checked by Claude agents
+- When: October 11 to November 7, 2026
+- Agents: Research and QA on Opus 5.5, manager on Sonnet 5.5
+- Output: 68 published posts, 6 rejected, 22 cycle reviews
+- Checks: 3,405 claims against 958 sources; 0 fabricated sources; 92.6% of sources graded A or B
+- Fell short on: Throughput, 2.6 posts a day against a goal of 4, because more than half of the roughly 140 scheduled runs never started
+- Cost: About 440k subagent tokens per finished post
+
+
+---
+
 ## The LLM demo that paid dividends
 
 URL: https://datachart.github.io/caleb.me/blog/rag-interview-demo.html  
