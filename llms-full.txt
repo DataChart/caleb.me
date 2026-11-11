@@ -139,6 +139,91 @@ The archive, the rejected posts, the cycle reviews and the metrics all stay onli
 
 ---
 
+## Can open-source forecasting models predict my own portfolio?
+
+URL: https://datachart.github.io/caleb.me/blog/forecasting-my-holdings-with-foundation-models.html  
+Published: 2026-11-10  
+Topic: Forecasting
+
+I've forecast a lot of things that weren't mine: a year of USDA meat and poultry production, store sales for a retailer, poker returns. A couple of months ago I wrote about why Chronos-2 keeps showing up everywhere, and the whole time I was writing it there was a question in the back of my head. If these foundation models are as general as everyone says, what happens when I point them at something I actually care about?
+
+So last week I started a new project, HoldingsForecast. Every week it forecasts the price of each of the 31 stocks I hold, 1 week, 3 months and 1 year ahead, using five open-weight time-series models. Then it backtests every one of them against the most humbling baseline in finance: assuming the price doesn't move at all.
+
+This post is the "here's what I'm building and why" version. There are no results yet. I'd rather write down what I expect before the backtest finishes than explain the numbers away afterwards.
+
+## The question I'm actually asking
+
+Weekly stock prices are about as close to a random walk as real data gets. That's not a pessimistic take, it's roughly what decades of finance research say. So the useful question isn't "can a model predict the stock market?" It's a much narrower one:
+
+Does any of these models beat "the price stays where it is" by enough to matter, and does it know when it's unsure?
+
+That second half is the part I care about most. Every model here returns a full distribution, the 10th through 90th percentiles, not just one number. A forecast that says "probably flat, but here's a wide range" can still be useful if the range is honest. A confident forecast that's wrong is worse than no forecast at all. I learned that one at the poker table long before I learned it in a notebook.
+
+## The lineup
+
+I picked the models from the GIFT-Eval leaderboard, which scores forecasting models across a wide range of real datasets. Every one of them is open-weight, small enough to run at home, and used zero-shot, so nothing is trained on my stocks:
+- Chronos-2 (Amazon, 120M parameters): the default, and the one with the most mature tooling.
+- Timestral (Mistral, 209M): top five overall among open models on GIFT-Eval.
+- t0 (The Forecasting Company, about 256M): the top "pretrained" model on the leaderboard.
+- TiRex (NX-AI, 35M): tiny, but strong on the economics and finance slice.
+- Toto 2.0 (Datadog, 313M): built for observability data, which made me curious how it handles prices.
+
+When several models run together, the pipeline also adds an ensemble that averages their percentiles. Then there are the two baselines every model has to beat: a plain random walk, where the price stays flat and the spread comes from the stock's own history, and a random walk with drift, which keeps the stock's typical trend going.
+
+Each model sees up to 10 years of weekly closing prices, taken every Friday after adjusting for splits and dividends. They're fed log prices rather than raw prices, so a 10% move counts the same for a $50 stock as for a $500 one, and the expensive names don't drown out the rest.
+
+## How I'm keeping myself honest
+
+The forecast itself is the easy part. The backtest is where the project really lives. It's a walk-forward test: starting in 2010, at every single week, each model sees only the history up to that week and forecasts the three horizons. Then the pipeline checks what actually happened. That comes to roughly 25,000 forecasts per model, and no model ever gets to peek at the future.
+
+The scorecard has a few numbers, and each one answers a different question:
+- CRPS skill: how much better the whole forecast distribution is than the random walk's. Anything above zero beats it. With data this close to a random walk, even a small positive number would be meaningful.
+- 80% coverage: how often the real price lands inside the model's 10th-to-90th percentile band. A well-calibrated model hits 80%. Much lower means it's overconfident; much higher means its bands are too wide to be useful.
+- Hit rate: how often it calls the direction right, up or down.
+- Information coefficient: whether the model can rank my holdings, telling which will do better than the others in a given week, even if it can't nail the prices.
+
+Results also get broken down by stock and by year. A model that "wins" because it got lucky on one stock, or on one bull market, isn't really winning, and I want to see that before I believe anything.
+
+## Running it on an old mining rig
+
+The hardware is my favorite part. Everything runs on a repurposed crypto mining rig: four RTX 3060s with 12 GB each and two RTX 3070s with 8 GB each, all hanging off PCIe x1 risers. Risers like that are terrible for training big models, because every byte crawls across a single PCIe lane. For this job they barely matter.
+
+Each GPU gets its own worker process that loads the model once. From then on, only small chunks of price history (a few megabytes) cross the riser, and whichever card is free grabs the next chunk, so the faster and slower cards share the work without any tuning. Predictions are saved per model, so if the rig gets bumped halfway through a run, it picks up where it stopped.
+
+I gave the backtest a 48-hour budget. The default run should finish in minutes to a few hours per model, which leaves plenty of room to try longer histories, different settings, or the bigger versions of each model.
+
+## What I expect to find
+
+Writing my guesses down now so I can't move the goalposts later:
+- At 1 week, I expect every model to land within a hair of the random walk. If one beats it at all, it'll be by a small margin.
+- I expect the real differences to show up in calibration. Some models will have bands that are too narrow, and the coverage number will catch it.
+- At 1 year, I expect the drift baseline to be surprisingly hard to beat, because "stocks tend to go up over time" is a strong prior that doesn't need a transformer.
+- I expect the ensemble to be the most consistent, if not the best at any single horizon.
+
+If the answer turns out to be "none of them beat the random walk," that's still a result, and I'll publish it. That's exactly what the baseline is there for.
+
+## What's next
+- Run the full backtest on the rig and publish the report on this site's Forecasting tab.
+- Put the weekly forecast on a Saturday schedule, after Friday's close.
+- Swap the hand-written holdings list for one pulled live from my brokerage. The code already has a slot for it.
+- Compare these forecasts with what the agents in my Agent Stock Portfolio decide to buy and sell.
+
+To be clear, this is an experiment, not investment advice, and I'm not handing my trades to a model. I want to know what these models can and can't see in data I know well. I'll post the numbers as soon as I have them.
+
+## At a glance
+- Project: HoldingsForecast, weekly price forecasts for the 31 stocks I hold
+- Started: November 6, 2026
+- Horizons: 1 week, 3 months and 1 year, each as a 10th-to-90th percentile range
+- Models: Chronos-2, Timestral, t0, TiRex and Toto 2.0, plus an ensemble, all zero-shot
+- Baselines: Random walk, and random walk with drift
+- Backtest: Walk-forward, a forecast every week since 2010, about 25,000 per model
+- Hardware: A repurposed mining rig: 4× RTX 3060 and 2× RTX 3070 on PCIe x1 risers
+- Tools: Python, PyTorch, pandas, yfinance, Hugging Face
+- Status: Pipeline built and tested; first full backtest still to run
+
+
+---
+
 ## The LLM demo that paid dividends
 
 URL: https://datachart.github.io/caleb.me/blog/rag-interview-demo.html  

@@ -240,6 +240,12 @@
         },
         {
           "@type": "BlogPosting",
+          "headline": "Can open-source forecasting models predict my own portfolio?",
+          "url": "https://datachart.github.io/caleb.me/blog/forecasting-my-holdings-with-foundation-models.html",
+          "datePublished": "2026-11-10"
+        },
+        {
+          "@type": "BlogPosting",
           "headline": "Bringing solar light to 24 homes in rural Kenya",
           "url": "https://datachart.github.io/caleb.me/blog/kenya-solar-installation.html",
           "datePublished": "2019-07-31"
@@ -366,6 +372,7 @@
       <a class="tab" href="#main" data-tab="main">Main</a>
       <a class="tab" href="#research" data-tab="research">Research Desk</a>
       <a class="tab" href="#finance" data-tab="finance">Finance</a>
+      <a class="tab" href="#forecasting" data-tab="forecasting">Forecasting</a>
       <a class="tab" href="#llms" data-tab="llms">Fine-tuned LLMs</a>
       <a class="tab" href="#blog" data-tab="blog">Blog</a>
     </nav>
@@ -588,7 +595,77 @@
       </div>
     </div>
 
-    <p class="more-soon"><span class="c"># coming to this tab:</span> my_spending/ &nbsp; forecasting/</p>
+    <section class="project-related" aria-labelledby="fin-fc-h">
+      <h3 class="live-h" id="fin-fc-h">Forecasting my holdings</h3>
+      <p>A separate project forecasts the 31 stocks I actually own with five open-weight time-series models, and backtests each one against a random walk.</p>
+      <ul class="post-list">
+        <li><a href="blog/forecasting-my-holdings-with-foundation-models.html">Can open-source forecasting models predict my own portfolio?</a><span class="post-meta">Blog post · Nov 10, 2026</span></li>
+        <li><a href="#forecasting">See the project on the Forecasting tab</a><span class="post-meta">HoldingsForecast · in development</span></li>
+      </ul>
+    </section>
+
+    <p class="more-soon"><span class="c"># coming to this tab:</span> my_spending/</p>
+  </section>
+
+  <!-- ===================== FORECASTING ===================== -->
+  <section class="panel project" id="forecasting" data-panel="forecasting" tabindex="-1" aria-labelledby="forecasting-h">
+    <header class="project-head">
+      <p class="badge"><span class="pulse" aria-hidden="true"></span>Just started · first backtest in progress</p>
+      <h2 id="forecasting-h">HoldingsForecast</h2>
+      <p class="tagline">Weekly price forecasts for every stock I hold, from five open-weight forecasting models, each scored against a random walk.</p>
+      <div class="ctas">
+        <a class="btn btn-primary" href="blog/forecasting-my-holdings-with-foundation-models.html">Read the blog post <span aria-hidden="true">→</span></a>
+        <a class="btn" href="https://huggingface.co/spaces/Salesforce/GIFT-Eval" target="_blank" rel="noopener">GIFT-Eval leaderboard <span aria-hidden="true">↗</span></a>
+      </div>
+    </header>
+
+    <div class="project-grid">
+      <div class="project-about">
+        <p>Every week, each model reads up to 10 years of Friday closing prices and forecasts each holding 1 week, 3 months and 1 year ahead, as a full 10th-to-90th percentile range rather than a single number. All five run zero-shot, so none is trained on my stocks.</p>
+        <ul class="agents">
+          <li><span class="agent-name">Chronos-2</span><span>Amazon, 120M parameters. The default, with the most mature tooling.</span></li>
+          <li><span class="agent-name">Timestral</span><span>Mistral, 209M. Top five among open models on GIFT-Eval.</span></li>
+          <li><span class="agent-name">t0</span><span>The Forecasting Company, about 256M. The top pretrained model on GIFT-Eval.</span></li>
+          <li><span class="agent-name">TiRex</span><span>NX-AI, 35M. Small, and strong on the economics and finance slice.</span></li>
+          <li><span class="agent-name">Toto 2.0</span><span>Datadog, 313M. Built for observability data.</span></li>
+        </ul>
+        <h3 class="live-h">How it's scored</h3>
+        <ul class="rules">
+          <li>Walk-forward backtest: from 2010, every week, each model sees only the past and forecasts the future.</li>
+          <li>Every model has to beat two baselines: a random walk, and a random walk with drift.</li>
+          <li>Scored on CRPS skill, 80% band coverage, up/down hit rate and how well it ranks the holdings.</li>
+          <li>Results are split by stock and by year, so one lucky stock or one bull market can't carry a model.</li>
+        </ul>
+      </div>
+
+      <div class="project-live">
+        <div class="stats">
+          <div class="stat"><span class="stat-num">31</span><span class="stat-label">holdings forecast</span></div>
+          <div class="stat"><span class="stat-num">5</span><span class="stat-label">foundation models + ensemble</span></div>
+          <div class="stat"><span class="stat-num">3</span><span class="stat-label">horizons: 1w, 3m, 1y</span></div>
+          <div class="stat"><span class="stat-num">~25k</span><span class="stat-label">backtest forecasts per model</span></div>
+        </div>
+        <h3 class="live-h">Hardware</h3>
+        <ul class="rules">
+          <li>A repurposed mining rig: 4× RTX 3060 (12 GB) and 2× RTX 3070 (8 GB) on PCIe x1 risers.</li>
+          <li>One worker per GPU loads each model once; only small chunks of price history cross the risers.</li>
+          <li>A 48-hour budget for the full backtest, with saved predictions so an interrupted run resumes.</li>
+        </ul>
+        <p class="source-note">Backtest results will be posted here when the first full run finishes.</p>
+      </div>
+    </div>
+
+    <section class="project-related" aria-labelledby="fc-posts-h">
+      <h3 class="live-h" id="fc-posts-h">Forecasting posts</h3>
+      <ol class="post-list">
+        <li><a href="blog/forecasting-my-holdings-with-foundation-models.html">Can open-source forecasting models predict my own portfolio?</a><span class="post-meta">Nov 10, 2026 · this project</span></li>
+        <li><a href="blog/chronos-2-foundation-model-spotlight.html">Foundation Model Spotlight: why Chronos-2 is still everywhere</a><span class="post-meta">Sep 3, 2026 · AI notes</span></li>
+        <li><a href="blog/store-sales-gradient-boosting.html">Store sales forecasting with gradient boosting, delivered to your inbox</a><span class="post-meta">Jun 13, 2025 · XGBoost and LightGBM</span></li>
+        <li><a href="blog/usda-meat-poultry-forecasting.html">Forecasting a year of USDA meat and poultry production</a><span class="post-meta">Mar 18, 2025 · VAE and transformer</span></li>
+      </ol>
+    </section>
+
+    <p class="more-soon"><span class="c"># coming to this tab:</span> backtest_report/ &nbsp; weekly_forecasts/</p>
   </section>
 
   <!-- ===================== OTHER TABS ===================== -->
@@ -658,6 +735,12 @@
     <p class="blog-count" id="blog-count" aria-live="polite"></p>
     <p class="blog-empty" id="blog-empty" hidden>No posts match. Try a different search or category.</p>
     <ol class="post-cards">
+      <li class="post-card" data-date="2026-11-10" data-category="Projects">
+        <div class="post-card-meta"><p class="post-tag">Forecasting</p><time class="post-date" datetime="2026-11-10">Nov 10, 2026</time></div>
+        <h3><a href="blog/forecasting-my-holdings-with-foundation-models.html">Can open-source forecasting models predict my own portfolio?</a></h3>
+        <p class="post-excerpt">Five open-weight time-series models, the 31 stocks I own, an old mining rig, and the hardest baseline in finance: assuming the price stays flat.</p>
+        <a class="read-more" href="blog/forecasting-my-holdings-with-foundation-models.html" aria-label="Read: Can open-source forecasting models predict my own portfolio?">Read post <span aria-hidden="true">→</span></a>
+      </li>
       <li class="post-card" data-date="2026-11-10" data-category="Projects">
         <div class="post-card-meta"><p class="post-tag">AI Agents</p><time class="post-date" datetime="2026-11-10">Nov 10, 2026</time></div>
         <h3><a href="blog/atlas-research-desk-month-of-agents.html">A month of letting three AI agents run a research desk</a></h3>
