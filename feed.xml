@@ -16,6 +16,14 @@
       <description>From October 11 to November 7, three Claude agents researched, fact-checked and published 68 posts on frontier AI. What worked, what broke, and what I'd change.</description>
     </item>
     <item>
+      <title>Can open-source forecasting models predict my own portfolio?</title>
+      <link>https://datachart.github.io/caleb.me/blog/forecasting-my-holdings-with-foundation-models.html</link>
+      <guid isPermaLink="true">https://datachart.github.io/caleb.me/blog/forecasting-my-holdings-with-foundation-models.html</guid>
+      <pubDate>Tue, 10 Nov 2026 12:00:00 +0000</pubDate>
+      <category>Forecasting</category>
+      <description>I'm pointing five open-weight time-series foundation models at the 31 stocks I own and backtesting them against the hardest baseline in finance: assuming the price stays flat.</description>
+    </item>
+    <item>
       <title>The LLM demo that paid dividends</title>
       <link>https://datachart.github.io/caleb.me/blog/rag-interview-demo.html</link>
       <guid isPermaLink="true">https://datachart.github.io/caleb.me/blog/rag-interview-demo.html</guid>

@@ -13,6 +13,12 @@
     <priority>0.7</priority>
   </url>
   <url>
+    <loc>https://datachart.github.io/caleb.me/blog/forecasting-my-holdings-with-foundation-models.html</loc>
+    <lastmod>2026-11-10</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
     <loc>https://datachart.github.io/caleb.me/blog/rag-interview-demo.html</loc>
     <lastmod>2026-11-03</lastmod>
     <changefreq>monthly</changefreq>

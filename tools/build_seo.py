@@ -422,6 +422,9 @@ def write_llms(posts: list[dict]) -> None:
         "with a final write-up at https://datachart.github.io/AtlasResearchDesk/conclusions/",
         "- [Agent Stock Portfolio](https://datachart.github.io/AgentStockPortfolio/): a paper-trading stock "
         "portfolio run entirely by Claude agents, with a live dashboard; trades every US trading day",
+        f"- [HoldingsForecast]({SITE_URL}#forecasting): weekly price forecasts for 31 real stock holdings from "
+        "five open-weight time-series foundation models (Chronos-2, Timestral, t0, TiRex, Toto 2.0), "
+        "walk-forward backtested against a random walk; started Nov 2026",
         "",
         "## Work experience",
         "",
