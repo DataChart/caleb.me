@@ -8,7 +8,7 @@ What's next for caleb.me. Check items off as they ship.
 - [ ] **Blog posts for school projects.** One post per project: the problem, what was built, the tools used, and what was learned. Link each one under the skill pills it uses.
 - [x] **Blog post: Hart2Chart.** The story and the work behind it.
 - [ ] **Blog post: poker career.** Expected value, bankroll management, reading tendencies and making calls with incomplete information map cleanly onto data work and forecasting. A strong, memorable "why I think this way" post.
-- [ ] **Atlas Research Desk products.** Write up what the desk produces (research posts, cycle reviews, the QA pipeline) and how it works, then link it from the Research Desk tab and the Claude / Multi-Agent Systems pills.
+- [x] **Atlas Research Desk products.** Write up what the desk produces (research posts, cycle reviews, the QA pipeline) and how it works, then link it from the Research Desk tab and the Claude / Multi-Agent Systems pills.
 - [ ] **Backtest mobile compatibility.** Check every tab and every blog post on real phones (iOS Safari, Android Chrome) at 360–430px wide: the tab bar, skill pills, project stats, holdings table and post pages. Fix anything that overflows or is hard to tap.
 - [ ] **Check the existing blog posts for typos.** Known ones to start with: "its great" → "it's great", and "It's second innovation" → "Its second innovation".
 

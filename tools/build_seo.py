@@ -418,7 +418,8 @@ def write_llms(posts: list[dict]) -> None:
         "## Projects",
         "",
         "- [Atlas Research Desk](https://datachart.github.io/AtlasResearchDesk/): frontier AI research written "
-        "and checked by a team of AI agents, every claim traceable to a source; redeploys daily",
+        "and checked by a team of AI agents, every claim traceable to a source; ran Oct 11 to Nov 7, 2026, "
+        "with a final write-up at https://datachart.github.io/AtlasResearchDesk/conclusions/",
         "- [Agent Stock Portfolio](https://datachart.github.io/AgentStockPortfolio/): a paper-trading stock "
         "portfolio run entirely by Claude agents, with a live dashboard; trades every US trading day",
         "",

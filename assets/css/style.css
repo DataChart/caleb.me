@@ -373,6 +373,7 @@ code, pre { font-family: var(--mono); }
 }
 .pulse { width: 8px; height: 8px; border-radius: 50%; background: var(--hl-n); animation: pulse 2s ease-in-out infinite; }
 @keyframes pulse { 50% { opacity: 0.35; } }
+.dot { width: 8px; height: 8px; border-radius: 50%; background: var(--muted); }
 .updated-line { font-family: var(--mono); font-size: 13px; color: var(--ink-3); overflow-wrap: anywhere; }
 .commit-msg { color: var(--muted); }
 .commit-msg:not(:empty)::before { content: "· "; }
@@ -409,6 +410,22 @@ code, pre { font-family: var(--mono); }
 .holdings th:not(:first-child), .holdings td:not(:first-child) { text-align: right; }
 .source-note { font-family: var(--mono); font-size: 12px; color: var(--muted); }
 .more-soon { font-family: var(--mono); font-size: 13px; color: var(--ink-3); }
+
+.project-conclusion {
+  display: flex; flex-direction: column; gap: 20px;
+  padding: 24px; border-radius: 14px; border: 1px solid var(--line); background: var(--surface);
+}
+.concl-lead { max-width: 820px; font-size: 17px; line-height: 1.65; color: var(--ink-2); }
+.concl-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 28px; }
+.concl-grid h4 { margin-bottom: 10px; font-size: 16px; font-weight: 500; color: var(--ink); }
+.concl-grid .rules { color: var(--ink-2); line-height: 1.55; }
+.concl-cost { font-family: var(--mono); font-size: 13px; color: var(--ink-3); }
+@media (max-width: 900px) {
+  .concl-grid { grid-template-columns: minmax(0, 1fr); gap: 20px; }
+}
+@media (max-width: 520px) {
+  .project-conclusion { padding: 18px; }
+}
 
 /* ---------- blog ---------- */
 .blog { display: flex; flex-direction: column; gap: 16px; }
