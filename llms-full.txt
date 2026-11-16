@@ -2,7 +2,7 @@
 
 > Caleb Hart is a data scientist and data engineer who builds AI, machine learning, RAG and business intelligence solutions in Python, SQL and Power BI, and teaches people how to use AI well.
 
-Roles: Data Scientist, Data Analyst, Data Engineer, AI Solutions Specialist, Business Intelligence Analyst.
+Roles: Leader, Software Developer, Teacher, Mentor, Advisor, Consultant, Data Scientist, Data Analyst, Data Engineer, AI Engineer, Business Analyst.
 
 Skills: Python, SQL, R and R Shiny, Power BI, SSIS, SSMS, Azure, pandas, Polars, machine learning (XGBoost, LightGBM, random forests), deep learning, reinforcement learning, time series forecasting, NLP and LLM fine-tuning, retrieval-augmented generation (RAG), AI agents and multi-agent orchestration (Claude, ChatGPT, Copilot), data governance, ETL, dashboards, JavaScript, HTML, C#, C++, Git. Works in 13 programming languages.
 

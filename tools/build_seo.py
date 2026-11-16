@@ -30,13 +30,19 @@ SITE_URL = "https://datachart.github.io/caleb.me/"
 ROOT = Path(__file__).resolve().parent.parent
 
 NAME = "Caleb Hart"
-TAGLINE = "Data Scientist, Data Engineer & AI Solutions Specialist"
+TAGLINE = "AI Engineer, Teacher & Leader"
 JOB_TITLES = [
+    "Leader",
+    "Software Developer",
+    "Teacher",
+    "Mentor",
+    "Advisor",
+    "Consultant",
     "Data Scientist",
     "Data Analyst",
     "Data Engineer",
-    "AI Solutions Specialist",
-    "Business Intelligence Analyst",
+    "AI Engineer",
+    "Business Analyst",
 ]
 SUMMARY = (
     "Caleb Hart is a data scientist and data engineer who builds AI, machine learning, "
@@ -44,9 +50,9 @@ SUMMARY = (
     "people how to use AI well."
 )
 KEYWORDS = [
-    "Caleb Hart", "data scientist", "data analyst", "data engineer", "AI solutions specialist",
-    "business intelligence analyst", "BI analyst", "BI developer", "machine learning engineer",
-    "applied AI", "AI engineer", "Python developer", "SQL", "Power BI", "SSIS", "SSMS", "Azure",
+    "Caleb Hart", "data scientist", "data analyst", "data engineer", "AI engineer",
+    "business analyst", "software developer", "AI consultant", "AI advisor", "mentor", "BI analyst", "BI developer", "machine learning engineer",
+    "applied AI", "Python developer", "SQL", "Power BI", "SSIS", "SSMS", "Azure",
     "pandas", "Polars", "R", "R Shiny", "machine learning", "deep learning",
     "reinforcement learning", "time series forecasting", "XGBoost", "LightGBM", "NLP",
     "large language models", "LLM fine-tuning", "RAG", "retrieval augmented generation",
@@ -70,7 +76,7 @@ SAME_AS = [
     "https://github.com/DataChart",
 ]
 OG_IMAGE = SITE_URL + "assets/img/og-card.png"
-OG_IMAGE_ALT = "Caleb Hart: data scientist, data engineer, AI solutions. A 16-bit pixel-art giraffe at sunset."
+OG_IMAGE_ALT = "Caleb Hart: AI engineer, teacher, leader. A 16-bit pixel-art giraffe at sunset."
 
 START, END = "<!-- seo:start -->", "<!-- seo:end -->"
 PERSON_ID = SITE_URL + "#person"

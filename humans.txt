@@ -1,6 +1,6 @@
 /* TEAM */
 Name: Caleb Hart
-Role: Data Scientist, Data Engineer, AI Solutions Specialist
+Role: AI Engineer, Teacher, Leader, Data Scientist, Data Engineer
 Site: https://datachart.github.io/caleb.me/
 LinkedIn: https://www.linkedin.com/in/caleb-e-hart
 GitHub: https://github.com/DataChart
