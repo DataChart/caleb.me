@@ -19,7 +19,7 @@ Small changes with an outsized effect on how the site comes across to recruiters
 - [x] **Link preview image.** Add `og:image` (and `twitter:card`) so links shared on LinkedIn, Slack and text show the giraffe and name instead of a blank card. Needs a 1200×630 PNG.
 - [ ] **Canonical URL and custom domain.** Point `caleb.me` (or the chosen domain) at GitHub Pages and add a `<link rel="canonical">`.
 - [ ] **One-line "open to" status** in the side panel (e.g. roles, consulting, speaking) so visitors know what to reach out about.
-- [ ] **Fill the Fine-tuned LLMs tab.** It's a placeholder today. Even one short write-up of a fine-tune (data, base model, eval results) makes the tab worth clicking.
+- [x] **Fill the LLMs tab.** It now holds the RAG chatbot, the code commenter and the mining rig LLM server, each with its own write-up.
 - [x] **Certifications and courses list.** The LinkedIn facilitation course and any others, with links, as proof points next to the skills.
 - [ ] **Pin repos on GitHub.** Pin AtlasResearchDesk, AgentStockPortfolio and caleb.me on the DataChart profile, each with a README and a link back here.
 - [ ] **Cross-post.** Add a "Read the full post at caleb.me" line to the LinkedIn originals so traffic flows to the site.
