@@ -195,10 +195,11 @@ code, pre { font-family: var(--mono); }
   display: grid; gap: 64px 56px;
   grid-template-columns: minmax(0, 1fr) minmax(320px, 420px);
   grid-template-rows: auto 1fr auto;
-  grid-template-areas: "intro side" "skills side" "certs certs";
+  grid-template-areas: "intro side" "skills side" "projects projects" "certs certs";
   align-items: start;
 }
 .skills { grid-area: skills; min-width: 0; }
+.projects { grid-area: projects; min-width: 0; }
 .side { grid-area: side; display: flex; flex-direction: column; gap: 28px; }
 
 /* ---------- skills matrix ---------- */
@@ -249,10 +250,10 @@ code, pre { font-family: var(--mono); }
 .sm-count { color: var(--sm-text-2); text-align: center; font-variant-numeric: tabular-nums; }
 .sm-cert { color: var(--sm-success); text-align: center; letter-spacing: -0.12em; white-space: nowrap; }
 
-.sm-eng-head { display: flex; justify-content: space-between; align-items: baseline; margin-top: 16px; }
+.sm-eng-head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 4px 16px; }
 .sm-hint { font-size: 11px; color: var(--sm-text-3); }
 
-.sm-cards { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 10px; margin-top: 8px; }
+.sm-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 10px; margin-top: 12px; }
 .sm-card { border: 0.5px solid var(--sm-border); border-radius: 12px; padding: 10px 13px; cursor: pointer; transition: opacity .15s, border-color .15s; outline: none; }
 .sm-card:focus-visible { box-shadow: 0 0 0 1px var(--sm-link); }
 .sm-card-top { display: flex; justify-content: space-between; gap: 6px; }
@@ -542,7 +543,7 @@ code, pre { font-family: var(--mono); }
 /* ---------- responsive ---------- */
 @media (max-width: 900px) {
   .project-grid { grid-template-columns: minmax(0, 1fr); }
-  .main-grid { grid-template-columns: minmax(0, 1fr); grid-template-rows: none; grid-template-areas: "intro" "side" "skills" "certs"; gap: 64px; }
+  .main-grid { grid-template-columns: minmax(0, 1fr); grid-template-rows: none; grid-template-areas: "intro" "side" "skills" "projects" "certs"; gap: 64px; }
   .side { max-width: 440px; }
 }
 @media (max-width: 560px) {
